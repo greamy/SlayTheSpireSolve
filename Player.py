@@ -1,8 +1,11 @@
 from Entity import Entity
+from Deck import Deck
+import random
 
 
 class Player(Entity):
-    def __init__(self, health, block, status_list, energy, gold, potions, relics, deck):
+    def __init__(self, health: int, block: int, status_list: list, energy: int,
+                 gold: int, potions: list, relics: list, deck: Deck):
         super().__init__(health, block, status_list)
         self.energy = energy
         self.gold = gold
@@ -10,11 +13,49 @@ class Player(Entity):
         self.potions = potions
         self.relics = relics
         self.deck = deck
+        self.draw_amount = 5
+        self.max_energy = 3
 
-    def play_card(self, card):
+    def start_turn(self):
+        super().start_turn()
+        self.energy = self.max_energy
+        self.draw_cards(self.draw_amount)
+
+    def do_turn(self, enemies):
+        # TODO: Make player play potions
+        while self.energy > 0:
+            success = self.play_card(random.choice(self.deck.hand), enemies[0])
+            if not success:
+                for card in self.deck.hand:
+                    if card.energy <= self.energy:
+                        success = self.play_card(card, enemies[0])
+                        break
+
+            if not success:
+                break
+            else:
+                for enemy in enemies:
+                    if not enemy.is_alive():
+                        enemies.remove(enemy)
+                if len(enemies) == 0:
+                    return
+
+        self.deck.end_turn()
+
+    def draw_cards(self, amount):
+        self.deck.draw_cards(amount)
+
+    def play_card(self, card, enemy):
+        if card not in self.deck.hand:
+            print("Played card does not exist in hand")
+            return False
+        if card.energy > self.energy:
+            print("Played card costs too much energy!")
+            return False
         self.energy -= card.energy
-        my_deck.discard(card) #The discard function takes an index...., so we should decide on what to do about that
-
+        card.play(self, enemy)
+        self.deck.discard(self.deck.hand.index(card))
+        return True
 
     def gain_block(self, amount):
         self.block += amount
@@ -22,5 +63,10 @@ class Player(Entity):
     def use_potion(self, potion):
         pass
 
+    def begin_combat(self):
+        # TODO: Ensure all cards are in the draw pile, not in discard or exhaust
+        self.deck.begin_combat()
+        self.deck.shuffle()
+
     def __str__(self):
-        return self.label
+        return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\n Deck: " + str(self.deck)

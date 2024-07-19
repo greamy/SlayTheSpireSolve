@@ -6,6 +6,13 @@ class Entity:
         self.block = block
         self.status_list = status_list
 
+    def do_turn(self, enemy_entity):
+        pass
+
+    def start_turn(self):
+        # TODO: Decrement all timed statuses by one
+        self.block = 0
+
     def take_damage(self, amount):
         if self.block > 0:
             self.block -= amount
@@ -14,6 +21,12 @@ class Entity:
             self.block = 0
         else:
             self.health -= amount
+
+        if self.health <= 0:
+            self.health = 0
+
+    def is_alive(self):
+        return self.health > 0
 
     def gain_status(self, status):
         self.status_list.append(status)
