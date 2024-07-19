@@ -23,6 +23,7 @@ def main():
     print(my_deck)
     card.play(1)
     print(my_deck)
+    print(hi)
 if __name__ == "__main__":
     main()
 
