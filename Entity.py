@@ -18,12 +18,12 @@ class Entity:
 
     def take_damage(self, amount):
         if self.block > 0:
-            self.block -= amount
+            self.block -= round(amount*self.damage_taken_multiplier)
             if self.block < 0:
                 self.health -= abs(self.block)
             self.block = 0
         else:
-            self.health -= amount
+            self.health -= round(amount*self.damage_dealt_multiplier)
 
         if self.health <= 0:
             self.health = 0

@@ -8,8 +8,15 @@ from Stance import Stance
 
 
 def main():
-    my_cards = [Card(name="Strike"+str(i), cost=1, damage=6, attacks=1, block=0, types="attack", exhaust=False, status="none") for i in range(5)]
-    my_cards.extend(Card(name="Defend"+str(i), cost=1, damage=0, attacks=0, block=5, types="skill", exhaust=False, status="none") for i in range(5))
+    my_cards = [Card(name="Strike" + str(i), energy=1, damage=6, attacks=1, block=0, draw=0, discard=0, exhaust=False,
+                     status="none", stance=None) for i in range(5)]
+    my_cards.extend(
+        Card(name="Defend" + str(i), energy=1, damage=0, attacks=0, block=5, draw=0, discard=0, exhaust=False,
+             status="none", stance=None) for i in range(5))
+    my_cards.append(Card("Eruption", 2, 9, 1, 0, 0, 0, False,
+                         "", stance=Stance.WRATH))
+    my_cards.append(Card("Vigilance", 2, 0, 0, 8, 0, 0, False,
+                         "", stance=Stance.CALM))
     my_deck = Deck(my_cards)
 
     num_turns = []
