@@ -13,3 +13,7 @@ class Playable:
         target_entity.take_damage(one_attack_damage * self.attacks)
         primary_entity.block += self.block
         # TODO: Implement status effects
+
+    def __str__(self):
+        return ("Damage: " + str(self.damage) + " Attacks: " + str(self.attacks) +
+                " Block: " + str(self.block) + " Status: " + str(self.status))

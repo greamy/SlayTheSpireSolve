@@ -26,6 +26,7 @@ class Deck:
             num -= (len(self.hand) + num) - self.MAX_HAND_SIZE
         if num > len(self.draw_pile):
             self.hand.extend(self.draw_pile)
+            self.draw_pile.clear()
             num -= len(self.draw_pile)
             self.reshuffle()
             self.draw_cards(num)
