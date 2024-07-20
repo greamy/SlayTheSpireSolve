@@ -19,7 +19,12 @@ def parse(clean_file):
 from Actions.Card import Card\n\n
 class Name(Card):
     def __init__(self):
-        super().__init__("name", energy, damage, attacks, block, draw, discard, exhaust, status, stance)"""
+        super().__init__("name", energy, damage, attacks, block, draw, discard, exhaust, status, stance)
+        
+    def play(self, player, enemy, debug):
+        super().play(player, enemy, debug)
+        # TODO: Implement the following:
+        # DESCRIPTION"""
 
     classes = {}
 
@@ -109,6 +114,7 @@ class Name(Card):
             card_class = card_class.replace("status", "\"\"")
             card_class = card_class.replace("U,", "1000,")
             card_class = card_class.replace("X,", "0,")
+            card_class = card_class.replace("DESCRIPTION", card_description)
 
             classes[card_name] = card_class
 
