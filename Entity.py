@@ -5,6 +5,9 @@ class Entity:
         self.health = health
         self.block = block
         self.status_list = status_list
+        self.damage_dealt_multiplier = 1.0
+        self.damage_dealt_modifier = 0
+        self.damage_taken_multiplier = 1.0
 
     def do_turn(self, enemy_entity):
         pass

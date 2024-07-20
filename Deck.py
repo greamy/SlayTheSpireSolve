@@ -5,6 +5,7 @@ from Card import Card
 
 class Deck:
     MAX_HAND_SIZE = 10
+
     def __init__(self, cards):
         self.draw_pile = cards
         self.hand = []
@@ -55,7 +56,6 @@ class Deck:
         self.exhaust_pile.clear()
         self.shuffle()
 
-
     def end_turn(self):
         self.discard_pile.extend(self.hand)
         self.hand.clear()
@@ -66,4 +66,3 @@ class Deck:
                 "\nHand: " + str([str(card) for card in self.hand]) +
                 "\nDiscard: " + str([str(card) for card in self.discard_pile]) +
                 "\nExhaust: " + str([str(card) for card in self.exhaust_pile]))
-

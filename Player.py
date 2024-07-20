@@ -1,5 +1,6 @@
 from Entity import Entity
 from Deck import Deck
+from Stance import Stance
 import random
 
 
@@ -15,6 +16,7 @@ class Player(Entity):
         self.deck = deck
         self.draw_amount = 5
         self.max_energy = 3
+        self.stance = Stance.NONE
 
     def start_turn(self):
         super().start_turn()
@@ -41,6 +43,14 @@ class Player(Entity):
                     return
 
         self.deck.end_turn()
+        if self.stance == Stance.DIVINITY:
+            self.set_stance(Stance.NONE)
+
+    def take_damage(self, damage):
+        if self.stance == Stance.WRATH:
+            damage *= 2
+        super().take_damage(damage)
+
 
     def draw_cards(self, amount):
         self.deck.draw_cards(amount)
@@ -62,6 +72,22 @@ class Player(Entity):
 
     def use_potion(self, potion):
         pass
+
+    def set_stance(self, stance: Stance):
+        if self.stance == Stance.CALM and stance != Stance.CALM:
+            self.energy += 2
+        if self.stance == Stance.WRATH and stance != Stance.WRATH:
+            self.damage_dealt_multiplier /= 2
+        if self.stance == Stance.DIVINITY and stance != Stance.DIVINITY:
+            self.damage_dealt_multiplier /= 3
+
+        if self.stance != Stance.WRATH and stance == Stance.WRATH:
+            self.damage_dealt_multiplier *= 2
+        if self.stance != Stance.DIVINITY and stance == Stance.DIVINITY:
+            self.damage_dealt_multiplier *= 3
+            self.energy += 3
+
+        self.stance = stance
 
     def begin_combat(self):
         # TODO: Ensure all cards are in the draw pile, not in discard or exhaust

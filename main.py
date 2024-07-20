@@ -4,6 +4,7 @@ from Player import Player
 from Enemy import Enemy
 from Combat import Combat
 from Intent import Intent
+from Stance import Stance
 
 
 def main():
@@ -14,7 +15,7 @@ def main():
     num_turns = []
     player_healths = []
     num_died = 0
-    num_combat = 1000
+    num_combat = 1
     for i in range(num_combat):
         Grants_ass = Player(health=69, block=0, status_list=[], energy=3, gold=690, potions=[], relics=[], deck=my_deck)
         jaw_worm = [Enemy(health=42, block=0, status_list=[], intent_set=[Intent(12, 1, 0, "", 25),
