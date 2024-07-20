@@ -6,9 +6,10 @@ class Intent(Playable):
         super().__init__(damage, attacks, block, status)
         self.probability = probability
 
-    def play(self, enemy, player):
-        print("Playing " + str(self) + "...")
-        super().play(enemy, player)
+    def play(self, enemy, player, debug):
+        if debug:
+            print("Playing " + str(self) + "...")
+        super().play(enemy, player, debug)
 
     def __str__(self):
         return "INTENT: " + super().__str__() + " Probability: " + str(self.probability)

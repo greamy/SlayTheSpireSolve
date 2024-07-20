@@ -4,15 +4,14 @@ from Entities.Enemy import Enemy
 
 class Combat:
 
-    def __init__(self, player: Player, enemies: list):
+    def __init__(self, player: Player, enemies: list[Enemy], debug: bool):
         self.player = player
 
         if len(enemies) < 1:
             print("No enemies in combat")
-        elif not isinstance(enemies[0], Enemy):
-            print("Enemy list must contain Enemy objects")
 
         self.enemies = enemies
+        self.debug = debug
 
     def start(self):
         self.player.begin_combat()
@@ -20,29 +19,31 @@ class Combat:
 
         return self.run()
 
-    def get_enemy_health(self):
+    def get_total_enemy_health(self):
         return sum([enemy.health for enemy in self.enemies])
 
     def run(self):
         # Game loop of player turn -> Enemy turn until enemies or player is killed.
         num_turns = 0
-        while self.player.health > 0 and self.get_enemy_health() > 0:
+        while self.player.health > 0 and self.get_total_enemy_health() > 0:
             self.player.start_turn()
-            self.player.do_turn(self.enemies)
+            self.player.do_turn(self.enemies, self.debug)
 
             for enemy in self.enemies:
                 enemy.start_turn()
-                enemy.do_turn(self.player)
+                enemy.do_turn(self.player, self.debug)
 
-            print(self.player)
-            for enemy in self.enemies:
-                print(enemy)
+            if self.debug:
+                print(self.player)
+                for enemy in self.enemies:
+                    print(enemy)
 
             num_turns += 1
-        if self.player.health <= 0:
-            print("YOU LOSE")
-        if self.get_enemy_health() <= 0:
-            print("YOU WIN")
+        if self.debug:
+            if self.player.health <= 0:
+                print("YOU LOSE")
+            if self.get_total_enemy_health() <= 0:
+                print("YOU WIN")
 
         return num_turns, self.player.health, self.player.is_alive()
 

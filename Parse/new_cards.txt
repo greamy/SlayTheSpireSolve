@@ -1,0 +1,382 @@
+Name
+Picture
+Rarity
+Type
+Energy
+Description
+-
+Defend
+Skill
+1
+Gain 5(8) {{Block}}.
+-
+Eruption
+Attack
+2(1)
+Deal 9 damage. Enter {{Wrath}}.
+-
+Strike
+Attack
+1
+Deal 6(9) damage.
+-
+Vigilance
+Skill
+2
+Enter {{Calm}}. Gain 8(12) {{Block}}.
+-
+Bowling Bash
+Attack
+1
+Deal 7(10) damage for each enemy in combat.
+-
+Consecrate
+Attack
+0
+Deal 5(8) damage to ALL enemies.
+-
+Crescendo
+Skill
+1(0)
+{{Retain}}. Enter {{Wrath}}. {{Exhaust}}.
+-
+Crush Joints
+Attack
+1
+Deal 8(10) damage. If the previous card played was a skill, apply 1(2) {{Vulnerable}}.
+-
+Cut Through Fate
+Attack
+1
+Deal 7(9) damage. {{Scry}} 2(3). Draw 1 card.
+-
+Empty Body
+Skill
+1
+Gain 7(10) {{Block}}. Exit your {{Stance}}.
+-
+Empty Fist
+Attack
+1
+Deal 9(14) damage. Exit your {{Stance}}.
+-
+Evaluate
+Skill
+1
+Gain 6(10) {{Block}}. Shuffle an {{C|Insight}} into your draw pile.
+-
+Flurry of Blows
+Attack
+0
+Deal 4(6) damage. On {{Stance}} change, returns from the Discard Pile into your hand.
+-
+Flying Sleeves
+Attack
+1
+{{Retain}}. Deal 4(6) damage twice.
+-
+Follow-Up
+Attack
+1
+Deal 7(11) damage. If the previous card played was an Attack, gain 1 {{Energy}}.
+-
+Halt
+Skill
+0
+Gain 3(4) {{Block}}. {{Wrath}}: Gain 9(14) additional {{Block}}.
+-
+Just Lucky
+Attack
+0
+{{Scry}} 1(2). Gain 2(3) {{Block}}. Deal 3(4) damage.
+-
+Pressure Points
+Skill
+1
+Apply 8(11) Mark. ALL enemies lose HP equal to their Mark.
+-
+Prostrate
+Skill
+0
+Gain 2(3) {{Mantra}}. Gain 4 {{Block}}.
+-
+Protect
+Skill
+2
+{{Retain}}. Gain 12(16) {{Block}}.
+-
+Sash Whip
+Attack
+1
+Deal 8(10) damage. If the last card played this combat was an Attack, apply 1(2) {{Weak}}.
+-
+Third Eye
+Skill
+1
+Gain 7(9) {{Block}}. {{Scry}} 3(5).
+-
+Tranquility
+Skill
+1(0)
+{{Retain}}. Enter {{Calm}}. {{Exhaust}}.
+-
+Battle Hymn
+Power
+1
+(Innate.) At the start of each turn add a {{C|Smite}} into your hand.
+-
+Carve Reality
+Attack
+1
+Deal 6(10) damage. Add a {{C|Smite}} into your hand.
+-
+Collect
+Skill
+X
+Put an {{C|Miracle|Miracle+}} into your hand at the start of your next X(+1) turns. {{Exhaust}}.
+-
+Conclude
+Attack
+1
+Deal 12(16) damage to ALL enemies. End your turn.
+-
+Deceive Reality
+Skill
+1
+Gain 4(7) {{Block}}. Add a {{C|Safety}} to your hand.
+-
+Empty Mind
+Skill
+1
+Exit your {{Stance}}. Draw 2(3) cards.
+-
+Fasting
+Power
+2
+Gain 3(4) {{Strength}}. Gain 3(4) {{Dexterity}}. Gain 1 less {{Energy}} at the start of each turn.
+-
+Fear No Evil
+Attack
+1
+Deal 8(11) damage. If the enemy intends to Attack, enter {{Calm}}.
+-
+Foreign Influence
+Skill
+0
+Choose 1 of 3 Attacks of any color to add to your hand. (It costs 0 this turn.) {{Exhaust}}.
+-
+Foresight
+Power
+1
+At the start of your turn, {{Scry}} 3(4).
+-
+Indignation
+Skill
+1
+If you are in {{Wrath}}, apply 3(5) {{Vulnerable}} to ALL enemies, otherwise enter {{Wrath}}.
+-
+Inner Peace
+Skill
+1
+If you are in {{Calm}}, draw 3(4) cards, otherwise Enter {{Calm}}.
+-
+Like Water
+Power
+1
+At the end of your turn, if you are in {{Calm}}, gain 5(7) {{Block}}.
+-
+Meditate
+Skill
+1
+Put 1(2) card(s) from your discard pile into your hand and {{Retain}} it. Enter {{Calm}}. End your turn.
+-
+Mental Fortress
+Power
+1
+Whenever you switch {{Stance|Stances}}, gain 4(6) {{Block}}.
+-
+Nirvana
+Power
+1
+Whenever you {{Scry}}, gain 3(4) {{Block}}.
+-
+Perseverance
+Skill
+1
+{{Retain}}. Gain 5(7) {{Block}}. Whenever this card is {{Retain|Retained}}, increase its {{Block}} by 2(3).
+-
+Pray
+Skill
+1
+Gain 3(4) {{Mantra}}. Shuffle an {{C|Insight}} into your draw pile.
+-
+Reach Heaven
+Attack
+2
+Deal 10(15) damage. Shuffle a {{C|Through Violence}} into your draw pile.
+-
+Rushdown
+Power
+1(0)
+Whenever you enter {{Wrath}}, draw 2 cards.
+-
+Sanctity
+Skill
+1
+Gain 6(9) {{Block}}. If the previous card played was a Skill, draw 2 card.
+-
+Sands of Time
+Attack
+4
+{{Retain}}. Deal 20(26) damage. Whenever this card is {{Retain|Retained}}, lower its cost by 1.
+-
+Signature Move
+Attack
+2
+Can only be played if this is the only attack in your hand. Deal 30(40) damage.
+-
+Simmering Fury
+Skill
+1
+At the start of your next turn, enter {{Wrath}} and draw 2(3) cards.
+-
+Study
+Power
+2(1)
+At the end of your turn, shuffle an {{C|Insight}} into your draw pile.
+-
+Swivel
+Skill
+2
+Gain 8(11) {{Block}}. The next Attack you play costs 0.
+-
+Talk to the Hand
+Attack
+1
+Deal 5(7) damage. Whenever you attack this enemy, gain 2(3) {{Block}}. {{Exhaust}}.
+-
+Tantrum
+Attack
+1
+Deal 3 damage 3(4) times. Enter {{Wrath}}. Shuffle this card into your draw pile.
+-
+Wallop
+Attack
+2
+Deal 9(12) damage. Gain {{Block}} equal to unblocked damage dealt.
+-
+Wave of the Hand
+Skill
+1
+Whenever you gain {{Block}} this turn, apply 1(2) {{Weak}} to ALL enemies.
+-
+Weave
+Attack
+0
+Deal 4(6) damage. Whenever you {{Scry}}, return this from the discard pile to your Hand.
+-
+Wheel Kick
+Attack
+2
+Deal 15(20) damage. Draw 2 cards.
+-
+Windmill Strike
+Attack
+2
+{{Retain}}. Deal 7(10) damage. Whenever this card is {{Retain|Retained}}, increase its damage by 4(5).
+-
+Worship
+Skill
+2
+({{Retain}}.) Gain 5 {{Mantra}}.
+-
+Wreath of Flame
+Skill
+1
+Your next Attack deals 5(8) additional damage.
+-
+Alpha
+Skill
+1
+({{Innate}}.) Shuffle a {{C|Beta}} into your draw pile. {{Exhaust}}.
+-
+Blasphemy
+Skill
+1
+(Retain.) Enter {{Divinity}}. Die next turn. {{Exhaust}}.
+-
+Brilliance
+Attack
+1
+Deal 12(16) damage. Deals additional damage for all {{Mantra}} gained this combat.
+-
+Conjure Blade
+Skill
+X
+Shuffle an {{C|Expunger}} with X(+1) into your draw pile. {{Exhaust}}.
+-
+Deus Ex Machina
+Skill
+Unplayable
+{{Unplayable}}. When you draw this card, add 2(3) {{C|Miracle|Miracles}} into your hand. {{Exhaust}}.
+-
+Deva Form
+Power
+3
+{{Ethereal}}. At the start of your turn, gain {{Energy}} and increase this gain by 1. (not {{Ethereal}}.)
+-
+Devotion
+Power
+1
+At the start of your turn, gain 2(3) {{Mantra}}.
+-
+Establishment
+Power
+1
+({{Innate}}.) Whenever a card is {{Retain|Retained}}, lower its cost by 1.
+-
+Judgment
+Skill
+1
+If the enemy has 30(40) or less HP, set their HP to 0.
+-
+Lesson Learned
+Attack
+2
+Deal 10(13) damage. If {{Fatal}}, {{Upgrade}} a random card in your deck. {{Exhaust}}.
+-
+Master Reality
+Power
+1(0)
+Whenever a card is created during combat, {{Upgrade}} it.
+-
+Omniscience
+Skill
+4(3)
+Choose a card in your draw pile. Play the chosen card twice and Exhaust it. Exhaust.
+-
+Ragnarok
+Attack
+3
+Deal 5(6) damage to a random enemy 5(6) times.
+-
+Scrawl
+Skill
+1(0)
+Draw cards until your hand is full. {{Exhaust}}.
+-
+Spirit Shield
+Skill
+2
+Gain 3(4) {{Block}} for each card in your hand.
+-
+Vault
+Skill
+3(2)
+Take an extra turn after this one. End your turn. {{Exhaust}}.
+-
+Wish
+Skill
+3
+Choose one: Gain 6(8) {{Plated Armor}}, 3(4) {{Strength}}, or 25(30) Gold. {{Exhaust}}.
+}

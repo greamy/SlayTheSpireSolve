@@ -1,0 +1,532 @@
+!Name
+!Picture
+!Rarity
+!Type
+!Energy
+!Description
+|-
+|[[Defend|Defend]]
+|[[File:Defend P.png|thumb|200x200px]]
+|Starter
+|Skill
+|1
+|Gain 5(8) {{KW|Block}}.
+|-
+|[[Eruption|Eruption]]
+|[[File:Eruption.png|thumb|200x200px]]
+|Starter
+|Attack
+|2(1)
+|Deal 9 damage. Enter {{KW|Wrath}}.
+|-
+|[[Strike|Strike]]
+|[[File:Strike P.png|thumb|200x200px]]
+|Starter
+|Attack
+|1
+|Deal 6(9) damage.
+|-
+|[[Vigilance|Vigilance]]
+|[[File:Vigilance.png|thumb|200x200px]]
+|Starter
+|Skill
+|2
+|Enter {{KW|Calm}}. Gain 8(12) {{KW|Block}}.
+|-
+|[[Bowling Bash|Bowling Bash]]
+|[[File:BowlingBash.png|thumb|200x200px]]
+|Common
+|Attack
+|1
+|Deal 7(10) damage for each enemy in combat.
+|-
+|[[Consecrate|Consecrate]]
+|[[File:Consecrate.png|thumb|200x200px]]
+|Common
+|Attack
+|0
+|Deal 5(8) damage to ALL enemies.
+|-
+|[[Crescendo|Crescendo]]
+|[[File:Crescendo.png|thumb|200x200px]]
+|Common
+|Skill
+|1(0)
+|{{KW|Retain}}. Enter {{KW|Wrath}}. {{KW|Exhaust}}.
+|-
+|[[Crush Joints|Crush Joints]]
+|[[File:CrushJoints.png|thumb|200x200px]]
+|Common
+|Attack
+|1
+|Deal 8(10) damage. If the previous card played was a skill, apply 1(2) {{KW|Vulnerable}}.
+|-
+|[[Cut Through Fate|Cut Through Fate]]
+|[[File:CutThroughFate.png|thumb|200x200px]]
+|Common
+|Attack
+|1
+|Deal 7(9) damage. {{KW|Scry}} 2(3). Draw 1 card.
+|-
+|[[Empty Body|Empty Body]]
+|[[File:EmptyBody.png|thumb|200x200px]]
+|Common
+|Skill
+|1
+|Gain 7(10) {{KW|Block}}. Exit your {{KW|Stance}}.
+|-
+|[[Empty Fist|Empty Fist]]
+|[[File:EmptyFist.png|thumb|200x200px]]
+|Common
+|Attack
+|1
+|Deal 9(14) damage. Exit your {{KW|Stance}}.
+|-
+|[[Evaluate|Evaluate]]
+|[[File:Evaluate.png|thumb|200x200px]]
+|Common
+|Skill
+|1
+|Gain 6(10) {{KW|Block}}. Shuffle an {{C|Insight}} into your draw pile.
+|-
+|[[Flurry of Blows|Flurry of Blows]]
+|[[File:FlurryOfBlows.png|thumb|200x200px]]
+|Common
+|Attack
+|0
+|Deal 4(6) damage. On {{KW|Stance}} change, returns from the Discard Pile into your hand.
+|-
+|[[Flying Sleeves|Flying Sleeves]]
+|[[File:FlyingSleeves.png|thumb|200x200px]]
+|Common
+|Attack
+|1
+|{{KW|Retain}}. Deal 4(6) damage twice.
+|-
+|[[Follow-Up|Follow-Up]]
+|[[File:Follow-Up.png|thumb|200x200px]]
+|Common
+|Attack
+|1
+|Deal 7(11) damage. If the previous card played was an Attack, gain 1 {{KW|Energy}}.
+|-
+|[[Halt|Halt]]
+|[[File:Halt.png|thumb|200x200px]]
+|Common
+|Skill
+|0
+|Gain 3(4) {{KW|Block}}. {{KW|Wrath}}: Gain 9(14) additional {{KW|Block}}.
+|-
+|[[Just Lucky|Just Lucky]]
+|[[File:JustLucky.png|thumb|200x200px]]
+|Common
+|Attack
+|0
+|{{KW|Scry}} 1(2). Gain 2(3) {{KW|Block}}. Deal 3(4) damage.
+|-
+|[[Pressure Points|Pressure Points]]
+|[[File:PressurePoints.png|thumb|200x200px]]
+|Common
+|Skill
+|1
+|Apply 8(11) Mark. ALL enemies lose HP equal to their Mark.
+|-
+|[[Prostrate|Prostrate]]
+|[[File:Prostrate.png|thumb|200x200px]]
+|Common
+|Skill
+|0
+|Gain 2(3) {{KW|Mantra}}. Gain 4 {{KW|Block}}.
+|-
+|[[Protect|Protect]]
+|[[File:Protect.png|thumb|200x200px]]
+|Common
+|Skill
+|2
+|{{KW|Retain}}. Gain 12(16) {{KW|Block}}.
+|-
+|[[Sash Whip|Sash Whip]]
+|[[File:SashWhip.png|thumb|200x200px]]
+|Common
+|Attack
+|1
+|Deal 8(10) damage. If the last card played this combat was an Attack, apply 1(2) {{KW|Weak}}.
+|-
+|[[Third Eye|Third Eye]]
+|[[File:ThirdEye.png|thumb|200x200px]]
+|Common
+|Skill
+|1
+|Gain 7(9) {{KW|Block}}. {{KW|Scry}} 3(5).
+|-
+|[[Tranquility|Tranquility]]
+|[[File:Tranquility.png|thumb|200x200px]]
+|Common
+|Skill
+|1(0)
+|{{KW|Retain}}. Enter {{KW|Calm}}. {{KW|Exhaust}}.
+|-
+|[[Battle Hymn|Battle Hymn]]
+|[[File:BattleHymn.png|thumb|200x200px]]
+|Uncommon
+|Power
+|1
+|(Innate.) At the start of each turn add a {{C|Smite}} into your hand.
+|-
+|[[Carve Reality|Carve Reality]]
+|[[File:CarveReality.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|1
+|Deal 6(10) damage. Add a {{C|Smite}} into your hand.
+|-
+|[[Collect|Collect]]
+|[[File:Collect.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|X
+|Put an {{C|Miracle|Miracle+}} into your hand at the start of your next X(+1) turns. {{KW|Exhaust}}.
+|-
+|[[Conclude|Conclude]]
+|[[File:Conclude.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|1
+|Deal 12(16) damage to ALL enemies. End your turn.
+|-
+|[[Deceive Reality|Deceive Reality]]
+|[[File:DeceiveReality.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|Gain 4(7) {{KW|Block}}. Add a {{C|Safety}} to your hand.
+|-
+|[[Empty Mind|Empty Mind]]
+|[[File:EmptyMind.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|Exit your {{KW|Stance}}. Draw 2(3) cards.
+|-
+|[[Fasting|Fasting]]
+|[[File:Fasting.png|thumb|200x200px]]
+|Uncommon
+|Power
+|2
+|Gain 3(4) {{KW|Strength}}. Gain 3(4) {{KW|Dexterity}}. Gain 1 less {{KW|Energy}} at the start of each turn.
+|-
+|[[Fear No Evil|Fear No Evil]]
+|[[File:FearNoEvil.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|1
+|Deal 8(11) damage. If the enemy intends to Attack, enter {{KW|Calm}}.
+|-
+|[[Foreign Influence|Foreign Influence]]
+|[[File:ForeignInfluence.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|0
+|Choose 1 of 3 Attacks of any color to add to your hand. (It costs 0 this turn.) {{KW|Exhaust}}.
+|-
+|[[Foresight|Foresight]]
+|[[File:Foresight.png|thumb|200x200px]]
+|Uncommon
+|Power
+|1
+|At the start of your turn, {{KW|Scry}} 3(4).
+|-
+|[[Indignation|Indignation]]
+|[[File:Indignation.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|If you are in {{KW|Wrath}}, apply 3(5) {{KW|Vulnerable}} to ALL enemies, otherwise enter {{KW|Wrath}}.
+|-
+|[[Inner Peace|Inner Peace]]
+|[[File:InnerPeace.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|If you are in {{KW|Calm}}, draw 3(4) cards, otherwise Enter {{KW|Calm}}.
+|-
+|[[Like Water|Like Water]]
+|[[File:LikeWater.png|thumb|200x200px]]
+|Uncommon
+|Power
+|1
+|At the end of your turn, if you are in {{KW|Calm}}, gain 5(7) {{KW|Block}}.
+|-
+|[[Meditate|Meditate]]
+|[[File:Meditate.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|Put 1(2) card(s) from your discard pile into your hand and {{KW|Retain}} it. Enter {{KW|Calm}}. End your turn.
+|-
+|[[Mental Fortress|Mental Fortress]]
+|[[File:MentalFortress.png|thumb|200x200px]]
+|Uncommon
+|Power
+|1
+|Whenever you switch {{KW|Stance|Stances}}, gain 4(6) {{KW|Block}}.
+|-
+|[[Nirvana|Nirvana]]
+|[[File:Nirvana.png|thumb|200x200px]]
+|Uncommon
+|Power
+|1
+|Whenever you {{KW|Scry}}, gain 3(4) {{KW|Block}}.
+|-
+|[[Perseverance|Perseverance]]
+|[[File:Perseverance.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|{{KW|Retain}}. Gain 5(7) {{KW|Block}}. Whenever this card is {{KW|Retain|Retained}}, increase its {{KW|Block}} by 2(3).
+|-
+|[[Pray|Pray]]
+|[[File:Pray.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|Gain 3(4) {{KW|Mantra}}. Shuffle an {{C|Insight}} into your draw pile.
+|-
+|[[Reach Heaven|Reach Heaven]]
+|[[File:ReachHeaven.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|2
+|Deal 10(15) damage. Shuffle a {{C|Through Violence}} into your draw pile.
+|-
+|[[Rushdown|Rushdown]]
+|[[File:Rushdown.png|thumb|200x200px]]
+|Uncommon
+|Power
+|1(0)
+|Whenever you enter {{KW|Wrath}}, draw 2 cards.
+|-
+|[[Sanctity|Sanctity]]
+|[[File:Sanctity.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|Gain 6(9) {{KW|Block}}. If the previous card played was a Skill, draw 2 card.
+|-
+|[[Sands of Time|Sands of Time]]
+|[[File:SandsofTime.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|4
+|{{KW|Retain}}. Deal 20(26) damage. Whenever this card is {{KW|Retain|Retained}}, lower its cost by 1.
+|-
+|[[Signature Move|Signature Move]]
+|[[File:SignatureMove.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|2
+|Can only be played if this is the only attack in your hand. Deal 30(40) damage.
+|-
+|[[Simmering Fury|Simmering Fury]]
+|[[File:SimmeringFury.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|At the start of your next turn, enter {{KW|Wrath}} and draw 2(3) cards.
+|-
+|[[Study|Study]]
+|[[File:Study.png|thumb|200x200px]]
+|Uncommon
+|Power
+|2(1)
+|At the end of your turn, shuffle an {{C|Insight}} into your draw pile.
+|-
+|[[Swivel|Swivel]]
+|[[File:Swivel.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|2
+|Gain 8(11) {{KW|Block}}. The next Attack you play costs 0.
+|-
+|[[Talk to the Hand|Talk to the Hand]]
+|[[File:TalktotheHand.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|1
+|Deal 5(7) damage. Whenever you attack this enemy, gain 2(3) {{KW|Block}}. {{KW|Exhaust}}.
+|-
+|[[Tantrum|Tantrum]]
+|[[File:Tantrum.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|1
+|Deal 3 damage 3(4) times. Enter {{KW|Wrath}}. Shuffle this card into your draw pile.
+|-
+|[[Wallop|Wallop]]
+|[[File:Wallop.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|2
+|Deal 9(12) damage. Gain {{KW|Block}} equal to unblocked damage dealt.
+|-
+|[[Wave of the Hand|Wave of the Hand]]
+|[[File:WaveoftheHand.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|Whenever you gain {{KW|Block}} this turn, apply 1(2) {{KW|Weak}} to ALL enemies.
+|-
+|[[Weave|Weave]]
+|[[File:Weave.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|0
+|Deal 4(6) damage. Whenever you {{KW|Scry}}, return this from the discard pile to your Hand.
+|-
+|[[Wheel Kick|Wheel Kick]]
+|[[File:WheelKick.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|2
+|Deal 15(20) damage. Draw 2 cards.
+|-
+|[[Windmill Strike|Windmill Strike]]
+|[[File:WindmillStrike.png|thumb|200x200px]]
+|Uncommon
+|Attack
+|2
+|{{KW|Retain}}. Deal 7(10) damage. Whenever this card is {{KW|Retain|Retained}}, increase its damage by 4(5).
+|-
+|[[Worship|Worship]]
+|[[File:Worship.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|2
+|({{KW|Retain}}.) Gain 5 {{KW|Mantra}}.
+|-
+|[[Wreath of Flame|Wreath of Flame]]
+|[[File:WreathofFlame.png|thumb|200x200px]]
+|Uncommon
+|Skill
+|1
+|Your next Attack deals 5(8) additional damage.
+|-
+|[[Alpha|Alpha]]
+|[[File:Alpha.png|thumb|200x200px]]
+|Rare
+|Skill
+|1
+|({{KW|Innate}}.) Shuffle a {{C|Beta}} into your draw pile. {{KW|Exhaust}}.
+|-
+|[[Blasphemy|Blasphemy]]
+|[[File:Blasphemy.png|thumb|200x200px]]
+|Rare
+|Skill
+|1
+|(Retain.) Enter {{KW|Divinity}}. Die next turn. {{KW|Exhaust}}.
+|-
+|[[Brilliance|Brilliance]]
+|[[File:Brilliance.png|thumb|200x200px]]
+|Rare
+|Attack
+|1
+|Deal 12(16) damage. Deals additional damage for all {{KW|Mantra}} gained this combat.
+|-
+|[[Conjure Blade|Conjure Blade]]
+|[[File:ConjureBlade.png|thumb|200x200px]]
+|Rare
+|Skill
+|X
+|Shuffle an {{C|Expunger}} with X(+1) into your draw pile. {{KW|Exhaust}}.
+|-
+|[[Deus Ex Machina|Deus Ex Machina]]
+|[[File:DeusExMachina.png|thumb|200x200px]]
+|Rare
+|Skill
+|Unplayable
+|{{KW|Unplayable}}. When you draw this card, add 2(3) {{C|Miracle|Miracles}} into your hand. {{KW|Exhaust}}.
+|-
+|[[Deva Form|Deva Form]]
+|[[File:DevaForm.png|thumb|200x200px]]
+|Rare
+|Power
+|3
+|{{KW|Ethereal}}. At the start of your turn, gain {{KW|Energy}} and increase this gain by 1. (not {{KW|Ethereal}}.)
+|-
+|[[Devotion|Devotion]]
+|[[File:Devotion.png|thumb|200x200px]]
+|Rare
+|Power
+|1
+|At the start of your turn, gain 2(3) {{KW|Mantra}}.
+|-
+|[[Establishment|Establishment]]
+|[[File:Establishment.png|thumb|200x200px]]
+|Rare
+|Power
+|1
+|({{KW|Innate}}.) Whenever a card is {{KW|Retain|Retained}}, lower its cost by 1.
+|-
+|[[Judgment|Judgment]]
+|[[File:Judgment.png|thumb|200x200px]]
+|Rare
+|Skill
+|1
+|If the enemy has 30(40) or less HP, set their HP to 0.
+|-
+|[[Lesson Learned|Lesson Learned]]
+|[[File:LessonLearned.png|thumb|200x200px]]
+|Rare
+|Attack
+|2
+|Deal 10(13) damage. If {{KW|Fatal}}, {{KW|Upgrade}} a random card in your deck. {{KW|Exhaust}}.
+|-
+|[[Master Reality|Master Reality]]
+|[[File:MasterReality.png|thumb|200x200px]]
+|Rare
+|Power
+|1(0)
+|Whenever a card is created during combat, {{KW|Upgrade}} it.
+|-
+|[[Omniscience|Omniscience]]
+|[[File:Omniscience.png|thumb|200x200px]]
+|Rare
+|Skill
+|4(3)
+|Choose a card in your draw pile. Play the chosen card twice and Exhaust it. Exhaust.
+|-
+|[[Ragnarok|Ragnarok]]
+|[[File:Ragnarok.png|thumb|200x200px]]
+|Rare
+|Attack
+|3
+|Deal 5(6) damage to a random enemy 5(6) times.
+|-
+|[[Scrawl|Scrawl]]
+|[[File:Scrawl.png|thumb|200x200px]]
+|Rare
+|Skill
+|1(0)
+|Draw cards until your hand is full. {{KW|Exhaust}}.
+|-
+|[[Spirit Shield|Spirit Shield]]
+|[[File:SpiritShield.png|thumb|200x200px]]
+|Rare
+|Skill
+|2
+|Gain 3(4) {{KW|Block}} for each card in your hand.
+|-
+|[[Vault|Vault]]
+|[[File:Vault.png|thumb|200x200px]]
+|Rare
+|Skill
+|3(2)
+|Take an extra turn after this one. End your turn. {{KW|Exhaust}}.
+|-
+|[[Wish|Wish]]
+|[[File:Wish.png|thumb|200x200px]]
+|Rare
+|Skill
+|3
+|Choose one: Gain 6(8) {{KW|Plated Armor}}, 3(4) {{KW|Strength}}, or 25(30) Gold. {{KW|Exhaust}}.
+|}

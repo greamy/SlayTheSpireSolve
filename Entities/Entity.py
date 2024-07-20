@@ -1,8 +1,8 @@
 class Entity:
 
-    def __init__(self, health, block, status_list):
+    def __init__(self, health, status_list):
         self.health = health
-        self.block = block
+        self.block = 0
         self.status_list = status_list
         self.damage_dealt_multiplier = 1.0
         self.damage_dealt_modifier = 0
@@ -20,7 +20,7 @@ class Entity:
             self.block -= round(amount*self.damage_taken_multiplier)
             if self.block < 0:
                 self.health -= abs(self.block)
-            self.block = 0
+                self.block = 0
         else:
             self.health -= round(amount*self.damage_dealt_multiplier)
 

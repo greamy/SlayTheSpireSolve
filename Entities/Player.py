@@ -1,16 +1,14 @@
 from Entities.Entity import Entity
-from Actions.Card import Card
 import random
 from enum import Enum
 
 
 class Player(Entity):
-    def __init__(self, health: int, block: int, status_list: list, energy: int,
+    def __init__(self, health: int, status_list: list, energy: int,
                  gold: int, potions: list, relics: list, cards: list):
-        super().__init__(health, block, status_list)
+        super().__init__(health, status_list)
         self.energy = energy
         self.gold = gold
-        self.status_list = status_list
         self.potions = potions
         self.relics = relics
         self.deck = self.Deck(cards)
@@ -28,14 +26,14 @@ class Player(Entity):
         self.energy = self.max_energy
         self.draw_cards(self.draw_amount)
 
-    def do_turn(self, enemies):
+    def do_turn(self, enemies, debug):
         # TODO: Make player play potions
-        while self.energy > 0:
-            success = self.play_card(random.choice(self.deck.hand), enemies[0])
+        while self.energy > 0 and len(self.deck.hand) > 0:
+            success = self.play_card(random.choice(self.deck.hand), enemies[0], debug)
             if not success:
                 for card in self.deck.hand:
                     if card.energy <= self.energy:
-                        success = self.play_card(card, enemies[0])
+                        success = self.play_card(card, enemies[0], debug)
                         break
 
             if not success:
@@ -47,27 +45,24 @@ class Player(Entity):
                 if len(enemies) == 0:
                     return
 
-        self.deck.end_turn()
+        self.deck.end_turn(debug)
         if self.stance == self.Stance.DIVINITY:
             self.set_stance(self.Stance.NONE)
-
-    def take_damage(self, damage):
-        if self.stance == self.Stance.WRATH:
-            damage *= 2
-        super().take_damage(damage)
 
     def draw_cards(self, amount):
         self.deck.draw_cards(amount)
 
-    def play_card(self, card, enemy):
+    def play_card(self, card, enemy, debug):
         if card not in self.deck.hand:
-            print("Played card does not exist in hand")
+            if debug:
+                print("Played card does not exist in hand")
             return False
         if card.energy > self.energy:
-            print("Played card costs too much energy!")
+            if debug:
+                print(card.name + " costs too much energy!")
             return False
         self.energy -= card.energy
-        card.play(self, enemy)
+        card.play(self, enemy, debug)
         self.deck.discard(self.deck.hand.index(card))
         return True
 
@@ -82,11 +77,13 @@ class Player(Entity):
             self.energy += 2
         if self.stance == self.Stance.WRATH and stance != self.Stance.WRATH:
             self.damage_dealt_multiplier /= 2
+            self.damage_taken_multiplier /= 2
         if self.stance == self.Stance.DIVINITY and stance != self.Stance.DIVINITY:
             self.damage_dealt_multiplier /= 3
 
         if self.stance != self.Stance.WRATH and stance == self.Stance.WRATH:
             self.damage_dealt_multiplier *= 2
+            self.damage_taken_multiplier *= 2
         if self.stance != self.Stance.DIVINITY and stance == self.Stance.DIVINITY:
             self.damage_dealt_multiplier *= 3
             self.energy += 3
@@ -94,7 +91,7 @@ class Player(Entity):
         self.stance = stance
 
     def __str__(self):
-        return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\n Deck: " + str(self.deck)
+        return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\nDeck: " + str(self.deck)
 
     class Stance(Enum):
         NONE = 0
@@ -125,11 +122,9 @@ class Player(Entity):
                 num -= (len(self.hand) + num) - self.MAX_HAND_SIZE
             if num > len(self.draw_pile):
                 self.hand.extend(self.draw_pile)
-                self.draw_pile.clear()
                 num -= len(self.draw_pile)
+                self.draw_pile.clear()
                 self.reshuffle()
-                self.draw_cards(num)
-                return
             for i in range(num):
                 self.hand.append(self.draw_pile.pop(0))
 
@@ -156,10 +151,11 @@ class Player(Entity):
             self.exhaust_pile.clear()
             self.shuffle()
 
-        def end_turn(self):
+        def end_turn(self, debug):
             self.discard_pile.extend(self.hand)
             self.hand.clear()
-            print("**************** TURN OVER ****************")
+            if debug:
+                print("**************** TURN OVER ****************")
 
         def __str__(self):
             return ("Draw Pile:" + str([str(card) for card in self.draw_pile]) +

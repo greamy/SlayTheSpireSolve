@@ -13,9 +13,10 @@ class Card(Playable):
         self.exhaust = exhaust
         self.stance = stance
 
-    def play(self, player: Player, enemy: Enemy):
-        super().play(player, enemy)
-        print("Playing " + self.name + "...")
+    def play(self, player: Player, enemy: Enemy, debug):
+        super().play(player, enemy, debug)
+        if debug:
+            print("Playing " + self.name + "...")
         player.draw_cards(self.draw)
 
         # TODO: Discard card of player's choice
