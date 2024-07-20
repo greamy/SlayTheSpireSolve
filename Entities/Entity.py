@@ -1,4 +1,3 @@
-
 class Entity:
 
     def __init__(self, health, block, status_list):

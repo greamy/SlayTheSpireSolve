@@ -1,4 +1,4 @@
-from Playable import Playable
+from Actions.Playable import Playable
 
 
 class Intent(Playable):

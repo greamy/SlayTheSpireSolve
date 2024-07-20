@@ -1,9 +1,10 @@
-from Playable import Playable
-from Stance import Stance
+from Actions.Playable import Playable
+from Entities.Player import Player
+from Entities.Enemy import Enemy
 
 
 class Card(Playable):
-    def __init__(self, name, energy, damage, attacks, block, draw, discard, exhaust, status, stance: Stance=None):
+    def __init__(self, name, energy, damage, attacks, block, draw, discard, exhaust, status, stance: Player.Stance=None):
         super().__init__(damage, attacks, block, status)
         self.name = name
         self.energy = energy
@@ -12,7 +13,7 @@ class Card(Playable):
         self.exhaust = exhaust
         self.stance = stance
 
-    def play(self, player, enemy):
+    def play(self, player: Player, enemy: Enemy):
         super().play(player, enemy)
         print("Playing " + self.name + "...")
         player.draw_cards(self.draw)

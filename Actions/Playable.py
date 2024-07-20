@@ -1,4 +1,4 @@
-import Entity
+from Entities import Entity
 
 
 class Playable:

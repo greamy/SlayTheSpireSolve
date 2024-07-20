@@ -1,5 +1,5 @@
-from Player import Player
-from Enemy import Enemy
+from Entities.Player import Player
+from Entities.Enemy import Enemy
 
 
 class Combat:
