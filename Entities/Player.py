@@ -29,7 +29,9 @@ class Player(Entity):
     def do_turn(self, enemies, debug):
         # TODO: Make player play potions
         while self.energy > 0 and len(self.deck.hand) > 0:
-            success = self.play_card(random.choice(self.deck.hand), enemies[0], debug)
+            card_choice = random.choice(self.deck.hand)
+            targeted_enemy = random.choice(enemies)
+            success = self.play_card(random.choice(self.deck.hand), targeted_enemy, debug)
             if not success:
                 for card in self.deck.hand:
                     if card.energy <= self.energy:
