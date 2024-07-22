@@ -1,6 +1,7 @@
 from Entities.Entity import Entity
 import random
 from enum import Enum
+from Actions.Listener import Listener
 
 
 class Player(Entity):
@@ -15,6 +16,7 @@ class Player(Entity):
         self.draw_amount = 5
         self.max_energy = 3
         self.stance = self.Stance.NONE
+        self.listeners = []
 
     def begin_combat(self):
         # TODO: Ensure all cards are in the draw pile, not in discard or exhaust
@@ -25,6 +27,7 @@ class Player(Entity):
         super().start_turn()
         self.energy = self.max_energy
         self.draw_cards(self.draw_amount)
+        # self.trigger_listeners(Listener.Event.START_TURN)
 
     def do_turn(self, enemies, debug):
         # TODO: Make player play potions
@@ -35,7 +38,7 @@ class Player(Entity):
             if not success:
                 for card in self.deck.hand:
                     if card.energy <= self.energy:
-                        success = self.play_card(card, enemies[0], debug)
+                        success = self.play_card(card, targeted_enemy, debug)
                         break
 
             if not success:
@@ -50,6 +53,8 @@ class Player(Entity):
         self.deck.end_turn(debug)
         if self.stance == self.Stance.DIVINITY:
             self.set_stance(self.Stance.NONE)
+
+        self.trigger_listeners(Listener.Event.END_TURN, enemies, debug)
 
     def draw_cards(self, amount):
         self.deck.draw_cards(amount)
@@ -91,6 +96,16 @@ class Player(Entity):
             self.energy += 3
 
         self.stance = stance
+
+    def add_listener(self, listener):
+        self.listeners.append(listener)
+
+    def trigger_listeners(self, event_type, enemies, debug):
+        if debug:
+            print("Triggering listeners!")
+        for listener in self.listeners:
+            if listener.event_type == event_type:
+                listener.trigger(self, enemies[0], debug)
 
     def __str__(self):
         return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\nDeck: " + str(self.deck)

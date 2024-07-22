@@ -19,6 +19,7 @@ class Enemy(Entity):
         for intent in self.intent_set:
             if choice < (intent.probability + current_prob):
                 self.intent = intent
+                break
             current_prob += intent.probability
 
     def do_turn(self, player, debug):
