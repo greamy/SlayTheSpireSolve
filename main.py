@@ -54,6 +54,7 @@ def main():
           + str((player_healths.count(max(player_healths)) / num_combat) * 100) + " % chance.")
     print("The worst combat had the player end at " + str(min(player_healths)) + " health with a "
           + str((player_healths.count(min(player_healths)) / num_combat) * 100) + " % chance.")
+    print("Lucas is stupid")
 
 
 if __name__ == "__main__":
