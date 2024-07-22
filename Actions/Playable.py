@@ -8,7 +8,7 @@ class Playable:
         self.block = block
         self.status = status
 
-    def play(self, primary_entity: Entity, target_entity: Entity, debug: bool):
+    def play(self, primary_entity: Entity, target_entity: Entity, target_list: list[Entity], debug: bool):
         one_attack_damage = round((self.damage + primary_entity.damage_dealt_modifier) * primary_entity.damage_dealt_multiplier)
         target_entity.take_damage(one_attack_damage * self.attacks)
         primary_entity.block += self.block

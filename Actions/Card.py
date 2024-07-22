@@ -4,7 +4,8 @@ from Entities.Enemy import Enemy
 
 
 class Card(Playable):
-    def __init__(self, name, energy, damage, attacks, block, draw, discard, exhaust, status, stance: Player.Stance=None):
+    def __init__(self, name, energy, damage, attacks, block, draw, discard, exhaust, status,
+                 stance: Player.Stance = None):
         super().__init__(damage, attacks, block, status)
         self.name = name
         self.energy = energy
@@ -13,8 +14,8 @@ class Card(Playable):
         self.exhaust = exhaust
         self.stance = stance
 
-    def play(self, player: Player, enemy: Enemy, debug):
-        super().play(player, enemy, debug)
+    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, target_enemy, enemies, debug)
         if debug:
             print("Playing " + self.name + "...")
         player.draw_cards(self.draw)

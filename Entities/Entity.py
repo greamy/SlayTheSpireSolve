@@ -8,10 +8,10 @@ class Entity:
         self.damage_dealt_modifier = 0
         self.damage_taken_multiplier = 1.0
 
-    def do_turn(self, enemy_entity):
+    def do_turn(self, opponents, debug):
         pass
 
-    def start_turn(self):
+    def start_turn(self, opponents, debug):
         # TODO: Decrement all timed statuses by one
         self.block = 0
 

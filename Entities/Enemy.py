@@ -23,7 +23,7 @@ class Enemy(Entity):
             current_prob += intent.probability
 
     def do_turn(self, player, debug):
-        self.intent.play(self, player, debug)
+        self.intent.play(self, player, [player], debug)
         self.choose_intent()
 
 

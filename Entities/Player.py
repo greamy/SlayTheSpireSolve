@@ -23,22 +23,22 @@ class Player(Entity):
         self.deck.begin_combat()
         self.deck.shuffle()
 
-    def start_turn(self):
-        super().start_turn()
+    def start_turn(self, enemies, debug):
+        super().start_turn(enemies, debug)
         self.energy = self.max_energy
         self.draw_cards(self.draw_amount)
-        # self.trigger_listeners(Listener.Event.START_TURN)
+        self.notify_listeners(Listener.Event.START_TURN, enemies, debug)
 
     def do_turn(self, enemies, debug):
         # TODO: Make player play potions
         while self.energy > 0 and len(self.deck.hand) > 0:
             card_choice = random.choice(self.deck.hand)
             targeted_enemy = random.choice(enemies)
-            success = self.play_card(random.choice(self.deck.hand), targeted_enemy, debug)
+            success = self.play_card(card_choice, targeted_enemy, enemies, debug)
             if not success:
                 for card in self.deck.hand:
                     if card.energy <= self.energy:
-                        success = self.play_card(card, targeted_enemy, debug)
+                        success = self.play_card(card, targeted_enemy, enemies, debug)
                         break
 
             if not success:
@@ -54,12 +54,12 @@ class Player(Entity):
         if self.stance == self.Stance.DIVINITY:
             self.set_stance(self.Stance.NONE)
 
-        self.trigger_listeners(Listener.Event.END_TURN, enemies, debug)
+        self.notify_listeners(Listener.Event.END_TURN, enemies, debug)
 
     def draw_cards(self, amount):
         self.deck.draw_cards(amount)
 
-    def play_card(self, card, enemy, debug):
+    def play_card(self, card, enemy, enemies, debug):
         if card not in self.deck.hand:
             if debug:
                 print("Played card does not exist in hand")
@@ -69,7 +69,7 @@ class Player(Entity):
                 print(card.name + " costs too much energy!")
             return False
         self.energy -= card.energy
-        card.play(self, enemy, debug)
+        card.play(self, enemy, enemies, debug)
         self.deck.discard(self.deck.hand.index(card))
         return True
 
@@ -100,12 +100,13 @@ class Player(Entity):
     def add_listener(self, listener):
         self.listeners.append(listener)
 
-    def trigger_listeners(self, event_type, enemies, debug):
+    def notify_listeners(self, event_type, enemies, debug):
         if debug:
             print("Triggering listeners!")
         for listener in self.listeners:
             if listener.event_type == event_type:
-                listener.trigger(self, enemies[0], debug)
+                # TODO: Don't always randomly choose enemy for power target
+                listener.notify(self, random.choice(enemies), enemies, debug)
 
     def __str__(self):
         return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\nDeck: " + str(self.deck)
@@ -137,6 +138,8 @@ class Player(Entity):
         def draw_cards(self, num):
             if len(self.hand) + num > self.MAX_HAND_SIZE:
                 num -= (len(self.hand) + num) - self.MAX_HAND_SIZE
+            if num > (len(self.draw_pile) + len(self.discard_pile)):
+                num = len(self.draw_pile) + len(self.discard_pile)
             if num > len(self.draw_pile):
                 self.hand.extend(self.draw_pile)
                 num -= len(self.draw_pile)

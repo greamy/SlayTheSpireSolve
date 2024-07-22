@@ -15,8 +15,6 @@ class Combat:
 
     def start(self):
         self.player.begin_combat()
-        # TODO: Decide on intent of each enemy in the combat
-
         return self.run()
 
     def get_total_enemy_health(self):
@@ -26,11 +24,11 @@ class Combat:
         # Game loop of player turn -> Enemy turn until enemies or player is killed.
         num_turns = 0
         while self.player.health > 0 and self.get_total_enemy_health() > 0:
-            self.player.start_turn()
+            self.player.start_turn(self.enemies, self.debug)
             self.player.do_turn(self.enemies, self.debug)
 
             for enemy in self.enemies:
-                enemy.start_turn()
+                enemy.start_turn([self.player], self.debug)
                 enemy.do_turn(self.player, self.debug)
 
             if self.debug:

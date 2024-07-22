@@ -16,13 +16,14 @@ def clean_input(full_file):
 
 def parse(clean_file):
     template = """from Entities.Player import Player
+from Entities.Enemy import Enemy
 from Actions.Card import Card\n\n
 class Name(Card):
     def __init__(self):
         super().__init__("name", energy, damage, attacks, block, draw, discard, exhaust, status, stance)
         
-    def play(self, player, enemy, debug):
-        super().play(player, enemy, debug)
+    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # DESCRIPTION"""
 
@@ -133,7 +134,7 @@ def main():
         file.writelines(cards)
 
     for class_name, class_string in classes.items():
-        path = os.path.join(os.path.curdir, "../Actions/Library_Parse")
+        path = os.path.join(os.path.curdir, "../Actions/Library")
         path = os.path.join(path, class_name + ".py")
         with open(path, "w") as file:
             file.write(class_string)

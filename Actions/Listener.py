@@ -7,9 +7,8 @@ class Listener:
         self.event_type = event_type
         self.on_listen = on_listen
 
-    def trigger(self, player, enemy, debug):
-        self.on_listen(player, enemy, debug)
-
+    def notify(self, player, enemy, enemies, debug):
+        self.on_listen(player, enemy, enemies, debug)
 
     class Event(Enum):
         START_TURN = 0

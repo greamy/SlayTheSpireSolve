@@ -1,13 +1,10 @@
-from Actions.Card import Card
 from Entities.Player import Player
 from Entities.Enemy import Enemy
 from Combat import Combat
 from Actions.Intent import Intent
 import copy
-import os
-import importlib
 import time
-from Actions.Library.Omega import Omega
+from Actions.Library.Alpha import Alpha
 
 
 def main():
@@ -29,7 +26,7 @@ def main():
     #         class_ = getattr(module, card_name)
     #         my_cards.append(class_())
 
-    my_cards = [Omega() for i in range(5)]
+    my_cards = [Alpha()]
 
     num_turns = []
     player_healths = []
@@ -39,7 +36,7 @@ def main():
     for i in range(num_combat):
         grants_ass = Player(health=69, status_list=[], energy=3, gold=690, potions=[], relics=[],
                             cards=copy.deepcopy(my_cards))
-        jaw_worm = Enemy(health=42, status_list=[], intent_set=[Intent(12, 1, 0, "", 25),
+        jaw_worm = Enemy(health=51, status_list=[], intent_set=[Intent(12, 1, 0, "", 25),
                                                                          Intent(7, 1, 5, "", 30),
                                                                          Intent(5, 1, 9, "", 45)])
         combat = Combat(grants_ass, [jaw_worm], True)
