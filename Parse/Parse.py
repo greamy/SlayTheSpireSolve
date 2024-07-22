@@ -20,7 +20,7 @@ from Entities.Enemy import Enemy
 from Actions.Card import Card\n\n
 class Name(Card):
     def __init__(self):
-        super().__init__("name", energy, damage, attacks, block, draw, discard, exhaust, status, stance)
+        super().__init__("name", Card.Type.cardType, energy, damage, attacks, block, draw, discard, exhaust, status, stance)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
@@ -43,7 +43,7 @@ class Name(Card):
 
             cur_idx += 1
             clean_file.pop(cur_idx)
-            card_type = clean_file[cur_idx]
+            card_type = clean_file[cur_idx][:-1]
 
             cur_idx += 1
             line = clean_file[cur_idx]
@@ -59,6 +59,7 @@ class Name(Card):
             card_class = template.replace("Name", card_name)
             card_class = card_class.replace("name", card_name)
             card_class = card_class.replace("energy", card_energy)
+            card_class = card_class.replace("cardType", card_type.upper())
 
             deal_index = card_description.find("Deal")
             if deal_index == -1:
@@ -134,7 +135,7 @@ def main():
         file.writelines(cards)
 
     for class_name, class_string in classes.items():
-        path = os.path.join(os.path.curdir, "../Actions/Library")
+        path = os.path.join(os.path.curdir, "../Actions/Library_Parse")
         path = os.path.join(path, class_name + ".py")
         with open(path, "w") as file:
             file.write(class_string)

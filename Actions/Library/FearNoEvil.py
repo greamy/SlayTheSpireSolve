@@ -5,7 +5,7 @@ from Actions.Card import Card
 
 class FearNoEvil(Card):
     def __init__(self):
-        super().__init__("FearNoEvil", 1, 8, 1, 0, 0, 0, False, "", None)
+        super().__init__("FearNoEvil", Card.Type.ATTACK, 1, 8, 1, 0, 0, 0, False, "", None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)

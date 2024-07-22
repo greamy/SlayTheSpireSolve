@@ -6,7 +6,7 @@ from Actions.Listener import Listener
 
 class Omega(Card):
     def __init__(self):
-        super().__init__("Omega", 3, 0, 0, 0, 0, 0, True, "", None)
+        super().__init__("Omega", Card.Type.POWER, 3, 0, 0, 0, 0, 0, True, "", None)
         self.listener = Listener(Listener.Event.END_TURN, self.power)
 
     def play(self, player: Player, enemy: Enemy, enemies: list[Enemy], debug: bool):

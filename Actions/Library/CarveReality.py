@@ -5,7 +5,7 @@ from Actions.Card import Card
 
 class CarveReality(Card):
     def __init__(self):
-        super().__init__("CarveReality", 1, 6, 1, 0, 0, 0, False, "", None)
+        super().__init__("CarveReality", Card.Type.ATTACK, 1, 6, 1, 0, 0, 0, False, "", None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)

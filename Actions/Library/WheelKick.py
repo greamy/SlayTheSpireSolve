@@ -5,7 +5,7 @@ from Actions.Card import Card
 
 class WheelKick(Card):
     def __init__(self):
-        super().__init__("WheelKick", 2, 15, 1, 0, 0, 0, False, "", None)
+        super().__init__("WheelKick", Card.Type.ATTACK, 2, 15, 1, 0, 0, 0, False, "", None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)

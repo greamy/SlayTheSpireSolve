@@ -5,7 +5,7 @@ from Actions.Card import Card
 
 class ConjureBlade(Card):
     def __init__(self):
-        super().__init__("ConjureBlade", 0, 0, 0, 0, 0, 0, True, "", None)
+        super().__init__("ConjureBlade", Card.Type.SKILL, 0, 0, 0, 0, 0, 0, True, "", None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)

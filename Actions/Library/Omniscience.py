@@ -5,7 +5,7 @@ from Actions.Card import Card
 
 class Omniscience(Card):
     def __init__(self):
-        super().__init__("Omniscience", 4, 0, 0, 0, 0, 0, False, "", None)
+        super().__init__("Omniscience", Card.Type.SKILL, 4, 0, 0, 0, 0, 0, False, "", None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)

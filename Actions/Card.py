@@ -1,13 +1,14 @@
 from Actions.Playable import Playable
 from Entities.Player import Player
 from Entities.Enemy import Enemy
-
+from enum import Enum
 
 class Card(Playable):
-    def __init__(self, name, energy, damage, attacks, block, draw, discard, exhaust, status,
+    def __init__(self, name, type, energy, damage, attacks, block, draw, discard, exhaust, status,
                  stance: Player.Stance = None):
         super().__init__(damage, attacks, block, status)
         self.name = name
+        self.type = type
         self.energy = energy
         self.draw = draw
         self.discard = discard
@@ -29,3 +30,8 @@ class Card(Playable):
 
     def __str__(self):
         return self.name
+
+    class Type(Enum):
+        ATTACK = 0
+        SKILL = 1
+        POWER = 2
