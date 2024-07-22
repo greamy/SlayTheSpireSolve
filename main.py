@@ -47,9 +47,13 @@ def main():
 
     end = time.time()
     print("The average number of turns for the combat is: " + str(sum(num_turns) / len(num_turns)) +
-          "\nThe average remaining health of the player is: " + str(sum(player_healths) / len(player_healths)) +
+          "\nThe average remaining health of the player is: " + str(sum(player_healths) / num_combat) +
           "\nThe player died " + str(num_died) + "/" + str(num_combat) + " times.")
-    print("Program ran in "  + str(end - start) + " seconds.")
+    print("Program ran in " + str(end - start) + " seconds.")
+    print("The best combat had the player end at " + str(max(player_healths)) + " health with a "
+          + str((player_healths.count(max(player_healths)) / num_combat) * 100) + " % chance.")
+    print("The worst combat had the player end at " + str(min(player_healths)) + " health with a "
+          + str((player_healths.count(min(player_healths)) / num_combat) * 100) + " % chance.")
 
 
 if __name__ == "__main__":
