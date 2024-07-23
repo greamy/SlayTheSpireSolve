@@ -1,15 +1,14 @@
+
 from Entities.Player import Player
 from Entities.Enemy import Enemy
 from Actions.Card import Card
-from Actions.Library.Smite import Smite
 
 
-class CarveReality(Card):
+class Miracle(Card):
     def __init__(self):
-        super().__init__("CarveReality", Card.Type.ATTACK, 1, 6, 1, 0, 0, 0, False, False, "", None)
-        
+        super().__init__("Miracle", Card.Type.SKILL, -1, 0, 0, 0, 0, 0, True, True, "", None)
+
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        player.deck.hand.append(Smite)
         # TODO: Implement the following:
-        # Deal 6(10) damage. Add a {{C|Smite}} into your hand.
+        # Retain. Gain 1(2) energy. {{Exhaust}}.

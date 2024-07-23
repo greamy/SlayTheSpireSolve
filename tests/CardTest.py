@@ -7,8 +7,11 @@ from Actions.Library.Beta import Beta
 from Actions.Library.Blasphemy import Blasphemy
 from Actions.Library.BowlingBash import BowlingBash
 from Actions.Library.Brilliance import Brilliance
+from Actions.Library.CarveReality import CarveReality
+from Actions.Library.Collect import Collect
 from Actions.Library.Omega import Omega
 from Actions.Library.Smite import Smite
+from Actions.Library.Miracle import Miracle
 from Actions.Listener import Listener
 from Entities.Enemy import Enemy
 from Entities.Player import Player
@@ -69,7 +72,6 @@ class CardTest(unittest.TestCase):
 
         self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
         self.assertIsInstance(self.player.deck.hand[1], Smite)
-
 
     def test_smite(self):
         # Retain. Deal 12 damage. {{Exhaust}}.
@@ -142,6 +144,45 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.mantra, 5)
         self.player.play_card(card, self.enemy, self.enemies, False)
         self.assertEqual(self.enemy.health, self.enemy_start_health*3 - (12 + self.player.total_mantra) * 3)
+
+    def test_CarveReality(self):
+        card = CarveReality()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+
+        self.assertIn(card, self.player.deck.discard_pile)
+        self.assertIn(Smite, self.player.deck.hand)
+        self.assertEqual(self.enemy_start_health-6, self.enemy.health)
+
+    def test_Collect(self):
+        card = Collect()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+
+        self.assertEqual(self.player.energy, 0)
+        self.assertEqual(len(self.player.listeners), 1)
+        self.assertIn(card, self.player.deck.exhaust_pile)
+
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.assertIn(Miracle, self.player.deck.hand)
+        self.assertEqual(self.player.energy, 3)
+
+    def test_Miracle(self):
+        card = Miracle()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+
+        self.assertEqual(self.player.energy, 4)
+        self.assertIn(card, self.player.deck.exhaust_pile)
+
+        self.player.deck.hand.append(card)
+        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.enemies, False)
+        self.assertIn(card, self.player.deck.hand)
+
+
+
+
+
 
 
 

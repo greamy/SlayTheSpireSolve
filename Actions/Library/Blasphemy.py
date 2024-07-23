@@ -10,7 +10,6 @@ class Blasphemy(Card):
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         # (Retain.) Enter Divinity, Die next turn. {{Exhaust}}.
         player.add_listener(self.listener)
 
