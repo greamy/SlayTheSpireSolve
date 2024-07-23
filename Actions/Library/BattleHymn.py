@@ -12,7 +12,6 @@ class BattleHymn(Card):
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         # (Innate.) At the start of each turn add a {{C|Smite}} into your hand.
         player.add_listener(self.listener)
 

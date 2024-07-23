@@ -12,6 +12,7 @@ from Actions.Library.Collect import Collect
 from Actions.Library.Omega import Omega
 from Actions.Library.Smite import Smite
 from Actions.Library.Miracle import Miracle
+from Actions.Library.Conclude import Conclude
 from Actions.Listener import Listener
 from Entities.Enemy import Enemy
 from Entities.Player import Player
@@ -167,8 +168,16 @@ class CardTest(unittest.TestCase):
         self.assertIn(card, self.player.deck.exhaust_pile)
 
         self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
-        self.assertIn(Miracle, self.player.deck.hand)
-        self.assertEqual(self.player.energy, 3)
+        self.assertIsInstance(self.player.deck.hand[0], Miracle)
+
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.assertEqual(len(self.player.deck.hand),3)
+
+        self.player.deck.hand.clear()
+
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.assertEqual(len(self.player.deck.hand), 0)
 
     def test_Miracle(self):
         # Retain. Gain 1(2) energy. {{Exhaust}}.

@@ -8,9 +8,8 @@ class Conclude(Card):
         super().__init__("Conclude", Card.Type.ATTACK, 1, 12, 1, 0, 0, 0, False, False, "", None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        pass
-        #super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
+        for enemy in enemies:
+            super().play(player, enemy, enemies, debug)
         # Deal 12(16) damage to ALL enemies. End your turn.
         player.turn_over = True
 

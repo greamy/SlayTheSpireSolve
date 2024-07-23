@@ -19,9 +19,8 @@ class Collect(Card):
         # Put an {{C|Miracle|Miracle+}} into your hand at the start of your next X(+1) turns. {{Exhaust}}.
 
     def do_skill(self, player, enemy, enemies, debug):
-        pass
-        # while Need something here to make collect add the right amount of Miracles for the amount of turns > 0:
-        #     player.deck.hand.append(Miracle())
-        #     player.energy -= 1
-        # else:
-        #     player.listeners.remove(self.listener)
+        player.deck.hand.append(Miracle())
+
+    def upgrade(self):
+        super().upgrade()
+        self.x_modifier = 1
