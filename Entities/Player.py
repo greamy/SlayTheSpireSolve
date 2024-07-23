@@ -16,7 +16,6 @@ class Player(Entity):
         self.draw_amount = 5
         self.max_energy = 3
         self.mantra = 0
-        self.total_mantra = 0
         self.stance = self.Stance.NONE
         self.listeners = []
 
@@ -26,7 +25,6 @@ class Player(Entity):
         self.deck.shuffle()
 
     def end_combat(self):
-        self.total_mantra = 0
         self.mantra = 0
 
     def start_turn(self, enemies, debug):
@@ -105,11 +103,13 @@ class Player(Entity):
         self.stance = stance
 
     def add_mantra(self, amount):
+        pre_remainder = self.mantra // 10
         self.mantra += amount
-        self.total_mantra += amount
-        if self.mantra > 10:
+        if pre_remainder < self.mantra // 10:
             self.set_stance(self.Stance.DIVINITY)
-            self.mantra -= 10
+
+    def get_mantra_count(self):
+        return self.mantra % 10
 
     def add_listener(self, listener):
         self.listeners.append(listener)

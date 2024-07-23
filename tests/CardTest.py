@@ -135,15 +135,15 @@ class CardTest(unittest.TestCase):
 
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
-        self.assertEqual(self.enemy.health, self.enemy_start_health - (12+self.player.total_mantra))
+        self.assertEqual(self.enemy.health, self.enemy_start_health - (12+self.player.mantra))
 
         self.enemy.health = self.enemy_start_health * 3
 
         self.player.deck.hand.append(card)
         self.player.add_mantra(10)
-        self.assertEqual(self.player.mantra, 5)
+        self.assertEqual(self.player.get_mantra_count(), 5)
         self.player.play_card(card, self.enemy, self.enemies, False)
-        self.assertEqual(self.enemy.health, self.enemy_start_health*3 - (12 + self.player.total_mantra) * 3)
+        self.assertEqual(self.enemy.health, self.enemy_start_health*3 - (12 + self.player.mantra) * 3)
 
     def test_CarveReality(self):
         card = CarveReality()
