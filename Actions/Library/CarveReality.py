@@ -13,3 +13,7 @@ class CarveReality(Card):
         player.deck.hand.append(Smite)
         # TODO: Implement the following:
         # Deal 6(10) damage. Add a {{C|Smite}} into your hand.
+
+    def upgrade(self):
+        super().upgrade()
+        self.damage = 10

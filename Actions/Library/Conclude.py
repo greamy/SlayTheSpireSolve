@@ -12,3 +12,8 @@ class Conclude(Card):
         #super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Deal 12(16) damage to ALL enemies. End your turn.
+        player.turn_over = True
+
+    def upgrade(self):
+        super().upgrade()
+        self.damage = 16

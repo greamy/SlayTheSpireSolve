@@ -1,3 +1,7 @@
+import importlib
+import os
+
+from Actions.Card import Card
 from Entities.Player import Player
 from Entities.Enemy import Enemy
 from Combat import Combat
@@ -8,14 +12,14 @@ from Actions.Library.Alpha import Alpha
 
 
 def main():
-    # my_cards = [Card(name="Strike" + str(i), energy=1, damage=6, attacks=1, block=0, draw=0, discard=0, exhaust=False,
-    #                  status="none", stance=None) for i in range(5)]
+    # my_cards = [Card(name="Strike" + str(i), card_type=Card.Type.ATTACK, energy=1, damage=6, attacks=1, block=0, draw=0, discard=0, retain=False, exhaust=False,
+    #                  status="", stance=None) for i in range(5)]
     # my_cards.extend(
-    #     Card(name="Defend" + str(i), energy=1, damage=0, attacks=0, block=5, draw=0, discard=0, exhaust=False,
-    #          status="none", stance=None) for i in range(5))
-    # my_cards.append(Card("Eruption", 2, 9, 1, 0, 0, 0, False,
+    #     Card(name="Defend" + str(i), card_type=Card.Type.SKILL, energy=1, damage=0, attacks=0, block=5, draw=0, discard=0, retain=False, exhaust=False,
+    #          status="", stance=None) for i in range(5))
+    # my_cards.append(Card("Eruption", Card.Type.ATTACK, 2, 9, 1, 0, 0, 0, False,False,
     #                      "", stance=Player.Stance.WRATH))
-    # my_cards.append(Card("Vigilance", 2, 0, 0, 8, 0, 0, False,
+    # my_cards.append(Card("Vigilance", Card.Type.SKILL,2, 0, 0, 8, 0, 0, False, False,
     #                      "", stance=Player.Stance.CALM))
     #
     # card_name_list = os.listdir(os.path.join(os.curdir, "./Actions/Library"))

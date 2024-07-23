@@ -10,5 +10,8 @@ class BowlingBash(Card):
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         self.attacks = len(enemies)
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         # Deal 7(10) damage for each enemy in combat.
+
+    def upgrade(self):
+        super().upgrade()
+        self.damage = 10

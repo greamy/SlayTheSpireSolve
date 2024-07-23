@@ -17,5 +17,9 @@ class Omega(Card):
 
     def do_power(self, player, enemy, enemies, debug):
         for enemy in enemies:
-            enemy.take_damage(50)
+            enemy.take_damage(self.damage)
+
+    def upgrade(self):
+        super().upgrade()
+        self.damage = 60
 

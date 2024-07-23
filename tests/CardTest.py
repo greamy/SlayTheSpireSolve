@@ -18,7 +18,6 @@ from Entities.Player import Player
 import copy
 
 
-
 class CardTest(unittest.TestCase):
 
     def setUp(self):
@@ -53,7 +52,7 @@ class CardTest(unittest.TestCase):
         card = Omega()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
-        self.assertIn(card, self.player.deck.exhaust_pile)
+        self.assertIn(card, self.player.deck.used_powers)
         self.assertEqual(len(self.player.listeners), 1)
 
         self.player.notify_listeners(Listener.Event.END_TURN, self.enemies, False)
@@ -65,7 +64,7 @@ class CardTest(unittest.TestCase):
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
         self.assertEqual(len(self.player.listeners), 1)
-        self.assertIn(card, self.player.deck.exhaust_pile)
+        self.assertIn(card, self.player.deck.used_powers)
 
         self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
         self.assertIsInstance(self.player.deck.hand[0], Smite)
@@ -110,6 +109,7 @@ class CardTest(unittest.TestCase):
         self.assertFalse(self.player.is_alive())
 
     def test_bowlingbash(self):
+        # Deal 7(10) damage for each enemy in combat.
         card = BowlingBash()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -123,6 +123,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.enemy.health, self.enemy_start_health-(7*len(self.enemies)))
 
     def test_brilliance(self):
+        # Deal 12(16) damage. Deals additional damage for all {{Mantra}} gained this combat.
         card = Brilliance()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -146,6 +147,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.enemy.health, self.enemy_start_health*3 - (12 + self.player.mantra) * 3)
 
     def test_CarveReality(self):
+        # Deal 6(10) damage. Add a {{C|Smite}} into your hand.
         card = CarveReality()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -155,6 +157,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.enemy_start_health-6, self.enemy.health)
 
     def test_Collect(self):
+        # Put an {{C|Miracle|Miracle+}} into your hand at the start of your next X(+1) turns. {{Exhaust}}.
         card = Collect()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -168,6 +171,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.energy, 3)
 
     def test_Miracle(self):
+        # Retain. Gain 1(2) energy. {{Exhaust}}.
         card = Miracle()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -179,13 +183,18 @@ class CardTest(unittest.TestCase):
         self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.enemies, False)
         self.assertIn(card, self.player.deck.hand)
 
+    def test_Conclude(self):
+        # Deal 12(16) damage to ALL enemies. End your turn.
+        card = Conclude()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
 
+        self.enemies.append(copy.deepcopy(self.enemy))
 
+        for enemy in self.enemies:
+            self.assertEqual(enemy.health, self.enemy_start_health-12)
 
-
-
-
-
+        self.assertTrue(self.player.turn_over)
 
 
 if __name__ == '__main__':

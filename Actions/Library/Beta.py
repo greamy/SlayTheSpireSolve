@@ -13,3 +13,7 @@ class Beta(Card):
         # Shuffle an {{C|Omega}} into your draw pile. {{Exhaust}}.
         player.deck.draw_pile.append(Omega())
         player.deck.shuffle()
+
+    def upgrade(self):
+        super().upgrade()
+        self.energy = 1

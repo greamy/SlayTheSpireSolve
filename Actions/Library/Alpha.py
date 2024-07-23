@@ -14,3 +14,7 @@ class Alpha(Card):
         player.deck.draw_pile.append(Beta())
         player.deck.shuffle()
 
+    def upgrade(self):
+        super().upgrade()
+        self.innate = True
+

@@ -17,12 +17,21 @@ class Player(Entity):
         self.max_energy = 3
         self.mantra = 0
         self.stance = self.Stance.NONE
+        self.turn_over = False
         self.listeners = []
+        self.innate_cards = []
 
     def begin_combat(self):
         # TODO: Ensure all cards are in the draw pile, not in discard or exhaust
-        self.deck.begin_combat()
-        self.deck.shuffle()
+        self.deck.reshuffle()
+        num_innate = 0
+        for idx, card in enumerate(self.deck.draw_pile):
+            if card.innate:
+                self.deck.swap(0 + num_innate, idx)
+                num_innate += 1
+
+        if num_innate > self.draw_amount:
+            self.deck.draw_cards(num_innate - self.draw_amount)
 
     def end_combat(self):
         self.mantra = 0
@@ -30,12 +39,13 @@ class Player(Entity):
     def start_turn(self, enemies, debug):
         super().start_turn(enemies, debug)
         self.energy = self.max_energy
-        self.draw_cards(self.draw_amount)
+        self.deck.draw_cards(self.draw_amount)
         self.notify_listeners(Listener.Event.START_TURN, enemies, debug)
 
     def do_turn(self, enemies, debug):
         # TODO: Make player play potions
-        while self.energy > 0 and len(self.deck.hand) > 0:
+        playable_cards = [card for card in self.deck.hand if card.energy <= self.energy]
+        while len(playable_cards) > 0 and not self.turn_over:
             card_choice = random.choice(self.deck.hand)
             targeted_enemy = random.choice(enemies)
             success = self.play_card(card_choice, targeted_enemy, enemies, debug)
@@ -53,6 +63,7 @@ class Player(Entity):
                         enemies.remove(enemy)
                 if len(enemies) == 0:
                     return
+            playable_cards = [card for card in self.deck.hand if card.energy <= self.energy]
 
         self.deck.end_turn(debug)
         if self.stance == self.Stance.DIVINITY:
@@ -74,7 +85,7 @@ class Player(Entity):
             return False
         self.energy -= card.energy
         card.play(self, enemy, enemies, debug)
-        if not card.exhaust:
+        if not card.exhaust and not card.is_power():
             self.deck.discard(self.deck.hand.index(card))
         return True
 
@@ -139,6 +150,7 @@ class Player(Entity):
             self.hand = []
             self.discard_pile = []
             self.exhaust_pile = []
+            self.used_powers = []
 
         def shuffle(self):
             random.shuffle(self.draw_pile)
@@ -165,6 +177,12 @@ class Player(Entity):
         def reshuffle(self):
             self.draw_pile.extend(self.discard_pile)
             self.discard_pile.clear()
+            self.draw_pile.extend(self.hand)
+            self.hand.clear()
+            self.draw_pile.extend(self.exhaust_pile)
+            self.exhaust_pile.clear()
+            self.draw_pile.extend(self.used_powers)
+            self.used_powers.clear()
             self.shuffle()
 
         def draw(self, amount):
@@ -176,14 +194,6 @@ class Player(Entity):
         def exhaust(self, card):
             self.exhaust_pile.append(card)
             self.hand.remove(card)
-
-        def begin_combat(self):
-            self.reshuffle()
-            self.draw_pile.extend(self.hand)
-            self.hand.clear()
-            self.draw_pile.extend(self.exhaust_pile)
-            self.exhaust_pile.clear()
-            self.shuffle()
 
         def end_turn(self, debug):
             temp_hand = [card for card in self.hand if not card.retain]
