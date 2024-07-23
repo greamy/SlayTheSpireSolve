@@ -37,6 +37,8 @@ class Combat:
                     print(enemy)
 
             num_turns += 1
+
+        self.player.end_combat()
         if self.debug:
             if self.player.health <= 0:
                 print("YOU LOSE")

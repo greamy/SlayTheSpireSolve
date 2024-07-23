@@ -6,7 +6,7 @@ from Entities.Player import Player
 
 class Beta(Card):
     def __init__(self):
-        super().__init__("Beta", Card.Type.SKILL,2, 0, 0, 0, 0, 0, True, "", None)
+        super().__init__("Beta", Card.Type.SKILL,2, 0, 0, 0, 0, 0, True, False,"", None)
 
     def play(self, player: Player, enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, enemy, enemies, debug)

@@ -22,7 +22,7 @@ class Entity:
                 self.health -= abs(self.block)
                 self.block = 0
         else:
-            self.health -= round(amount*self.damage_dealt_multiplier)
+            self.health -= round(amount*self.damage_taken_multiplier)
 
         if self.health <= 0:
             self.health = 0

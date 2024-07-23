@@ -4,15 +4,16 @@ from Entities.Enemy import Enemy
 from enum import Enum
 
 class Card(Playable):
-    def __init__(self, name, type, energy, damage, attacks, block, draw, discard, exhaust, status,
+    def __init__(self, name, card_type, energy, damage, attacks, block, draw, discard, exhaust, retain, status,
                  stance: Player.Stance = None):
         super().__init__(damage, attacks, block, status)
         self.name = name
-        self.type = type
+        self.type = card_type
         self.energy = energy
         self.draw = draw
         self.discard = discard
         self.exhaust = exhaust
+        self.retain = retain
         self.stance = stance
 
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
@@ -20,6 +21,9 @@ class Card(Playable):
         if debug:
             print("Playing " + self.name + "...")
         player.draw_cards(self.draw)
+        if self.exhaust:
+            player.deck.exhaust_pile.append(self)
+            player.deck.hand.remove(self)
 
         # TODO: Discard card of player's choice
         # TODO: Do any other effects the card has

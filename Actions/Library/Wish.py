@@ -5,7 +5,7 @@ from Actions.Card import Card
 
 class Wish(Card):
     def __init__(self):
-        super().__init__("Wish", Card.Type.SKILL, 3, 0, 0, 0, 0, 0, True, "", None)
+        super().__init__("Wish", Card.Type.SKILL, 3, 0, 0, 0, 0, 0, True, False, "", None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)

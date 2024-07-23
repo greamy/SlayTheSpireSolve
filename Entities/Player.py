@@ -15,6 +15,8 @@ class Player(Entity):
         self.deck = self.Deck(cards)
         self.draw_amount = 5
         self.max_energy = 3
+        self.mantra = 0
+        self.total_mantra = 0
         self.stance = self.Stance.NONE
         self.listeners = []
 
@@ -22,6 +24,10 @@ class Player(Entity):
         # TODO: Ensure all cards are in the draw pile, not in discard or exhaust
         self.deck.begin_combat()
         self.deck.shuffle()
+
+    def end_combat(self):
+        self.total_mantra = 0
+        self.mantra = 0
 
     def start_turn(self, enemies, debug):
         super().start_turn(enemies, debug)
@@ -70,7 +76,8 @@ class Player(Entity):
             return False
         self.energy -= card.energy
         card.play(self, enemy, enemies, debug)
-        self.deck.discard(self.deck.hand.index(card))
+        if not card.exhaust:
+            self.deck.discard(self.deck.hand.index(card))
         return True
 
     def gain_block(self, amount):
@@ -96,6 +103,13 @@ class Player(Entity):
             self.energy += 3
 
         self.stance = stance
+
+    def add_mantra(self, amount):
+        self.mantra += amount
+        self.total_mantra += amount
+        if self.mantra > 10:
+            self.set_stance(self.Stance.DIVINITY)
+            self.mantra -= 10
 
     def add_listener(self, listener):
         self.listeners.append(listener)
@@ -172,8 +186,9 @@ class Player(Entity):
             self.shuffle()
 
         def end_turn(self, debug):
-            self.discard_pile.extend(self.hand)
-            self.hand.clear()
+            temp_hand = [card for card in self.hand if not card.retain]
+            self.discard_pile.extend(temp_hand)
+            self.hand = [card for card in self.hand if card not in temp_hand]
             if debug:
                 print("**************** TURN OVER ****************")
 

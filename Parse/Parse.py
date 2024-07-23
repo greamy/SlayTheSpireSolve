@@ -20,7 +20,7 @@ from Entities.Enemy import Enemy
 from Actions.Card import Card\n\n
 class Name(Card):
     def __init__(self):
-        super().__init__("name", Card.Type.cardType, energy, damage, attacks, block, draw, discard, exhaust, status, stance)
+        super().__init__("name", Card.Type.cardType, energy, damage, attacks, block, draw, discard, exhaust, retain, status, stance)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
@@ -110,6 +110,12 @@ class Name(Card):
                 card_class = card_class.replace("stance", "Player.Stance." +
                                                 card_description[enter_stance_index:end_stance_word_index].upper())
 
+            retain_index = card_description.find("{{Retain")
+            if retain_index != -1:
+                card_class = card_class.replace("retain", "True")
+            else:
+                card_class = card_class.replace("retain", "False")
+
             card_class = card_class.replace("stance", "None")
             card_class = card_class.replace("draw", "0")
             card_class = card_class.replace("discard", "0")
@@ -135,7 +141,7 @@ def main():
         file.writelines(cards)
 
     for class_name, class_string in classes.items():
-        path = os.path.join(os.path.curdir, "../Actions/Library_Parse")
+        path = os.path.join(os.path.curdir, "../Actions/Library")
         path = os.path.join(path, class_name + ".py")
         with open(path, "w") as file:
             file.write(class_string)

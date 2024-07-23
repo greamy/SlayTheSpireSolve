@@ -1,13 +1,14 @@
+from Actions.Listener import Listener
 from Entities.Player import Player
 from Entities.Enemy import Enemy
 from Actions.Card import Card
 
 
-class Defend(Card):
+class Smite(Card):
     def __init__(self):
-        super().__init__("Defend", Card.Type.SKILL, 1, 0, 0, 5, 0, 0, False, False, "", None)
-        
+        super().__init__("Smite", Card.Type.ATTACK, 1, 12, 1, 0, 0, 0, True, True, "", None)
+
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
-        # Gain 5(8) {{Block}}.
+        # Retain. Deal 12 damage. {{Exhaust}}.
+
