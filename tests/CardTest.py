@@ -179,6 +179,10 @@ class CardTest(unittest.TestCase):
         self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
         self.assertEqual(len(self.player.deck.hand), 0)
 
+        self.assertIn(Miracle, self.player.deck.hand)
+        self.assertEqual(self.player.energy, 3)
+
+
     def test_Miracle(self):
         # Retain. Gain 1(2) energy. {{Exhaust}}.
         card = Miracle()
