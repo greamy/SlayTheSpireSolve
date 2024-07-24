@@ -1,3 +1,4 @@
+from Actions.Listener import Listener
 from Actions.Playable import Playable
 from Entities.Player import Player
 from Entities.Enemy import Enemy
@@ -23,12 +24,6 @@ class Card(Playable):
         if debug:
             print("Playing " + self.name + "...")
         player.draw_cards(self.draw)
-        if self.exhaust:
-            player.deck.exhaust_pile.append(self)
-            player.deck.hand.remove(self)
-        if self.card_type == self.Type.POWER:
-            player.deck.used_powers.append(self)
-            player.deck.hand.remove(self)
 
         # TODO: Discard card of player's choice
         # TODO: Do any other effects the card has
@@ -42,6 +37,12 @@ class Card(Playable):
 
     def is_power(self):
         return self.card_type == self.Type.POWER
+
+    def is_skill(self):
+        return self.card_type == self.Type.SKILL
+
+    def is_attack(self):
+        return self.card_type == self.Type.ATTACK
 
     def __str__(self):
         return self.name

@@ -85,8 +85,20 @@ class Player(Entity):
             return False
         self.energy -= card.energy
         card.play(self, enemy, enemies, debug)
-        if not card.exhaust and not card.is_power():
-            self.deck.discard(self.deck.hand.index(card))
+        if card.is_attack():
+            self.notify_listeners(Listener.Event.ATTACK_PLAYED, enemies, debug)
+        elif card.is_skill():
+            self.notify_listeners(Listener.Event.SKILL_PLAYED, enemies, debug)
+        elif card.is_power():
+            self.deck.used_powers.append(card)
+            self.deck.hand.remove(card)
+            self.notify_listeners(Listener.Event.POWER_PLAYED, enemies, debug)
+            return True
+        if card.exhaust:
+            self.deck.exhaust_pile.append(card)
+            self.deck.hand.remove(card)
+            return True
+        self.deck.discard(self.deck.hand.index(card))
         return True
 
     def gain_block(self, amount):
@@ -129,7 +141,7 @@ class Player(Entity):
         if debug:
             print("Triggering listeners!")
         for listener in self.listeners:
-            if listener.event_type == event_type:
+            if event_type in listener.event_types:
                 # TODO: Don't always randomly choose enemy for power target
                 listener.notify(self, random.choice(enemies), enemies, debug)
 

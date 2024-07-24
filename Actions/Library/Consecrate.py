@@ -8,6 +8,10 @@ class Consecrate(Card):
         super().__init__("Consecrate", Card.Type.ATTACK, 0, 5, 1, 0, 0, 0, False, False, "", None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
+        for enemy in enemies:
+            super().play(player, enemy, enemies, debug)
         # Deal 5(8) damage to ALL enemies.
+
+    def upgrade(self):
+        super().upgrade()
+        self.damage = 8

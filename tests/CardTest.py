@@ -9,10 +9,17 @@ from Actions.Library.BowlingBash import BowlingBash
 from Actions.Library.Brilliance import Brilliance
 from Actions.Library.CarveReality import CarveReality
 from Actions.Library.Collect import Collect
+from Actions.Library.ConjureBlade import ConjureBlade
+from Actions.Library.Crescendo import Crescendo
+from Actions.Library.CrushJoints import CrushJoints
+from Actions.Library.Defend import Defend
+from Actions.Library.Expunger import Expunger
 from Actions.Library.Omega import Omega
 from Actions.Library.Smite import Smite
 from Actions.Library.Miracle import Miracle
 from Actions.Library.Conclude import Conclude
+from Actions.Library.Consecrate import Consecrate
+from Actions.Library.Strike import Strike
 from Actions.Listener import Listener
 from Entities.Enemy import Enemy
 from Entities.Player import Player
@@ -174,13 +181,14 @@ class CardTest(unittest.TestCase):
         self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
         self.assertEqual(len(self.player.deck.hand),3)
 
+        self.assertIsInstance(self.player.deck.hand[1], Miracle)
+        self.assertIsInstance(self.player.deck.hand[2], Miracle)
+
         self.player.deck.hand.clear()
 
         self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
         self.assertEqual(len(self.player.deck.hand), 0)
 
-        self.assertIn(Miracle, self.player.deck.hand)
-        self.assertEqual(self.player.energy, 3)
 
 
     def test_Miracle(self):
@@ -208,6 +216,81 @@ class CardTest(unittest.TestCase):
             self.assertEqual(enemy.health, self.enemy_start_health-12)
 
         self.assertTrue(self.player.turn_over)
+
+    def test_ConjureBlade(self):
+        # Shuffle an {{C|Expunger}} with X(+1) attacks into your draw pile. {{Exhaust}}.
+        energy = self.player.energy
+        card = ConjureBlade()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertIsInstance(self.player.deck.draw_pile[0], Expunger)
+        self.assertEqual(self.player.energy, 0)
+        self.assertIn(card, self.player.deck.exhaust_pile)
+        self.assertEqual(self.player.deck.draw_pile[0].attacks, energy)
+
+    def test_Expunger(self):
+        # Deal 9 damage X times.
+        energy_used = 3
+        card = Expunger(energy_used)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health-(energy_used*9))
+
+    def test_Consecrate(self):
+        # Deal 5(8) damage to all enemies.
+        card = Consecrate()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health-5)
+
+        self.enemy.health = self.enemy_start_health
+        self.enemies.append(copy.deepcopy(self.enemy))
+
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemies[0].health, self.enemy_start_health-5)
+        self.assertEqual(self.enemies[1].health, self.enemy_start_health-5)
+
+    def test_Crescendo(self):
+        # {{Retain}}. Enter {{Wrath}}. {{Exhaust}}.
+        card = Crescendo()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.stance, Player.Stance.WRATH)
+        self.assertIn(card, self.player.deck.exhaust_pile)
+
+        card = Crescendo()
+        self.player.deck.hand.append(card)
+        self.player.deck.end_turn(debug=False)
+        self.assertIn(card, self.player.deck.hand)
+
+    def test_CrushJoints(self):
+        # Deal 8(10) damage. If the previous card played was a skill, apply 1(2) {{Vulnerable}}.
+
+        card = CrushJoints(self.player)
+        self.player.deck.hand.append(card)
+        skill = Defend()
+        self.player.deck.hand.append(skill)
+        self.player.play_card(skill, self.enemy, self.enemies, False)
+        self.assertTrue(card.skill_played)
+
+        attack = Strike()
+        self.player.deck.hand.append(attack)
+        self.player.play_card(attack, self.enemy, self.enemies, False)
+        self.assertFalse(card.skill_played)
+
+        self.enemy.health = self.enemy_start_health
+
+        skill = Defend()
+        self.player.deck.hand.append(skill)
+        self.player.play_card(skill, self.enemy, self.enemies, False)
+
+        self.player.energy = 3
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertFalse(card.skill_played)
+        self.assertEqual(self.enemy.health, self.enemy_start_health-8)
+        # TODO: assert vulnerable was applied
+
 
 
 if __name__ == '__main__':

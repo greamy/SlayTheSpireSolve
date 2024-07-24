@@ -3,8 +3,10 @@ from enum import Enum
 
 class Listener:
 
-    def __init__(self, event_type, on_listen, num_turns=None):
-        self.event_type = event_type
+    def __init__(self, event_types, on_listen, num_turns=None):
+        if not isinstance(event_types, list):
+            event_types = [event_types]
+        self.event_types = event_types
         self.on_listen = on_listen
         self.num_turns = num_turns
 
@@ -20,3 +22,6 @@ class Listener:
         END_TURN = 1
         CARD_RETAINED = 2
         CARD_CREATED = 3
+        ATTACK_PLAYED = 4
+        SKILL_PLAYED = 5
+        POWER_PLAYED = 6
