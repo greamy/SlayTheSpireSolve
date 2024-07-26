@@ -21,6 +21,7 @@ from Actions.Library.Conclude import Conclude
 from Actions.Library.Consecrate import Consecrate
 from Actions.Library.Strike import Strike
 from Actions.Listener import Listener
+from Actions.Library.CutThroughFate import CutThroughFate
 from Entities.Enemy import Enemy
 from Entities.Player import Player
 import copy
@@ -286,11 +287,28 @@ class CardTest(unittest.TestCase):
         self.player.play_card(skill, self.enemy, self.enemies, False)
 
         self.player.energy = 3
+
         self.player.play_card(card, self.enemy, self.enemies, False)
         self.assertFalse(card.skill_played)
         self.assertEqual(self.enemy.health, self.enemy_start_health-8)
-        # TODO: assert vulnerable was applied
+        self.assertEqual(self.enemy.damage_taken_multiplier, 1.5)
 
+        attack = Strike()
+        self.player.deck.hand.append(attack)
+        self.player.play_card(attack, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - (1.5*6) - 8)
+
+        self.enemy.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.assertEqual(self.enemy.damage_taken_multiplier, 1.0)
+
+    def test_CutThroughFate(self):
+        draw_pile = [Strike(), Defend(), Strike()]
+        card = CutThroughFate()
+        self.player.deck.hand.append(card)
+        self.player.deck.draw_pile.extend(draw_pile)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health-7)
+        self.assertEqual(len(self.player.deck.hand), 1)
 
 
 if __name__ == '__main__':

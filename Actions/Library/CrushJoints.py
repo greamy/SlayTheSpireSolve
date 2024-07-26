@@ -2,6 +2,7 @@ from Actions.Listener import Listener
 from Entities.Player import Player
 from Entities.Enemy import Enemy
 from Actions.Card import Card
+from Entities.Vulnerable import Vulnerable
 
 
 class CrushJoints(Card):
@@ -19,7 +20,8 @@ class CrushJoints(Card):
         # TODO: Implement the following:
         # Deal 8(10) damage. If the previous card played was a skill, apply 1(2) {{Vulnerable}}.
         if self.skill_played:
-            # apply vulnerable
+            vuln = Vulnerable(self.vulnerable, target_enemy)
+            target_enemy.add_listener(Listener(Listener.Event.START_TURN, vuln.decrement))
             print("Apply vulnerable!")
         self.skill_played = False
 

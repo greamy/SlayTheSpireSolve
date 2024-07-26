@@ -18,7 +18,6 @@ class Player(Entity):
         self.mantra = 0
         self.stance = self.Stance.NONE
         self.turn_over = False
-        self.listeners = []
         self.innate_cards = []
 
     def begin_combat(self):
@@ -134,16 +133,15 @@ class Player(Entity):
     def get_mantra_count(self):
         return self.mantra % 10
 
-    def add_listener(self, listener):
-        self.listeners.append(listener)
-
-    def notify_listeners(self, event_type, enemies, debug):
-        if debug:
-            print("Triggering listeners!")
-        for listener in self.listeners:
-            if event_type in listener.event_types:
-                # TODO: Don't always randomly choose enemy for power target
-                listener.notify(self, random.choice(enemies), enemies, debug)
+    def scry(self, amount):
+        # TODO: Make better Scry AI
+        index = 0
+        cards = self.deck.draw_pile[0:amount]
+        for card in cards:
+            if random.randint(0, 1) == 0:
+                self.deck.discard_pile.append(self.deck.draw_pile.pop(index))
+            else:
+                index += 1
 
     def __str__(self):
         return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\nDeck: " + str(self.deck)

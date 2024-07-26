@@ -1,3 +1,6 @@
+import random
+
+
 class Entity:
 
     def __init__(self, health, status_list):
@@ -7,6 +10,8 @@ class Entity:
         self.damage_dealt_multiplier = 1.0
         self.damage_dealt_modifier = 0
         self.damage_taken_multiplier = 1.0
+        self.listeners = []
+
 
     def do_turn(self, opponents, debug):
         pass
@@ -30,10 +35,15 @@ class Entity:
     def is_alive(self):
         return self.health > 0
 
-    def gain_status(self, status):
-        self.status_list.append(status)
+    def add_listener(self, listener):
+        self.listeners.append(listener)
 
-    def lose_status(self, status):
-        self.status_list.remove(status)
+    def notify_listeners(self, event_type, enemies, debug):
+        if debug:
+            print("Triggering listeners!")
+        for listener in self.listeners:
+            if event_type in listener.event_types:
+                # TODO: Don't always randomly choose enemy for power target
+                listener.notify(self, random.choice(enemies), enemies, debug)
 
 
