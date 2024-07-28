@@ -1,3 +1,4 @@
+from Actions.Library.Safety import Safety
 from Entities.Player import Player
 from Entities.Enemy import Enemy
 from Actions.Card import Card
@@ -9,5 +10,9 @@ class DeceiveReality(Card):
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
+        player.deck.hand.append(Safety())
         # Gain 4(7) {{Block}}. Add a {{C|Safety}} to your hand.
+
+    def upgrade(self):
+        self.block = 7
+

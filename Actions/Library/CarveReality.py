@@ -10,7 +10,7 @@ class CarveReality(Card):
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        player.deck.hand.append(Smite)
+        player.deck.hand.append(Smite())
         # TODO: Implement the following:
         # Deal 6(10) damage. Add a {{C|Smite}} into your hand.
 

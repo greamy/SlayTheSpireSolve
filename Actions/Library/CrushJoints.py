@@ -22,7 +22,6 @@ class CrushJoints(Card):
         if self.skill_played:
             vuln = Vulnerable(self.vulnerable, target_enemy)
             target_enemy.add_listener(Listener(Listener.Event.START_TURN, vuln.decrement))
-            print("Apply vulnerable!")
         self.skill_played = False
 
     def do_skill(self, player, enemy, enemies, debug):

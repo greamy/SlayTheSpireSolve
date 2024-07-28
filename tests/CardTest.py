@@ -12,9 +12,11 @@ from Actions.Library.Collect import Collect
 from Actions.Library.ConjureBlade import ConjureBlade
 from Actions.Library.Crescendo import Crescendo
 from Actions.Library.CrushJoints import CrushJoints
+from Actions.Library.DeceiveReality import DeceiveReality
 from Actions.Library.Defend import Defend
 from Actions.Library.Expunger import Expunger
 from Actions.Library.Omega import Omega
+from Actions.Library.Safety import Safety
 from Actions.Library.Smite import Smite
 from Actions.Library.Miracle import Miracle
 from Actions.Library.Conclude import Conclude
@@ -160,9 +162,8 @@ class CardTest(unittest.TestCase):
         card = CarveReality()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
-
+        self.assertIsInstance(self.player.deck.hand[0], Smite)
         self.assertIn(card, self.player.deck.discard_pile)
-        self.assertIn(Smite, self.player.deck.hand)
         self.assertEqual(self.enemy_start_health-6, self.enemy.health)
 
     def test_Collect(self):
@@ -309,6 +310,34 @@ class CardTest(unittest.TestCase):
         self.player.play_card(card, self.enemy, self.enemies, False)
         self.assertEqual(self.enemy.health, self.enemy_start_health-7)
         self.assertEqual(len(self.player.deck.hand), 1)
+
+    def test_DeceiveReality(self):
+        card = DeceiveReality()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, 4)
+        self.assertIsInstance(self.player.deck.hand[0], Safety)
+        self.assertEqual(len(self.player.deck.discard_pile), 1)
+
+    def test_Safety(self):
+        card = Safety()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertIn(card, self.player.deck.exhaust_pile)
+
+        self.player.deck.hand.append(card)
+        self.player.deck.end_turn(False)
+        self.assertIn(card, self.player.deck.hand)
+
+    def test_defend(self):
+        card = Defend()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertIn(card, self.player.deck.discard_pile)
+        self.assertEqual(self.player.block, 5)
+
+
+
 
 
 if __name__ == '__main__':
