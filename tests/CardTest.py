@@ -14,6 +14,7 @@ from Actions.Library.Crescendo import Crescendo
 from Actions.Library.CrushJoints import CrushJoints
 from Actions.Library.DeceiveReality import DeceiveReality
 from Actions.Library.Defend import Defend
+from Actions.Library.DevaForm import DevaForm
 from Actions.Library.Expunger import Expunger
 from Actions.Library.Omega import Omega
 from Actions.Library.Safety import Safety
@@ -335,6 +336,19 @@ class CardTest(unittest.TestCase):
         self.player.play_card(card, self.enemy, self.enemies, False)
         self.assertIn(card, self.player.deck.discard_pile)
         self.assertEqual(self.player.block, 5)
+
+    def test_DevaForm(self):
+        card = DevaForm()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.player.energy = 3
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        print(self.player.energy)
+
+
 
 
 
