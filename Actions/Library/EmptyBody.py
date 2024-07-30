@@ -11,3 +11,7 @@ class EmptyBody(Card):
         super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Gain 7(10) {{Block}}. Exit your {{Stance}}.
+
+    def upgrade(self):
+        super().upgrade()
+        self.block = 10

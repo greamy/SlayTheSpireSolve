@@ -29,9 +29,6 @@ class Player(Entity):
                 self.deck.swap(0 + num_innate, idx)
                 num_innate += 1
 
-        if num_innate > self.draw_amount:
-            self.deck.draw_cards(num_innate - self.draw_amount)
-
     def end_combat(self):
         self.mantra = 0
 
@@ -64,7 +61,12 @@ class Player(Entity):
                     return
             playable_cards = [card for card in self.deck.hand if card.energy <= self.energy]
 
+        self.end_turn(enemies, debug)
+
+    def end_turn(self, enemies, debug):
         self.deck.end_turn(debug)
+        if len(self.deck.hand) > 0:
+            self.notify_listeners(Listener.Event.CARD_RETAINED, enemies, debug)
         if self.stance == self.Stance.DIVINITY:
             self.set_stance(self.Stance.NONE)
 
@@ -125,9 +127,9 @@ class Player(Entity):
         self.stance = stance
 
     def add_mantra(self, amount):
-        pre_remainder = self.mantra // 10
+        pre_result = self.mantra // 10
         self.mantra += amount
-        if pre_remainder < self.mantra // 10:
+        if pre_result < self.mantra // 10:
             self.set_stance(self.Stance.DIVINITY)
 
     def get_mantra_count(self):
@@ -209,6 +211,7 @@ class Player(Entity):
             temp_hand = [card for card in self.hand if not card.retain]
             self.discard_pile.extend(temp_hand)
             self.hand = [card for card in self.hand if card not in temp_hand]
+
             if debug:
                 print("**************** TURN OVER ****************")
 

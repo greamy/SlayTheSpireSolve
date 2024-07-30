@@ -11,3 +11,7 @@ class Eruption(Card):
         super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Deal 9 damage. Enter {{Wrath}}.
+
+    def upgrade(self):
+        super().upgrade()
+        self.energy = 1

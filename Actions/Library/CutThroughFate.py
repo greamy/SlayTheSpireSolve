@@ -15,5 +15,6 @@ class CutThroughFate(Card):
         player.draw_cards(1)
 
     def upgrade(self):
+        super().upgrade()
         self.damage = 9
         self.scry_amount = 3

@@ -15,6 +15,11 @@ from Actions.Library.CrushJoints import CrushJoints
 from Actions.Library.DeceiveReality import DeceiveReality
 from Actions.Library.Defend import Defend
 from Actions.Library.DevaForm import DevaForm
+from Actions.Library.Devotion import Devotion
+from Actions.Library.EmptyFist import EmptyFist
+from Actions.Library.EmptyMind import EmptyMind
+from Actions.Library.Eruption import Eruption
+from Actions.Library.Establishment import Establishment
 from Actions.Library.Expunger import Expunger
 from Actions.Library.Omega import Omega
 from Actions.Library.Safety import Safety
@@ -25,6 +30,7 @@ from Actions.Library.Consecrate import Consecrate
 from Actions.Library.Strike import Strike
 from Actions.Listener import Listener
 from Actions.Library.CutThroughFate import CutThroughFate
+from Actions.Library.EmptyBody import EmptyBody
 from Entities.Enemy import Enemy
 from Entities.Player import Player
 import copy
@@ -338,14 +344,92 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.block, 5)
 
     def test_DevaForm(self):
-        card = DevaForm()
+        card = DevaForm(self.player)
         self.player.deck.hand.append(card)
-        self.player.deck.end_turn()
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.player.energy = 3
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.assertEqual(self.player.energy, 4)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.assertEqual(self.player.energy, 6)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.assertEqual(self.player.energy, 9)
 
+        self.player.deck.hand.append(card)
+        self.player.notify_listeners(Listener.Event.END_TURN, self.enemies, False)
+        self.assertEqual(self.player.deck.exhaust_pile[0], card)
 
+    def test_Devotion(self):
+        card = Devotion()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.assertEqual(self.player.mantra, 2)
 
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.assertEqual(self.player.get_mantra_count(), 0)
+        self.assertEqual(self.player.stance, Player.Stance.DIVINITY)
 
+    def test_EmptyBody(self):
+        card = EmptyBody()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, 7)
 
+        self.player.set_stance(Player.Stance.CALM)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, 14)
+        self.assertEqual(self.player.stance, Player.Stance.NONE)
+        self.assertEqual(self.player.energy, 3)
+
+    def test_EmptyFist(self):
+        card = EmptyFist()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy_start_health - 9, self.enemy.health)
+
+        self.player.set_stance(Player.Stance.CALM)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - 18)
+        self.assertEqual(self.player.stance, Player.Stance.NONE)
+        self.assertEqual(self.player.energy, 3)
+
+    def test_EmptyMind(self):
+        card = EmptyMind()
+        self.player.deck.draw_pile = ([Strike(), Strike()])
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(len(self.player.deck.hand), 2)
+
+        self.player.set_stance(Player.Stance.CALM)
+        self.player.deck.draw_pile = ([Strike(), Strike()])
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(len(self.player.deck.hand), 4)
+        self.assertEqual(self.player.stance, Player.Stance.NONE)
+        self.assertEqual(self.player.energy, 3)
+
+    def test_Eruption(self):
+        card = Eruption()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health-9)
+        self.assertEqual(self.player.stance, self.player.Stance.WRATH)
+
+    def test_Establishment(self):
+        card = Establishment()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+
+        self.player.deck.hand.append(Safety())
+        self.player.end_turn(self.enemies, False)
+        self.assertEqual(len(self.player.deck.hand), 1)
+        self.assertEqual(self.player.deck.hand[0].energy, 0)
 
 
 if __name__ == '__main__':

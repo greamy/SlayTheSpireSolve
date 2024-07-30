@@ -14,5 +14,6 @@ class DeceiveReality(Card):
         # Gain 4(7) {{Block}}. Add a {{C|Safety}} to your hand.
 
     def upgrade(self):
+        super().upgrade()
         self.block = 7
 
