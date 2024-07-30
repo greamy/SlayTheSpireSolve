@@ -1,3 +1,4 @@
+from Actions.Library.Insight import Insight
 from Entities.Player import Player
 from Entities.Enemy import Enemy
 from Actions.Card import Card
@@ -10,4 +11,10 @@ class Evaluate(Card):
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
+        player.deck.draw_pile.append(Insight())
+        player.deck.shuffle()
         # Gain 6(10) {{Block}}. Shuffle an {{C|Insight}} into your draw pile.
+
+    def upgrade(self):
+        super().upgrade()
+        self.block = 10

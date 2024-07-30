@@ -3,15 +3,15 @@ from Entities.Enemy import Enemy
 from Actions.Card import Card
 
 
-class FlyingSleeves(Card):
+class Insight(Card):
     def __init__(self):
-        super().__init__("FlyingSleeves", Card.Type.ATTACK, 1, 4, 2, 0, 0, 0, False, True, "", None)
-        
+        super().__init__("Insight", Card.Type.SKILL, 0, 0, 0, 0, 2, 0, True, True, "", None)
+
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
-        # {{Retain}}. Deal 4(6) damage twice.
+
+        # {{Retain}} Draw 2(3) cards}. {{Exhaust}}
 
     def upgrade(self):
         super().upgrade()
-        self.damage = 6
+        self.draw = 3

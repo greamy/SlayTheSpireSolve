@@ -20,7 +20,11 @@ from Actions.Library.EmptyFist import EmptyFist
 from Actions.Library.EmptyMind import EmptyMind
 from Actions.Library.Eruption import Eruption
 from Actions.Library.Establishment import Establishment
+from Actions.Library.Evaluate import Evaluate
 from Actions.Library.Expunger import Expunger
+from Actions.Library.FlyingSleeves import FlyingSleeves
+from Actions.Library.FollowUp import FollowUp
+from Actions.Library.Insight import Insight
 from Actions.Library.Omega import Omega
 from Actions.Library.Safety import Safety
 from Actions.Library.Smite import Smite
@@ -430,6 +434,47 @@ class CardTest(unittest.TestCase):
         self.player.end_turn(self.enemies, False)
         self.assertEqual(len(self.player.deck.hand), 1)
         self.assertEqual(self.player.deck.hand[0].energy, 0)
+
+    def test_Evaluate(self):
+        card = Evaluate()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertIsInstance(self.player.deck.draw_pile[0], Insight)
+        self.assertEqual(self.player.block, 6)
+
+    def test_Insight(self):
+        self.player.deck.draw_pile = ([Strike(), Strike()])
+        card = Insight()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(len(self.player.deck.hand), 2)
+        self.assertIn(card, self.player.deck.exhaust_pile)
+
+    def test_FlyingSleeves(self):
+        card = FlyingSleeves()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health-8)
+
+        self.player.deck.hand.append(card)
+        self.player.end_turn(self.enemies, False)
+        self.assertIn(card, self.player.deck.hand)
+
+
+    def test_FollowUp(self):
+        card = FollowUp()
+        self.player.deck.hand.append(card)
+        strike = Strike()
+        self.player.deck.hand.append(strike)
+        self.player.play_card(strike, self.enemy, self.enemies, False)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - 6 - 7)
+        self.assertEqual(self.energy, 2)
+
+
+
+
+
 
 
 if __name__ == '__main__':

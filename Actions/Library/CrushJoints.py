@@ -11,9 +11,9 @@ class CrushJoints(Card):
         self.vulnerable = 1
         self.skill_played = False
         self.skill_listener = Listener(Listener.Event.SKILL_PLAYED, self.do_skill)
-        self.attack_listener = Listener([Listener.Event.ATTACK_PLAYED, Listener.Event.POWER_PLAYED], self.do_other)
+        self.not_skill_listener = Listener([Listener.Event.ATTACK_PLAYED, Listener.Event.POWER_PLAYED], self.do_other)
         player.add_listener(self.skill_listener)
-        player.add_listener(self.attack_listener)
+        player.add_listener(self.not_skill_listener)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
