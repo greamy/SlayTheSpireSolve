@@ -340,13 +340,7 @@ class CardTest(unittest.TestCase):
     def test_DevaForm(self):
         card = DevaForm()
         self.player.deck.hand.append(card)
-        self.player.play_card(card, self.enemy, self.enemies, False)
-        self.player.energy = 3
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
-        print(self.player.energy)
+        self.player.deck.end_turn()
 
 
 
