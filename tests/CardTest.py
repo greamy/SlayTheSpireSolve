@@ -22,6 +22,7 @@ from Actions.Library.Eruption import Eruption
 from Actions.Library.Establishment import Establishment
 from Actions.Library.Evaluate import Evaluate
 from Actions.Library.Expunger import Expunger
+from Actions.Library.FearNoEvil import FearNoEvil
 from Actions.Library.FlyingSleeves import FlyingSleeves
 from Actions.Library.FollowUp import FollowUp
 from Actions.Library.Insight import Insight
@@ -450,6 +451,13 @@ class CardTest(unittest.TestCase):
         self.assertEqual(len(self.player.deck.hand), 2)
         self.assertIn(card, self.player.deck.exhaust_pile)
 
+    def test_FearNoEvil(self):
+        card = FearNoEvil()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - card.damage)
+        self.assertEqual(self.player.stance, Player.Stance.CALM)
+
     def test_FlyingSleeves(self):
         card = FlyingSleeves()
         self.player.deck.hand.append(card)
@@ -460,18 +468,15 @@ class CardTest(unittest.TestCase):
         self.player.end_turn(self.enemies, False)
         self.assertIn(card, self.player.deck.hand)
 
-
     def test_FollowUp(self):
-        card = FollowUp()
+        card = FollowUp(self.player)
         self.player.deck.hand.append(card)
         strike = Strike()
         self.player.deck.hand.append(strike)
         self.player.play_card(strike, self.enemy, self.enemies, False)
         self.player.play_card(card, self.enemy, self.enemies, False)
         self.assertEqual(self.enemy.health, self.enemy_start_health - 6 - 7)
-        self.assertEqual(self.energy, 2)
-
-
+        self.assertEqual(self.player.energy, 2)
 
 
 

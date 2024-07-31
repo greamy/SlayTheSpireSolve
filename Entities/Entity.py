@@ -10,6 +10,7 @@ class Entity:
         self.damage_dealt_multiplier = 1.0
         self.damage_dealt_modifier = 0
         self.damage_taken_multiplier = 1.0
+        self.block_modifier = 0
         self.listeners = []
 
 
