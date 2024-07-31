@@ -25,3 +25,4 @@ class Listener:
         ATTACK_PLAYED = 4
         SKILL_PLAYED = 5
         POWER_PLAYED = 6
+        CARD_PLAYED = 7

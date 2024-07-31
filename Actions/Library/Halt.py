@@ -6,8 +6,18 @@ from Actions.Card import Card
 class Halt(Card):
     def __init__(self):
         super().__init__("Halt", Card.Type.SKILL, 0, 0, 0, 3, 0, 0, False, False, "", None)
-        
+        self.wrath_block = 9
+
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
+
+        if player.stance == player.Stance.WRATH:
+            player.block += self.wrath_block
+
         # Gain 3(4) {{Block}}. {{Wrath}}: Gain 9(14) additional {{Block}}.
+
+    def upgrade(self):
+        super().upgrade()
+        self.block = 4
+        self.wrath_block = 14
+

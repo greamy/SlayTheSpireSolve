@@ -23,8 +23,12 @@ from Actions.Library.Establishment import Establishment
 from Actions.Library.Evaluate import Evaluate
 from Actions.Library.Expunger import Expunger
 from Actions.Library.FearNoEvil import FearNoEvil
+from Actions.Library.FlurryofBlows import FlurryofBlows
 from Actions.Library.FlyingSleeves import FlyingSleeves
 from Actions.Library.FollowUp import FollowUp
+from Actions.Library.Halt import Halt
+from Actions.Library.Indignation import Indignation
+from Actions.Library.InnerPeace import InnerPeace
 from Actions.Library.Insight import Insight
 from Actions.Library.Omega import Omega
 from Actions.Library.Safety import Safety
@@ -315,6 +319,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.enemy.damage_taken_multiplier, 1.0)
 
     def test_CutThroughFate(self):
+        # Deal 7(9) damage. {{Scry}} 2(3). Draw 1 card.
         draw_pile = [Strike(), Defend(), Strike()]
         card = CutThroughFate()
         self.player.deck.hand.append(card)
@@ -324,6 +329,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(len(self.player.deck.hand), 1)
 
     def test_DeceiveReality(self):
+        # Gain 4(7) {{Block}}. Add a {{C|Safety}} to your hand.
         card = DeceiveReality()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -332,6 +338,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(len(self.player.deck.discard_pile), 1)
 
     def test_Safety(self):
+        # {{Retain}}. Gain 12(16) {{Block}}.
         card = Safety()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -342,6 +349,7 @@ class CardTest(unittest.TestCase):
         self.assertIn(card, self.player.deck.hand)
 
     def test_defend(self):
+        # Gain 5(8) {{Block}}.
         card = Defend()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -349,6 +357,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.block, 5)
 
     def test_DevaForm(self):
+        # {{Ethereal}}. At the start of your turn, gain {{Energy}} and increase this gain by 1. (not {{Ethereal}}.)
         card = DevaForm(self.player)
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -365,6 +374,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.deck.exhaust_pile[0], card)
 
     def test_Devotion(self):
+        # At the start of your turn, gain 2(3) {{Mantra}}.
         card = Devotion()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -379,6 +389,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.stance, Player.Stance.DIVINITY)
 
     def test_EmptyBody(self):
+        # Gain 7(10) {{Block}}. Exit your {{Stance}}.
         card = EmptyBody()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -392,6 +403,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.energy, 3)
 
     def test_EmptyFist(self):
+        # Deal 9(14) damage. Exit your {{Stance}}.
         card = EmptyFist()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -405,6 +417,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.energy, 3)
 
     def test_EmptyMind(self):
+        # Exit your {{Stance}}. Draw 2(3) cards.
         card = EmptyMind()
         self.player.deck.draw_pile = ([Strike(), Strike()])
         self.player.deck.hand.append(card)
@@ -420,6 +433,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.energy, 3)
 
     def test_Eruption(self):
+        # Deal 9 damage. Enter {{Wrath}}.
         card = Eruption()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -427,6 +441,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.stance, self.player.Stance.WRATH)
 
     def test_Establishment(self):
+        # ({{Innate}}.) Whenever a card is {{Retained}}, lower its cost by 1.
         card = Establishment()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -437,6 +452,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.deck.hand[0].energy, 0)
 
     def test_Evaluate(self):
+        # Gain 6(10) {{Block}}. Shuffle an {{C|Insight}} into your draw pile.
         card = Evaluate()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -444,6 +460,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.block, 6)
 
     def test_Insight(self):
+        # {{Retain}} Draw 2(3) cards}. {{Exhaust}}
         self.player.deck.draw_pile = ([Strike(), Strike()])
         card = Insight()
         self.player.deck.hand.append(card)
@@ -452,6 +469,7 @@ class CardTest(unittest.TestCase):
         self.assertIn(card, self.player.deck.exhaust_pile)
 
     def test_FearNoEvil(self):
+        # Deal 8(11) damage. If the enemy intends to Attack, enter {{Calm}}.
         card = FearNoEvil()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -459,6 +477,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.stance, Player.Stance.CALM)
 
     def test_FlyingSleeves(self):
+        # {{Retain}}. Deal 4(6) damage twice.
         card = FlyingSleeves()
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
@@ -469,6 +488,7 @@ class CardTest(unittest.TestCase):
         self.assertIn(card, self.player.deck.hand)
 
     def test_FollowUp(self):
+        # Deal 7(11) damage. If the previous card played was an Attack, gain 1 {{Energy}}.
         card = FollowUp(self.player)
         self.player.deck.hand.append(card)
         strike = Strike()
@@ -477,6 +497,94 @@ class CardTest(unittest.TestCase):
         self.player.play_card(card, self.enemy, self.enemies, False)
         self.assertEqual(self.enemy.health, self.enemy_start_health - 6 - 7)
         self.assertEqual(self.player.energy, 2)
+
+    def test_FlurryofBlows(self):
+        # Deal 4(6) damage. On {{Stance}} change, returns from the Discard Pile into your hand.
+        card = FlurryofBlows()
+        new_card = FlurryofBlows()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - card.damage)
+
+        self.player.deck.draw_pile.append(new_card)
+        eruption = Eruption()
+        self.player.deck.hand.append(eruption)
+        self.player.play_card(eruption, self.enemy, self.enemies, False)
+        self.assertIn(new_card, self.player.deck.draw_pile)
+
+        Empty_fist = EmptyFist()
+        self.player.deck.hand.append(Empty_fist)
+        self.player.play_card(Empty_fist, self.enemy, self.enemies, False)
+        self.player.notify_listeners(Listener.Event.CARD_PLAYED, self.enemies, False)
+        self.assertEqual(len(self.player.deck.hand), 1)
+
+    def test_Halt(self):
+        # Gain 3(4) {{Block}}. {{Wrath}}: Gain 9(14) additional {{Block}}.
+        card = Halt()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, card.block)
+
+        eruption = Eruption()
+        self.player.deck.hand.append(eruption)
+        self.player.play_card(eruption, self.enemy, self.enemies, False)
+        self.player.block = 0
+
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, card.block + card.wrath_block)
+
+    def test_Indignation(self):
+        # If you are in {{Wrath}}, apply 3(5) {{Vulnerable}} to ALL enemies, otherwise enter {{Wrath}}.
+        card = Indignation()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.stance, self.player.Stance.WRATH)
+
+        crescendo = Crescendo()
+        self.player.deck.hand.append(crescendo)
+        self.player.play_card(crescendo, self.enemy, self.enemies, False)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.damage_taken_multiplier, 1.5)
+        self.enemy.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.enemy.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.enemy.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
+        self.assertEqual(self.enemy.damage_taken_multiplier, 1.0)
+
+    def test_InnerPeace(self):
+        # If you are in {{Calm}}, draw 3(4) cards, otherwise Enter {{Calm}}.
+        self.player.deck.draw_pile = ([Strike(), Strike(), Strike()])
+        card = InnerPeace()
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.stance, self.player.Stance.CALM)
+        self.assertEqual(len(self.player.deck.draw_pile), 3)
+
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(len(self.player.deck.hand), 3)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

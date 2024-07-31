@@ -21,7 +21,6 @@ class Player(Entity):
         self.innate_cards = []
 
     def begin_combat(self):
-        # TODO: Ensure all cards are in the draw pile, not in discard or exhaust
         self.deck.reshuffle()
         num_innate = 0
         for idx, card in enumerate(self.deck.draw_pile):
@@ -86,6 +85,7 @@ class Player(Entity):
             return False
         self.energy -= card.energy
         card.play(self, enemy, enemies, debug)
+
         if card.is_attack():
             self.notify_listeners(Listener.Event.ATTACK_PLAYED, enemies, debug)
         elif card.is_skill():
