@@ -568,8 +568,8 @@ class CardTest(unittest.TestCase):
         self.assertEqual(len(self.player.deck.hand), 3)
 
 
-
-
+    def test_Judgement(self):
+        pass
 
 
 
