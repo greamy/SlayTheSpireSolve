@@ -498,10 +498,10 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.enemy.health, self.enemy_start_health - 6 - 7)
         self.assertEqual(self.player.energy, 2)
 
-    def test_FlurryofBlows(self):
+    def test_FlurryOfBlows(self):
         # Deal 4(6) damage. On {{Stance}} change, returns from the Discard Pile into your hand.
-        card = FlurryofBlows()
-        new_card = FlurryofBlows()
+        card = FlurryofBlows(self.player)
+        new_card = FlurryofBlows(self.player)
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
         self.assertEqual(self.enemy.health, self.enemy_start_health - card.damage)
@@ -511,11 +511,13 @@ class CardTest(unittest.TestCase):
         self.player.deck.hand.append(eruption)
         self.player.play_card(eruption, self.enemy, self.enemies, False)
         self.assertIn(new_card, self.player.deck.draw_pile)
+        self.assertIn(card, self.player.deck.hand)
+
+        self.player.play_card(card, self.enemy, self.enemies, False)
 
         Empty_fist = EmptyFist()
         self.player.deck.hand.append(Empty_fist)
         self.player.play_card(Empty_fist, self.enemy, self.enemies, False)
-        self.player.notify_listeners(Listener.Event.CARD_PLAYED, self.enemies, False)
         self.assertEqual(len(self.player.deck.hand), 1)
 
     def test_Halt(self):

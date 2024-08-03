@@ -28,7 +28,6 @@ class Card(Playable):
         # TODO: Discard card of player's choice
         # TODO: Do any other effects the card has
         # etc...
-        player.notify_listeners(Listener.Event.CARD_PLAYED, enemies, debug)
         if self.stance is not None:
             player.set_stance(self.stance)
 
