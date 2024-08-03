@@ -12,7 +12,7 @@ class JustLucky(Card):
         super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # {{Scry}} 1(2). Gain 2(3) {{Block}}. Deal 3(4) damage.
-        player.scry(self.scry)
+        player.scry(self.scry, enemies, debug)
 
     def upgrade(self):
         super().upgrade()

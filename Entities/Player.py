@@ -135,7 +135,7 @@ class Player(Entity):
     def get_mantra_count(self):
         return self.mantra % 10
 
-    def scry(self, amount):
+    def scry(self, amount, enemies, debug):
         # TODO: Make better Scry AI
         index = 0
         cards = self.deck.draw_pile[0:amount]
@@ -144,6 +144,7 @@ class Player(Entity):
                 self.deck.discard_pile.append(self.deck.draw_pile.pop(index))
             else:
                 index += 1
+        self.notify_listeners(Listener.Event.SCRY_OCCURRED, enemies, debug)
 
     def __str__(self):
         return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\nDeck: " + str(self.deck)
@@ -208,9 +209,9 @@ class Player(Entity):
             self.hand.remove(card)
 
         def end_turn(self, debug):
-            temp_hand = [card for card in self.hand if not card.retain]
-            self.discard_pile.extend(temp_hand)
-            self.hand = [card for card in self.hand if card not in temp_hand]
+            to_discard = [card for card in self.hand if not card.retain and not card.temp_retain]
+            self.discard_pile.extend(to_discard)
+            self.hand = [card for card in self.hand if card.retain or card.temp_retain]
 
             if debug:
                 print("**************** TURN OVER ****************")

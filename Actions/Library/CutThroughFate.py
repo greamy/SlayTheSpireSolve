@@ -11,7 +11,7 @@ class CutThroughFate(Card):
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
         # Deal 7(9) damage. {{Scry}} 2(3). Draw 1 card.
-        player.scry(self.scry_amount)
+        player.scry(self.scry_amount, enemies, debug)
         player.draw_cards(1)
 
     def upgrade(self):

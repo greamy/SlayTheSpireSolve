@@ -35,7 +35,12 @@ from Actions.Library.JustLucky import JustLucky
 from Actions.Library.LessonLearned import LessonLearned
 from Actions.Library.LikeWater import LikeWater
 from Actions.Library.MasterReality import MasterReality
+from Actions.Library.Meditate import Meditate
+from Actions.Library.MentalFortress import MentalFortress
+from Actions.Library.Nirvana import Nirvana
 from Actions.Library.Omega import Omega
+from Actions.Library.Omniscience import Omniscience
+from Actions.Library.Perseverance import Perseverance
 from Actions.Library.Safety import Safety
 from Actions.Library.Smite import Smite
 from Actions.Library.Miracle import Miracle
@@ -619,6 +624,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.block, card.end_turn_block)
 
     def test_MasterReality(self):
+        # Whenever a card is created during combat, {{Upgrade}} it.
         card = MasterReality(self.player)
         alpha = Alpha(self.player)
 
@@ -628,6 +634,66 @@ class CardTest(unittest.TestCase):
         self.player.play_card(alpha, self.enemy, self.enemies, False)
 
         self.assertTrue(self.player.deck.draw_pile[0].upgraded)
+
+    def test_Meditate(self):
+        # Put 1(2) card(s) from your discard pile into your hand and {{Retain}} it. Enter {{Calm}}. End your turn.
+        card = Meditate(self.player)
+        strike = Strike(self.player)
+        self.player.deck.discard_pile.append(strike)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(len(self.player.deck.discard_pile), 1)
+        self.assertIn(strike, self.player.deck.hand)
+
+    def test_MentalFortress(self):
+        # Whenever you switch {{Stance|Stances}}, gain 4(6) {{Block}}.
+        card = MentalFortress(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+
+        eruption = Eruption(self.player)
+        self.player.deck.hand.append(eruption)
+        self.player.play_card(eruption, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, card.stance_block)
+
+        eruption = Eruption(self.player)
+        self.player.deck.hand.append(eruption)
+        self.player.play_card(eruption, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, card.stance_block)
+
+    def test_Nirvana(self):
+        # Whenever you {{Scry}}, gain 3(4) {{Block}}.
+        card = Nirvana(self.player)
+        ctf = CutThroughFate(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+
+        self.player.deck.hand.append(ctf)
+        self.player.play_card(ctf, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, card.scry_block)
+
+    def test_Omniscience(self):
+        # Choose a card in your draw pile. Play the chosen card twice and Exhaust it. {{Exhaust}}.
+        self.player.energy = 4
+        card = Omniscience(self.player)
+        strike = Strike(self.player)
+        self.player.deck.draw_pile.append(strike)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health-(strike.damage*2))
+
+    def test_Perseverance(self):
+        # {{Retain}}. Gain 5(7) {{Block}}. Whenever this card is {{Retained}}, increase its {{Block}} by 2(3).
+        card = Perseverance(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, card.block)
+
+        self.player.block = 0
+
+        self.player.deck.hand.append(card)
+        self.player.end_turn(self.enemies, False)
+        self.assertEqual(card.block, 7)
 
 
 if __name__ == '__main__':
