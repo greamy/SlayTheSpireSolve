@@ -5,8 +5,8 @@ from Actions.Card import Card
 
 
 class Establishment(Card):
-    def __init__(self):
-        super().__init__("Establishment", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, True, "", None)
+    def __init__(self, player: Player):
+        super().__init__("Establishment", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, True, player, None)
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_power)
 
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):

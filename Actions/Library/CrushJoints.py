@@ -6,8 +6,8 @@ from Entities.Vulnerable import Vulnerable
 
 
 class CrushJoints(Card):
-    def __init__(self, player):
-        super().__init__("CrushJoints", Card.Type.ATTACK, 1, 8, 1, 0, 0, 0, False, False, "", None)
+    def __init__(self, player: Player):
+        super().__init__("CrushJoints", Card.Type.ATTACK, 1, 8, 1, 0, 0, 0, False, False, player, None)
         self.vulnerable = 1
         self.skill_played = False
         self.skill_listener = Listener(Listener.Event.SKILL_PLAYED, self.do_skill)

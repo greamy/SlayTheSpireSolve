@@ -4,10 +4,11 @@ from Entities.Player import Player
 from Entities.Enemy import Enemy
 from enum import Enum
 
+
 class Card(Playable):
-    def __init__(self, name, card_type, energy, damage, attacks, block, draw, discard, exhaust, retain, status,
-                 stance: Player.Stance = None, innate=False):
-        super().__init__(damage, attacks, block, status)
+    def __init__(self, name, card_type, energy, damage, attacks, block, draw, discard, exhaust, retain, player,
+                 stance: Player.Stance = None, innate=False, debug=False):
+        super().__init__(damage, attacks, block)
         self.name = name
         self.card_type = card_type
         self.energy = energy
@@ -18,6 +19,11 @@ class Card(Playable):
         self.stance = stance
         self.upgraded = False
         self.innate = innate
+
+        # Check for Master Reality listener - Upgrade if master reality has been played
+        for listener in player.listeners:
+            if Listener.Event.CARD_CREATED in listener.event_types:
+                self.upgrade()
 
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)

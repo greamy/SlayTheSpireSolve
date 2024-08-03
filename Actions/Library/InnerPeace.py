@@ -4,9 +4,9 @@ from Actions.Card import Card
 
 
 class InnerPeace(Card):
-    def __init__(self):
+    def __init__(self, player: Player):
         super().__init__("InnerPeace", Card.Type.SKILL, 1, 0, 0, 0, 0,
-                         0, False, False, "", None)
+                         0, False, False, player, None)
         self.draw_amount = 3
 
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):

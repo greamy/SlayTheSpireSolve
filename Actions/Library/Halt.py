@@ -4,8 +4,8 @@ from Actions.Card import Card
 
 
 class Halt(Card):
-    def __init__(self):
-        super().__init__("Halt", Card.Type.SKILL, 0, 0, 0, 3, 0, 0, False, False, "", None)
+    def __init__(self, player: Player):
+        super().__init__("Halt", Card.Type.SKILL, 0, 0, 0, 3, 0, 0, False, False, player, None)
         self.wrath_block = 9
 
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):

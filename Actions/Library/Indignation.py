@@ -6,8 +6,8 @@ from Entities.Vulnerable import Vulnerable
 
 
 class Indignation(Card):
-    def __init__(self):
-        super().__init__("Indignation", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, "", None)
+    def __init__(self, player: Player):
+        super().__init__("Indignation", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None)
         self.vulnerable = 3
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):

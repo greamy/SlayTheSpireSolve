@@ -4,8 +4,8 @@ from Actions.Card import Card
 
 
 class Tranquility(Card):
-    def __init__(self):
-        super().__init__("Tranquility", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, True, True, "", Player.Stance.CALM)
+    def __init__(self, player: Player):
+        super().__init__("Tranquility", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, True, True, player, Player.Stance.CALM)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)

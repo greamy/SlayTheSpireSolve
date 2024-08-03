@@ -5,8 +5,8 @@ from Actions.Card import Card
 
 
 class FlurryofBlows(Card):
-    def __init__(self, player):
-        super().__init__("FlurryofBlows", Card.Type.ATTACK, 0, 4, 1, 0, 0, 0, False, False, "", None)
+    def __init__(self, player: Player):
+        super().__init__("FlurryofBlows", Card.Type.ATTACK, 0, 4, 1, 0, 0, 0, False, False, player, None)
         self.card_listener = Listener([Listener.Event.SKILL_PLAYED, Listener.Event.ATTACK_PLAYED, Listener.Event.POWER_PLAYED], self.do_card)
         self.last_stance = None
         player.add_listener(self.card_listener)

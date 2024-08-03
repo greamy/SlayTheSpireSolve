@@ -6,8 +6,8 @@ from Actions.Library.Miracle import Miracle
 
 
 class Collect(Card):
-    def __init__(self):
-        super().__init__("Collect", Card.Type.SKILL, 0, 0, 0, 0, 0, 0, True, False, "", None)
+    def __init__(self, player: Player):
+        super().__init__("Collect", Card.Type.SKILL, 0, 0, 0, 0, 0, 0, True, False, player, None)
         self.listener = Listener(Listener.Event.START_TURN, self.do_skill, 0)
         self.x_modifier = 0
         
@@ -19,7 +19,7 @@ class Collect(Card):
         # Put an {{C|Miracle|Miracle+}} into your hand at the start of your next X(+1) turns. {{Exhaust}}.
 
     def do_skill(self, player, enemy, enemies, debug):
-        player.deck.hand.append(Miracle())
+        player.deck.hand.append(Miracle(player))
 
     def upgrade(self):
         super().upgrade()

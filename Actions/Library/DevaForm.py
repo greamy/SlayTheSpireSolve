@@ -6,8 +6,8 @@ from Actions.Card import Card
 
 
 class DevaForm(Card):
-    def __init__(self, player):
-        super().__init__("DevaForm", Card.Type.POWER, 3, 0, 0, 0, 0, 0, False, False, "", None)
+    def __init__(self, player: Player):
+        super().__init__("DevaForm", Card.Type.POWER, 3, 0, 0, 0, 0, 0, False, False, player, None)
         self.energy_listener = Listener(Listener.Event.START_TURN, self.do_power)
         self.ethereal_listener = Listener(Listener.Event.END_TURN, self.do_ethereal)
         player.add_listener(self.ethereal_listener)

@@ -4,8 +4,8 @@ from Actions.Card import Card
 
 
 class Conclude(Card):
-    def __init__(self):
-        super().__init__("Conclude", Card.Type.ATTACK, 1, 12, 1, 0, 0, 0, False, False, "", None)
+    def __init__(self, player: Player):
+        super().__init__("Conclude", Card.Type.ATTACK, 1, 12, 1, 0, 0, 0, False, False, player, None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         for enemy in enemies:

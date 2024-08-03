@@ -4,8 +4,8 @@ from Actions.Card import Card
 
 
 class Brilliance(Card):
-    def __init__(self):
-        super().__init__("Brilliance", Card.Type.ATTACK, 1, 12, 1, 0, 0, 0, False, False, "", None)
+    def __init__(self, player: Player):
+        super().__init__("Brilliance", Card.Type.ATTACK, 1, 12, 1, 0, 0, 0, False, False, player, None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         self.damage = 12 + player.mantra

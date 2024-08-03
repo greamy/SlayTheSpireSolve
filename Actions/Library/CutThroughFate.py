@@ -4,8 +4,8 @@ from Actions.Card import Card
 
 
 class CutThroughFate(Card):
-    def __init__(self):
-        super().__init__("CutThroughFate", Card.Type.ATTACK, 1, 7, 1, 0, 0, 0, False, False, "", None)
+    def __init__(self, player: Player):
+        super().__init__("CutThroughFate", Card.Type.ATTACK, 1, 7, 1, 0, 0, 0, False, False, player, None)
         self.scry_amount = 2
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):

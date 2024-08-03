@@ -6,8 +6,8 @@ from Actions.Library.Smite import Smite
 
 
 class BattleHymn(Card):
-    def __init__(self):
-        super().__init__("BattleHymn", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, "", None)
+    def __init__(self, player: Player):
+        super().__init__("BattleHymn", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None)
         self.listener = Listener(Listener.Event.START_TURN, self.do_power)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
@@ -16,7 +16,7 @@ class BattleHymn(Card):
         player.add_listener(self.listener)
 
     def do_power(self, player, enemy, enemies, debug):
-        player.deck.hand.append(Smite())
+        player.deck.hand.append(Smite(player))
 
     def upgrade(self):
         super().upgrade()

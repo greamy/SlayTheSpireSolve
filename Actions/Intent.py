@@ -2,8 +2,8 @@ from Actions.Playable import Playable
 
 
 class Intent(Playable):
-    def __init__(self, damage, attacks, block, status, probability):
-        super().__init__(damage, attacks, block, status)
+    def __init__(self, damage, attacks, block, probability):
+        super().__init__(damage, attacks, block)
         self.probability = probability
 
     def play(self, enemy, player, player_list, debug):

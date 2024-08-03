@@ -215,6 +215,9 @@ class Player(Entity):
             if debug:
                 print("**************** TURN OVER ****************")
 
+        def get_deck(self):
+            return self.hand + self.draw_pile + self.discard_pile + self.exhaust_pile + self.used_powers
+
         def __str__(self):
             return ("Draw Pile:" + str([str(card) for card in self.draw_pile]) +
                     "\nHand: " + str([str(card) for card in self.hand]) +

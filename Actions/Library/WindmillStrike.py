@@ -4,8 +4,8 @@ from Actions.Card import Card
 
 
 class WindmillStrike(Card):
-    def __init__(self):
-        super().__init__("WindmillStrike", Card.Type.ATTACK, 2, 7, 1, 0, 0, 0, False, True, "", None)
+    def __init__(self, player: Player):
+        super().__init__("WindmillStrike", Card.Type.ATTACK, 2, 7, 1, 0, 0, 0, False, True, player, None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
