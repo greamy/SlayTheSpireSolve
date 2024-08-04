@@ -41,12 +41,20 @@ from Actions.Library.Nirvana import Nirvana
 from Actions.Library.Omega import Omega
 from Actions.Library.Omniscience import Omniscience
 from Actions.Library.Perseverance import Perseverance
+from Actions.Library.Pray import Pray
+from Actions.Library.PressurePoints import PressurePoints
+from Actions.Library.Prostrate import Prostrate
+from Actions.Library.Protect import Protect
+from Actions.Library.Ragnarok import Ragnarok
+from Actions.Library.ReachHeaven import ReachHeaven
+from Actions.Library.Rushdown import Rushdown
 from Actions.Library.Safety import Safety
 from Actions.Library.Smite import Smite
 from Actions.Library.Miracle import Miracle
 from Actions.Library.Conclude import Conclude
 from Actions.Library.Consecrate import Consecrate
 from Actions.Library.Strike import Strike
+from Actions.Library.ThroughViolence import ThroughViolence
 from Actions.Listener import Listener
 from Actions.Library.CutThroughFate import CutThroughFate
 from Actions.Library.EmptyBody import EmptyBody
@@ -207,7 +215,7 @@ class CardTest(unittest.TestCase):
 
         self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
         self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
-        self.assertEqual(len(self.player.deck.hand),3)
+        self.assertEqual(len(self.player.deck.hand), 3)
 
         self.assertIsInstance(self.player.deck.hand[1], Miracle)
         self.assertIsInstance(self.player.deck.hand[2], Miracle)
@@ -216,8 +224,6 @@ class CardTest(unittest.TestCase):
 
         self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, False)
         self.assertEqual(len(self.player.deck.hand), 0)
-
-
 
     def test_Miracle(self):
         # Retain. Gain 1(2) energy. {{Exhaust}}.
@@ -694,6 +700,105 @@ class CardTest(unittest.TestCase):
         self.player.deck.hand.append(card)
         self.player.end_turn(self.enemies, False)
         self.assertEqual(card.block, 7)
+
+    def test_Pray(self):
+        # Gain 3(4) {{Mantra}}. Shuffle an {{C|Insight}} into your draw pile.
+        card = Pray(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertIsInstance(self.player.deck.draw_pile[0], Insight)
+        self.assertEqual(self.player.mantra, 3)
+
+    def test_TheMostOverratedCard_PressurePoints(self):
+        # Apply 8(11) Mark. ALL enemies lose HP equal to their Mark.
+        self.enemies.append(copy.deepcopy(self.enemy))
+        card = PressurePoints(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemies[0], self.enemies, False)
+        self.assertEqual(self.enemies[0].health, self.enemy_start_health-self.enemy.mark)
+        self.enemy.block = 10000000
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemies[0], self.enemies, False)
+        self.assertEqual(self.enemies[0].health, self.enemy_start_health - card.card_mark*3)
+
+        self.enemies[0].health = self.enemy_start_health
+        self.player.energy = 3
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemies[1], self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - card.card_mark * 2)
+        self.assertEqual(self.enemies[1].health, self.enemy_start_health - card.card_mark * 1)
+
+    def test_Prostate(self):
+        # Gain 2(3) {{Mantra}}. Gain 4 {{Block}}.
+        card = Prostrate(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, card.block)
+        self.assertEqual(self.player.mantra, card.mantra)
+
+    def test_Protect(self):
+        # {{Retain}}. Gain 12(16) {{Block}}.
+        card = Protect(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, card.block)
+        self.player.deck.hand.append(card)
+        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.enemies, False)
+        self.assertIn(card, self.player.deck.hand)
+
+    def test_Ragnarok(self):
+        # Deal 5(6) damage to a random enemy 5(6) times.
+        card = Ragnarok(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemies[0], self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - card.damage*card.attacks)
+        self.enemies[0].health = self.enemy_start_health
+        self.enemies.append(copy.deepcopy(self.enemy))
+        self.player.energy = 3
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemies[0], self.enemies, False)
+        self.assertEqual((self.enemies[0].health + self.enemies[1].health), self.enemy_start_health * 2 - card.damage * card.attacks)
+
+    def test_ReachHeaven(self):
+        # Deal 10(15) damage. Shuffle a {{C|Through Violence}} into your draw pile.
+        card = ReachHeaven(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - card.damage)
+        self.assertIsInstance(self.player.deck.draw_pile[0], ThroughViolence)
+
+    def test_ThroughViolence(self):
+        card = ThroughViolence(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - card.damage)
+        self.assertIn(card, self.player.deck.exhaust_pile)
+
+        self.player.deck.hand.append(card)
+        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.enemies, False)
+        self.assertIn(card, self.player.deck.hand)
+
+    def test_Rushdown(self):
+        card = Rushdown(self.player)
+        self.player.deck.draw_pile.append([Strike(self.player), Strike(self.player), Strike(self.player)])
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        eruption = Eruption(self.player)
+        self.player.deck.hand.append(eruption)
+        self.player.play_card(eruption, self.enemy, self.enemies, False)
+        self.assertEqual(len(self.player.deck.draw_pile), 1)
+        self.assertEqual(len(self.player.deck.hand), 2)
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

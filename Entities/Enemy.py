@@ -13,6 +13,7 @@ class Enemy(Entity):
         self.intent = None
         self.choose_intent()
         self.minion = minion
+        self.mark = 0
 
     def choose_intent(self):
         current_prob = 0

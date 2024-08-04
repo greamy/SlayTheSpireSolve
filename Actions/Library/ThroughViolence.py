@@ -3,16 +3,15 @@ from Entities.Enemy import Enemy
 from Actions.Card import Card
 
 
-class Prostrate(Card):
+class ThroughViolence(Card):
     def __init__(self, player: Player):
-        super().__init__("Prostrate", Card.Type.SKILL, 0, 0, 0, 4, 0, 0, False, False, player, None)
-        self.mantra = 2
+        super().__init__("ThroughViolence", Card.Type.ATTACK, 0, 20, 1, 0, 0, 0, True, True, player, None)
+
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
-        player.add_mantra(self.mantra)
-        # Gain 2(3) {{Mantra}}. Gain 4 {{Block}}.
+        # {{Retain}} Deal 20(30) damage. {{Exhaust}}
 
     def upgrade(self):
         super().upgrade()
-        self.mantra = 3
+        self.damage = 30
