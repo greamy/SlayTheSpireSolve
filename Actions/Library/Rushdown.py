@@ -21,6 +21,7 @@ class Rushdown(Card):
     def do_card(self, player, enemy, enemies, debug):
         if player.stance != self.last_stance and player.stance == Player.Stance.WRATH:
             player.draw_cards(self.drawing_cards)
+        self.last_stance = player.stance
 
     def upgrade(self):
         super().upgrade()

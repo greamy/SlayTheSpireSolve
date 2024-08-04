@@ -49,6 +49,7 @@ from Actions.Library.Ragnarok import Ragnarok
 from Actions.Library.ReachHeaven import ReachHeaven
 from Actions.Library.Rushdown import Rushdown
 from Actions.Library.Safety import Safety
+from Actions.Library.Sanctity import Sanctity
 from Actions.Library.Smite import Smite
 from Actions.Library.Miracle import Miracle
 from Actions.Library.Conclude import Conclude
@@ -779,8 +780,9 @@ class CardTest(unittest.TestCase):
         self.assertIn(card, self.player.deck.hand)
 
     def test_Rushdown(self):
+        # Whenever you enter {{Wrath}}, draw 2 cards.
         card = Rushdown(self.player)
-        self.player.deck.draw_pile.append([Strike(self.player), Strike(self.player), Strike(self.player)])
+        self.player.deck.draw_pile.extend([Strike(self.player), Strike(self.player), Strike(self.player)])
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, False)
         eruption = Eruption(self.player)
@@ -788,6 +790,31 @@ class CardTest(unittest.TestCase):
         self.player.play_card(eruption, self.enemy, self.enemies, False)
         self.assertEqual(len(self.player.deck.draw_pile), 1)
         self.assertEqual(len(self.player.deck.hand), 2)
+        self.player.energy = 3
+        self.player.deck.hand.append(eruption)
+        self.player.play_card(eruption, self.enemy, self.enemies, False)
+        self.assertEqual(len(self.player.deck.draw_pile), 1)
+        self.assertEqual(len(self.player.deck.hand), 2)
+
+
+
+    def test_Sanctity(self):
+        # Gain 6(9) {{Block}}. If the previous card played was a Skill, draw 2 card.
+        card = Sanctity(self.player)
+        self.player.deck.draw_pile.extend([Strike(self.player), Strike(self.player), Strike(self.player)])
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(self.player.block, card.block)
+
+        defend = Defend(self.player)
+        self.player.deck.hand.append(defend)
+        self.player.play_card(defend, self.enemy, self.enemies, False)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, False)
+        self.assertEqual(len(self.player.deck.draw_pile), 1)
+        self.assertEqual(len(self.player.deck.hand), 2)
+
+
 
 
 
