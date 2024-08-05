@@ -14,7 +14,7 @@ class InnerPeace(Card):
         #
         # If you are in {{Calm}}, draw 3(4) cards, otherwise Enter {{Calm}}.
         if player.stance == player.Stance.CALM:
-            player.deck.draw_cards(self.draw_amount)
+            player.draw_cards(self.draw_amount, enemies, debug)
         if player.stance != player.Stance.CALM:
             player.stance = player.Stance.CALM
 

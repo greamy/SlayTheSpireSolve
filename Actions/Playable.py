@@ -1,3 +1,4 @@
+from Actions.Listener import Listener
 from Entities import Entity
 
 
@@ -11,7 +12,8 @@ class Playable:
         one_attack_damage = round((self.damage + primary_entity.damage_dealt_modifier) * primary_entity.damage_dealt_multiplier)
         target_entity.take_damage(one_attack_damage * self.attacks)
         primary_entity.block += self.block
-        # TODO: Implement status effects
+        for i in range(self.attacks):
+            target_entity.notify_listeners(Listener.Event.TAKEN_DAMAGE, [primary_entity], debug)
 
     def __str__(self):
         return ("Damage: " + str(self.damage) + " Attacks: " + str(self.attacks) +

@@ -9,7 +9,6 @@ class FearNoEvil(Card):
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         # Deal 8(11) damage. If the enemy intends to Attack, enter {{Calm}}.
         if target_enemy.intent.damage > 0:
             player.set_stance(Player.Stance.CALM)

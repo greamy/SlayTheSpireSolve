@@ -9,5 +9,10 @@ class Tantrum(Card):
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         # Deal 3 damage 3(4) times. Enter {{Wrath}}. Shuffle this card into your draw pile.
+        player.deck.draw_pile.append(self)
+        player.deck.shuffle()
+
+    def upgrade(self):
+        super().upgrade()
+        self.attacks = 4

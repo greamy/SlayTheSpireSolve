@@ -20,6 +20,7 @@ class Meditate(Card):
             player.deck.hand.append(card)
             player.deck.discard_pile.remove(card)
             card.temp_retain = True
+            player.notify_listeners(Listener.Event.HAND_CHANGED, enemies, debug)
         player.turn_over = True
 
     def do_retain(self, player, enemy, enemies, debug):

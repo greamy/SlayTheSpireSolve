@@ -6,15 +6,14 @@ import random
 
 class Ragnarok(Card):
     def __init__(self, player: Player):
-        super().__init__("Ragnarok", Card.Type.ATTACK, 3, 5, 5, 0, 0, 0, False, False, player, None)
+        super().__init__("Ragnarok", Card.Type.ATTACK, 3, 5, 1, 0, 0, 0, False, False, player, None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        # super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
+        # Deal 5(6) damage to a random enemy 5(6) times.
         for i in range(self.attacks):
             enemy = random.choice(enemies)
-            enemy.take_damage(self.damage)
-        # Deal 5(6) damage to a random enemy 5(6) times.
+            super().play(player, enemy, enemies, debug)
+
 
     def upgrade(self):
         super().upgrade()

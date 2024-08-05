@@ -11,3 +11,7 @@ class Strike(Card):
         super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Deal 6(9) damage.
+
+    def upgrade(self):
+        super().upgrade()
+        self.damage = 9

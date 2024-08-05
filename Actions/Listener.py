@@ -26,4 +26,7 @@ class Listener:
         SKILL_PLAYED = 5
         POWER_PLAYED = 6
         SCRY_OCCURRED = 7
+        HAND_CHANGED = 8
+        ENERGY_CHANGED = 9
+        TAKEN_DAMAGE = 10
 

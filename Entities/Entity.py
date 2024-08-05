@@ -1,5 +1,7 @@
 import random
 
+from Actions.Listener import Listener
+
 
 class Entity:
 

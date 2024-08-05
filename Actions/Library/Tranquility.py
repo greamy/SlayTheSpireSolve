@@ -11,3 +11,7 @@ class Tranquility(Card):
         super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # {{Retain}}. Enter {{Calm}}. {{Exhaust}}.
+
+    def upgrade(self):
+        super().upgrade()
+        self.energy = 0

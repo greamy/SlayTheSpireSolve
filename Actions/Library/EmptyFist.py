@@ -9,7 +9,6 @@ class EmptyFist(Card):
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         # Deal 9(14) damage. Exit your {{Stance}}.
 
     def upgrade(self):

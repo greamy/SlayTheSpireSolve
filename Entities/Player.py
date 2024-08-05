@@ -20,6 +20,7 @@ class Player(Entity):
         self.turn_over = False
         self.innate_cards = []
 
+
     def begin_combat(self):
         self.deck.reshuffle()
         num_innate = 0
@@ -34,7 +35,7 @@ class Player(Entity):
     def start_turn(self, enemies, debug):
         super().start_turn(enemies, debug)
         self.energy = self.max_energy
-        self.deck.draw_cards(self.draw_amount)
+        self.draw_cards(self.draw_amount, enemies, debug)
         self.notify_listeners(Listener.Event.START_TURN, enemies, debug)
 
     def do_turn(self, enemies, debug):
@@ -64,6 +65,7 @@ class Player(Entity):
 
     def end_turn(self, enemies, debug):
         self.deck.end_turn(debug)
+        self.notify_listeners(Listener.Event.HAND_CHANGED, enemies, debug)
         if len(self.deck.hand) > 0:
             self.notify_listeners(Listener.Event.CARD_RETAINED, enemies, debug)
         if self.stance == self.Stance.DIVINITY:
@@ -71,8 +73,13 @@ class Player(Entity):
 
         self.notify_listeners(Listener.Event.END_TURN, enemies, debug)
 
-    def draw_cards(self, amount):
+    def draw_cards(self, amount, enemies, debug):
         self.deck.draw_cards(amount)
+        self.notify_listeners(Listener.Event.HAND_CHANGED, enemies, debug)
+
+    def discard(self, card, enemies, debug):
+        self.deck.discard(card)
+        self.notify_listeners(Listener.Event.HAND_CHANGED, enemies, debug)
 
     def play_card(self, card, enemy, enemies, debug):
         if card not in self.deck.hand:
@@ -83,7 +90,12 @@ class Player(Entity):
             if debug:
                 print(card.name + " costs too much energy!")
             return False
+        if not card.playable:
+            if debug:
+                print(card.name + " is not playable right now.")
+            return False
         self.energy -= card.energy
+        self.deck.hand.remove(card)
         card.play(self, enemy, enemies, debug)
 
         if card.is_attack():
@@ -92,14 +104,11 @@ class Player(Entity):
             self.notify_listeners(Listener.Event.SKILL_PLAYED, enemies, debug)
         elif card.is_power():
             self.deck.used_powers.append(card)
-            self.deck.hand.remove(card)
             self.notify_listeners(Listener.Event.POWER_PLAYED, enemies, debug)
-            return True
         if card.exhaust:
             self.deck.exhaust_pile.append(card)
-            self.deck.hand.remove(card)
-            return True
-        self.deck.discard(self.deck.hand.index(card))
+        if card not in self.deck.get_deck():
+            self.discard(card, enemies, debug)
         return True
 
     def gain_block(self, amount):
@@ -141,7 +150,7 @@ class Player(Entity):
         cards = self.deck.draw_pile[0:amount]
         for card in cards:
             if random.randint(0, 1) == 0:
-                self.deck.discard_pile.append(self.deck.draw_pile.pop(index))
+                self.discard(self.deck.draw_pile.pop(index), enemies, debug)
             else:
                 index += 1
         self.notify_listeners(Listener.Event.SCRY_OCCURRED, enemies, debug)
@@ -201,8 +210,10 @@ class Player(Entity):
         def draw(self, amount):
             self.hand.extend([self.draw_pile.pop(0) for i in range(amount)])
 
-        def discard(self, index):
-            self.discard_pile.append(self.hand.pop(index))
+        def discard(self, card):
+            if card in self.hand:
+                self.hand.remove(card)
+            self.discard_pile.append(card)
 
         def exhaust(self, card):
             self.exhaust_pile.append(card)
@@ -216,8 +227,10 @@ class Player(Entity):
             if debug:
                 print("**************** TURN OVER ****************")
 
-        def get_deck(self):
-            return self.hand + self.draw_pile + self.discard_pile + self.exhaust_pile + self.used_powers
+        def get_deck(self, extra_cards=None):
+            if extra_cards is None:
+                extra_cards = list()
+            return self.hand + self.draw_pile + self.discard_pile + self.exhaust_pile + self.used_powers + extra_cards
 
         def __str__(self):
             return ("Draw Pile:" + str([str(card) for card in self.draw_pile]) +

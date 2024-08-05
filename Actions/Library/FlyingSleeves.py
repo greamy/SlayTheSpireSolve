@@ -9,7 +9,6 @@ class FlyingSleeves(Card):
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         # {{Retain}}. Deal 4(6) damage twice.
 
     def upgrade(self):

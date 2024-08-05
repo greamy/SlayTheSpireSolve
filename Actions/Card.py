@@ -20,6 +20,7 @@ class Card(Playable):
         self.upgraded = False
         self.innate = innate
         self.temp_retain = temp_retain
+        self.playable = True
 
         # Check for Master Reality listener - Upgrade if master reality has been played
         for listener in player.listeners:
@@ -30,7 +31,7 @@ class Card(Playable):
         super().play(player, target_enemy, enemies, debug)
         if debug:
             print("Playing " + self.name + "...")
-        player.draw_cards(self.draw)
+        player.draw_cards(self.draw, enemies, debug)
 
         # TODO: Discard card of player's choice
         # TODO: Do any other effects the card has
