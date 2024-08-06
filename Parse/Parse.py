@@ -17,7 +17,7 @@ def clean_input(full_file):
 def parse(clean_file):
     template = """from Entities.Player import Player
 from Entities.Enemy import Enemy
-from Actions.Card import Card\n\n
+from CombatSim.Actions.Card import Card\n\n
 class Name(Card):
     def __init__(self):
         super().__init__("name", Card.Type.cardType, energy, damage, attacks, block, draw, discard, exhaust, retain, status, stance)
