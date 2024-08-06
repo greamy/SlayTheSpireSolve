@@ -16,9 +16,8 @@ class CrushJoints(Card):
         player.add_listener(self.not_skill_listener)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         # Deal 8(10) damage. If the previous card played was a skill, apply 1(2) {{Vulnerable}}.
+        super().play(player, target_enemy, enemies, debug)
         if self.skill_played:
             vuln = Vulnerable(self.vulnerable, target_enemy)
             target_enemy.add_listener(Listener(Listener.Event.START_TURN, vuln.decrement))
