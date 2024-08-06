@@ -5,9 +5,8 @@ from Actions.Listener import Listener
 
 
 class Player(Entity):
-    def __init__(self, health: int, status_list: list, energy: int,
-                 gold: int, potions: list, relics: list, cards: list):
-        super().__init__(health, status_list)
+    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list):
+        super().__init__(health)
         self.energy = energy
         self.gold = gold
         self.potions = potions
@@ -36,7 +35,6 @@ class Player(Entity):
         super().start_turn(enemies, debug)
         self.energy = self.max_energy
         self.draw_cards(self.draw_amount, enemies, debug)
-        self.notify_listeners(Listener.Event.START_TURN, enemies, debug)
 
     def do_turn(self, enemies, debug):
         # TODO: Make player play potions
@@ -62,6 +60,7 @@ class Player(Entity):
             playable_cards = [card for card in self.deck.hand if card.energy <= self.energy]
 
         self.end_turn(enemies, debug)
+        self.turn_over = False
 
     def end_turn(self, enemies, debug):
         self.deck.end_turn(debug)
@@ -111,9 +110,6 @@ class Player(Entity):
             self.discard(card, enemies, debug)
         return True
 
-    def gain_block(self, amount):
-        self.block += amount
-
     def use_potion(self, potion):
         pass
 
@@ -154,6 +150,10 @@ class Player(Entity):
             else:
                 index += 1
         self.notify_listeners(Listener.Event.SCRY_OCCURRED, enemies, debug)
+
+    def gain_gold(self, amount, enemies, debug):
+        self.gold += amount
+        # TODO: Add gold gained listener notification
 
     def __str__(self):
         return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\nDeck: " + str(self.deck)

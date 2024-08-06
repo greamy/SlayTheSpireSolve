@@ -8,6 +8,11 @@ class Wallop(Card):
         super().__init__("Wallop", Card.Type.ATTACK, 2, 9, 1, 0, 0, 0, False, False, player, None)
         
     def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         # Deal 9(12) damage. Gain {{Block}} equal to unblocked damage dealt.
+        enemy_block = target_enemy.block
+        super().play(player, target_enemy, enemies, debug)
+        player.gain_block(self.one_attack_damage*self.attacks - enemy_block, enemies, debug)
+
+    def upgrade(self):
+        super().upgrade()
+        self.damage = 12

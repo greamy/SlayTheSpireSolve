@@ -33,9 +33,6 @@ class Card(Playable):
             print("Playing " + self.name + "...")
         player.draw_cards(self.draw, enemies, debug)
 
-        # TODO: Discard card of player's choice
-        # TODO: Do any other effects the card has
-        # etc...
         if self.stance is not None:
             player.set_stance(self.stance)
 

@@ -4,7 +4,7 @@ import random
 
 class Enemy(Entity):
     def __init__(self, health, status_list, intent_set, minion=False):
-        super().__init__(health, status_list)
+        super().__init__(health)
 
         total_prob = sum([intent.probability for intent in intent_set])
         if total_prob != 100:

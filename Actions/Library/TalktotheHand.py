@@ -18,7 +18,7 @@ class TalktotheHand(Card):
 
     def gain_block(self, enemy, player, enemies, debug):
         if enemy == self.enemy:
-            player.gain_block(self.block_gain)
+            player.gain_block(self.block_gain, enemies, debug)
 
     def upgrade(self):
         super().upgrade()

@@ -7,11 +7,12 @@ class Playable:
         self.damage = damage
         self.attacks = attacks
         self.block = block
+        self.one_attack_damage = 0
 
     def play(self, primary_entity: Entity, target_entity: Entity, target_list: list[Entity], debug: bool):
-        one_attack_damage = round((self.damage + primary_entity.damage_dealt_modifier) * primary_entity.damage_dealt_multiplier)
-        target_entity.take_damage(one_attack_damage * self.attacks)
-        primary_entity.block += self.block
+        self.one_attack_damage = round((self.damage + primary_entity.damage_dealt_modifier) * primary_entity.damage_dealt_multiplier)
+        target_entity.take_damage(self.one_attack_damage * self.attacks)
+        primary_entity.gain_block(self.block, target_list, debug)
         for i in range(self.attacks):
             target_entity.notify_listeners(Listener.Event.TAKEN_DAMAGE, [primary_entity], debug)
 

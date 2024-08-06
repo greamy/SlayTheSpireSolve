@@ -1,3 +1,4 @@
+from Actions.Listener import Listener
 from Entities.Player import Player
 from Entities.Enemy import Enemy
 from Actions.Card import Card
@@ -12,11 +13,13 @@ class Omniscience(Card):
         super().play(player, target_enemy, enemies, debug)
         # Choose a card in your draw pile. Play the chosen card twice and Exhaust it. {{Exhaust}}.
         # TODO: make not random
-        card = random.choice(player.deck.draw_pile)
-        card.play(player, target_enemy, enemies, debug)
-        card.play(player, target_enemy, enemies, debug)
-        player.deck.exhaust_pile.append(card)
-        player.deck.draw_pile.remove(card)
+        if len(player.deck.draw_pile) > 0:
+            card = random.choice(player.deck.draw_pile)
+            card.play(player, target_enemy, enemies, debug)
+            card.play(player, target_enemy, enemies, debug)
+            player.deck.exhaust_pile.append(card)
+            if card in player.deck.draw_pile:
+                player.deck.draw_pile.remove(card)
         # TODO notify exhaust listeners if needed
 
     def upgrade(self):

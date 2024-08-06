@@ -11,3 +11,7 @@ class Vigilance(Card):
         super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Enter {{Calm}}. Gain 8(12) {{Block}}.
+
+    def upgrade(self):
+        super().upgrade()
+        self.block = 12

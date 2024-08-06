@@ -15,7 +15,11 @@ class Meditate(Card):
         super().play(player, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Put 1(2) card(s) from your discard pile into your hand and {{Retain}} it. Enter {{Calm}}. End your turn.
-        for i in range(self.num_cards):
+        if self.num_cards > len(player.deck.discard_pile):
+            num_cards = len(player.deck.discard_pile)
+        else:
+            num_cards = self.num_cards
+        for i in range(num_cards):
             card = random.choice(player.deck.discard_pile)
             player.deck.hand.append(card)
             player.deck.discard_pile.remove(card)

@@ -11,11 +11,12 @@ class Listener:
         self.num_turns = num_turns
 
     def notify(self, player, enemy, enemies, debug):
-        self.on_listen(player, enemy, enemies, debug)
         if self.num_turns is not None:
             self.num_turns -= 1
             if self.num_turns == 0:
                 player.listeners.remove(self)
+        self.on_listen(player, enemy, enemies, debug)
+
 
     class Event(Enum):
         START_TURN = 0
@@ -29,4 +30,5 @@ class Listener:
         HAND_CHANGED = 8
         ENERGY_CHANGED = 9
         TAKEN_DAMAGE = 10
+        BLOCK_GAINED = 11
 
