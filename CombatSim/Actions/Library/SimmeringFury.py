@@ -10,8 +10,8 @@ class SimmeringFury(Card):
         self.listener = Listener(Listener.Event.START_TURN, self.do_card, 1)
         self.drawing_cards = 2
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         player.add_listener(self.listener)
         # At the start of your next turn, enter {{Wrath}} and draw 2(3) cards.

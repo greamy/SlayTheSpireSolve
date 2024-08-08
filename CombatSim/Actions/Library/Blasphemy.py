@@ -9,8 +9,8 @@ class Blasphemy(Card):
         super().__init__("Blasphemy", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, True, False, player, Player.Stance.DIVINITY)
         self.listener = Listener(Listener.Event.START_TURN, self.do_power, 1)
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # (Retain.) Enter Divinity, Die next turn. {{Exhaust}}.
         player.add_listener(self.listener)
 

@@ -9,8 +9,8 @@ class Fasting(Card):
         self.strength = 3
         self.dexterity = 3
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Gain 3(4) {{Strength}}. Gain 3(4) {{Dexterity}}. Gain 1 less {{Energy}} at the start of each turn.
         player.damage_dealt_modifier += self.strength

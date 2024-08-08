@@ -11,8 +11,8 @@ class MentalFortress(Card):
         self.stance_block = 4
         self.last_stance = player.stance
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         player.add_listener(self.listener)
         # Whenever you switch {{Stance|Stances}}, gain 4(6) {{Block}}.

@@ -12,9 +12,9 @@ class Swivel(Card):
                                         Listener.Event.ENERGY_CHANGED], self.update)
         self.last_energy = player.energy
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Gain 8(11) {{Block}}. The next Attack you play costs 0.
-        super().play(player, target_enemy, enemies, debug)
+        super().play(player, player_list, target_enemy, enemies, debug)
         player.add_listener(self.attack_listener)
         player.add_listener(self.other_listener)
         self.last_energy = player.energy

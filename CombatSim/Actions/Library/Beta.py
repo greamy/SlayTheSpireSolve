@@ -8,8 +8,8 @@ class Beta(Card):
     def __init__(self, player: Player):
         super().__init__("Beta", Card.Type.SKILL,2, 0, 0, 0, 0, 0, True, False, player, None)
 
-    def play(self, player: Player, enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, enemy, enemies, debug)
         # Shuffle an {{C|Omega}} into your draw pile. {{Exhaust}}.
         player.deck.draw_pile.append(Omega(player))
         player.deck.shuffle()

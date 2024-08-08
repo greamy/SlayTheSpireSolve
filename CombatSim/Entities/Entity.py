@@ -20,6 +20,9 @@ class Entity:
         self.block = 0
         self.notify_listeners(Listener.Event.START_TURN, opponents, debug)
 
+    def end_turn(self, opponents, debug):
+        self.notify_listeners(Listener.Event.END_TURN, opponents, debug)
+
     def take_damage(self, amount):
         if self.block > 0:
             self.block -= round(amount*self.damage_taken_multiplier)

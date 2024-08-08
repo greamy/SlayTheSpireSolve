@@ -9,8 +9,8 @@ class Omega(Card):
         super().__init__("Omega", Card.Type.POWER, 3, 50, 0, 0, 0, 0, False, False,player, None)
         self.listener = Listener(Listener.Event.END_TURN, self.do_power)
 
-    def play(self, player: Player, enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, enemy, enemies, debug)
         # TODO: Implement the following:
         # At the end of your turn, deal 50 damage to ALL enemies.
         player.add_listener(self.listener)

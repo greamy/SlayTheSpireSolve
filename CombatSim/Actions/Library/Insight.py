@@ -7,8 +7,8 @@ class Insight(Card):
     def __init__(self, player: Player):
         super().__init__("Insight", Card.Type.SKILL, 0, 0, 0, 0, 2, 0, True, True, player, None)
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
 
         # {{Retain}} Draw 2(3) cards}. {{Exhaust}}
 

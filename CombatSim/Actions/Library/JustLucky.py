@@ -8,8 +8,8 @@ class JustLucky(Card):
         super().__init__("JustLucky", Card.Type.ATTACK, 0, 3, 1, 2, 0, 0, False, False, player, None)
         self.scry = 1
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # {{Scry}} 1(2). Gain 2(3) {{Block}}. Deal 3(4) damage.
         player.scry(self.scry, enemies, debug)
 

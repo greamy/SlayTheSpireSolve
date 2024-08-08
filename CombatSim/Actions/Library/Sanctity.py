@@ -14,8 +14,8 @@ class Sanctity(Card):
         player.add_listener(self.skill_listener)
         player.add_listener(self.not_skill_listener)
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         if self.skill:
             player.draw_cards(self.drawing, enemies, debug)

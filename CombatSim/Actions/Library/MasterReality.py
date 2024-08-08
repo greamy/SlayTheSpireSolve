@@ -8,8 +8,8 @@ class MasterReality(Card):
         super().__init__("MasterReality", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None)
         self.listener = Listener(Listener.Event.CARD_CREATED, self.do_power)
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         player.add_listener(self.listener)
         # Whenever a card is created during combat, {{Upgrade}} it.
 

@@ -2,22 +2,34 @@ from CombatSim.Actions.Intent import Intent
 from CombatSim.Entities.Enemy import Enemy
 import random
 
+from CombatSim.Entities.Player import Player
+
 
 class JawWorm(Enemy):
     CHOMP = 0
     THRASH = 1
     BELLOW = 2
 
-    def __init__(self, ascension: int):
-        intent_set = [
-            self.Chomp(ascension), self.Thrash, self.Bellow(ascension)]
-        if ascension >= 7:
-            super().__init__(random.randint(42, 46), intent_set, ascension, minion=False)
-        else:
+    def __init__(self, ascension: int, act: int):
+
+        intent_set = [self.Chomp(ascension),
+                      self.Thrash(ascension),
+                      self.Bellow(ascension)]
+
+        self.third_act = False
+        if act == 3:
+            self.third_act = True
+        if ascension < 7:
             super().__init__(random.randint(40, 44), intent_set, ascension, minion=False)
+        else:
+            super().__init__(random.randint(42, 46), intent_set, ascension, minion=False)
+
+        if act == 3:
+            self.damage_dealt_modifier += self.intent_set[self.BELLOW].strength
+            self.block += self.intent_set[self.BELLOW].block
 
     def choose_intent(self):
-        if self.num_turns == 0:
+        if self.num_turns == 0 and not self.third_act:
             self.intent = self.intent_set[self.CHOMP]
         else:
             super().choose_intent()
@@ -33,10 +45,10 @@ class JawWorm(Enemy):
 
     class Bellow(Intent):
         def __init__(self, ascension: int):
-            if ascension < 1:
+            if ascension < 2:
                 self.block = 6
                 self.strength = 3
-            elif ascension < 16:
+            elif ascension < 17:
                 self.block = 6
                 self.strength = 4
             else:
@@ -45,15 +57,17 @@ class JawWorm(Enemy):
 
             super().__init__("Bellow", 0, 0, self.block, 45)
 
-        def play(self, enemy, player, player_list, debug):
-            super().play(enemy, player, player_list, debug)
+        def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
+            super().play(enemy, enemy_list, player, player_list, debug)
             enemy.damage_dealt_modifier += self.strength
 
     class Chomp(Intent):
         def __init__(self, ascension: int):
-            if ascension < 1:
+            if ascension < 2:
                 self.damage = 12
-            super().__init__("Chomp", 11, 1, 0, 25)
+            else:
+                self.damage = 11
+            super().__init__("Chomp", self.damage, 1, 0, 25)
 
     class Thrash(Intent):
         def __init__(self, ascension: int):

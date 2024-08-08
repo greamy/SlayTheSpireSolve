@@ -27,8 +27,8 @@ class Card(Playable):
             if Listener.Event.CARD_CREATED in listener.event_types:
                 self.upgrade()
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         if debug:
             print("Playing " + self.name + "...")
         player.draw_cards(self.draw, enemies, debug)
@@ -55,3 +55,4 @@ class Card(Playable):
         ATTACK = 0
         SKILL = 1
         POWER = 2
+        STATUS = 3

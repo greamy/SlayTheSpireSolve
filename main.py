@@ -46,7 +46,7 @@ def main():
         # jaw_worm = Enemy(health=51, status_list=[], intent_set=[Intent(12, 1, 0, 25),
         #                                                                  Intent(7, 1, 5, 30),
         #                                                                  Intent(5, 1, 9, 45)])
-        jaw_worm = JawWorm(20)
+        jaw_worm = JawWorm(20, 1)
         combat = Combat(grants_ass, [jaw_worm], False)
         num_turn, player_health, is_alive = combat.start()
         num_turns.append(num_turn)

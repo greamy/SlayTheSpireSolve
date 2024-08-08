@@ -11,8 +11,8 @@ class Collect(Card):
         self.listener = Listener(Listener.Event.START_TURN, self.do_skill, 0)
         self.x_modifier = 0
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         self.listener.num_turns = player.energy + self.x_modifier
         player.energy = 0
         player.add_listener(self.listener)

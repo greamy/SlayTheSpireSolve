@@ -13,7 +13,7 @@ class DeusExMachina(Card):
         self.playable = False
         self.num_cards = 2
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # {{Unplayable}}. When you draw this card, add 2(3) {{C|Miracle|Miracles}} into your hand. {{Exhaust}}.
         raise RuntimeError("DeusExMachina is unplayable!")
 

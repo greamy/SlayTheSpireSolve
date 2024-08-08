@@ -8,8 +8,8 @@ class PressurePoints(Card):
         super().__init__("PressurePoints", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None)
         self.card_mark = 8
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         target_enemy.mark += self.card_mark
         for enemy in enemies:

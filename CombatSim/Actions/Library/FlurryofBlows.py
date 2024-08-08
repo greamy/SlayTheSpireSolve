@@ -11,8 +11,8 @@ class FlurryofBlows(Card):
         self.last_stance = player.stance
         player.add_listener(self.card_listener)
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # Deal 4(6) damage. On {{Stance}} change, returns from the Discard Pile into your hand.
         self.last_stance = player.stance
 

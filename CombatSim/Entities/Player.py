@@ -60,9 +60,10 @@ class Player(Entity):
             playable_cards = [card for card in self.deck.hand if card.energy <= self.energy]
 
         self.end_turn(enemies, debug)
-        self.turn_over = False
 
     def end_turn(self, enemies, debug):
+        super().end_turn(enemies, debug)
+
         self.deck.end_turn(debug)
         self.notify_listeners(Listener.Event.HAND_CHANGED, enemies, debug)
         if len(self.deck.hand) > 0:
@@ -70,7 +71,7 @@ class Player(Entity):
         if self.stance == self.Stance.DIVINITY:
             self.set_stance(self.Stance.NONE)
 
-        self.notify_listeners(Listener.Event.END_TURN, enemies, debug)
+        self.turn_over = False
 
     def draw_cards(self, amount, enemies, debug):
         self.deck.draw_cards(amount)
@@ -95,7 +96,7 @@ class Player(Entity):
             return False
         self.energy -= card.energy
         self.deck.hand.remove(card)
-        card.play(self, enemy, enemies, debug)
+        card.play(self, [self], enemy, enemies, debug)
 
         if card.is_attack():
             self.notify_listeners(Listener.Event.ATTACK_PLAYED, enemies, debug)

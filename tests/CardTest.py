@@ -79,9 +79,11 @@ from CombatSim.Actions.Library.WindmillStrike import WindmillStrike
 from CombatSim.Actions.Library.Wish import Wish
 from CombatSim.Actions.Library.Worship import Worship
 from CombatSim.Actions.Library.WreathofFlame import WreathofFlame
+from CombatSim.Actions.Library.Slimed import Slimed
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Actions.Library.CutThroughFate import CutThroughFate
 from CombatSim.Actions.Library.EmptyBody import EmptyBody
+from CombatSim.Entities.Dungeon.JawWorm import JawWorm
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
 import copy
@@ -94,10 +96,14 @@ class CardTest(unittest.TestCase):
         self.energy = 3
         self.gold = 100
         self.player = Player(self.health, self.energy, self.gold, [], [], [])
-        self.enemy_start_health = 51
-        self.enemy = Enemy(health=self.enemy_start_health, status_list=[], intent_set=[Intent(12, 1, 0, 25),
-                                                                         Intent(7, 1, 5, 30),
-                                                                         Intent(5, 1, 9, 45)])
+        # self.enemy = Enemy(health=self.enemy_start_health,intent_set=[Intent("", 12, 1, 0, 25),
+        #                                                                  Intent("", 7, 1, 5, 30),
+        #                                                                  Intent("", 5, 1, 9, 45)])
+        self.ascension = 20
+        self.act = 1
+        self.enemy = JawWorm(self.ascension, self.act)
+        self.enemy_start_health = self.enemy.health
+
         self.enemies = [self.enemy]
         self.debug = False
 
@@ -124,6 +130,9 @@ class CardTest(unittest.TestCase):
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
         self.assertIn(card, self.player.deck.used_powers)
         self.assertEqual(len(self.player.listeners), 1)
+
+        self.enemy_start_health = 51
+        self.enemy.health = self.enemy_start_health
 
         self.player.notify_listeners(Listener.Event.END_TURN, self.enemies, self.debug)
         self.assertEqual(self.enemy.health, self.enemy_start_health-50)
@@ -1125,5 +1134,13 @@ class CardTest(unittest.TestCase):
         self.player.play_card(strike, self.enemy, self.enemies, self.debug)
         self.assertEqual(self.enemy.health, self.enemy_start_health - (strike.damage + card.temp_strength_gain)*strike.attacks)
 
+    def test_Slimed(self):
+        # Exhaust
+        card = Slimed(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy, self.enemies, self.debug)
+
+        self.assertIn(card, self.player.deck.exhaust_pile)
+        self.assertEqual(self.player.energy, self.energy - card.energy)
 if __name__ == '__main__':
     unittest.main()

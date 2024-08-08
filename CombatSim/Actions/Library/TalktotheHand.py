@@ -10,8 +10,8 @@ class TalktotheHand(Card):
         self.attack_listener = Listener(Listener.Event.TAKEN_DAMAGE, self.gain_block)
         self.enemy = None
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # Deal 5(7) damage. Whenever you attack this enemy, gain 2(3) {{Block}}. {{Exhaust}}.
         target_enemy.add_listener(self.attack_listener)
         self.enemy = target_enemy

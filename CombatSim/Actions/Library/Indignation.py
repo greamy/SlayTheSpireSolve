@@ -10,8 +10,8 @@ class Indignation(Card):
         super().__init__("Indignation", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None)
         self.vulnerable = 3
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         if player.stance == player.Stance.NONE:
             player.stance = player.Stance.WRATH
         elif player.stance == player.Stance.WRATH:

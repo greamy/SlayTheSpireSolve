@@ -10,8 +10,8 @@ class Nirvana(Card):
         self.scry_block = 3
         self.listener = Listener(Listener.Event.SCRY_OCCURRED, self.do_power)
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # Whenever you {{Scry}}, gain 3(4) {{Block}}.
         player.add_listener(self.listener)
 

@@ -13,8 +13,8 @@ class FollowUp(Card):
         player.add_listener(self.attack_listener)
         player.add_listener(self.not_Attack_listener)
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Deal 7(11) damage. If the previous card played was an Attack, gain 1 {{Energy}}.
         if self.attack_played:

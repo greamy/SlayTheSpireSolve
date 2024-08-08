@@ -11,9 +11,9 @@ class SignatureMove(Card):
         player.add_listener(self.listener)
         self.do_listen(player, None, [], False)
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Can only be played if this is the only attack in your hand. Deal 30(40) damage.
-        super().play(player, target_enemy, enemies, debug)
+        super().play(player, player_list, target_enemy, enemies, debug)
 
     def do_listen(self, player, enemy, enemies, debug):
         for card in player.deck.hand:

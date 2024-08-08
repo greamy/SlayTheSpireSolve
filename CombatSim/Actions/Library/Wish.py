@@ -11,9 +11,9 @@ class Wish(Card):
         self.strength_gain = 3
         self.plated_armor = 6
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Choose one: Gain 6(8) {{Plated Armor}}, 3(4) {{Strength}}, or 25(30) Gold. {{Exhaust}}.
-        super().play(player, target_enemy, enemies, debug)
+        super().play(player, player_list, target_enemy, enemies, debug)
         choice = random.randint(0, 2)
         if choice == 0:
             player.damage_dealt_modifier += self.strength_gain

@@ -41,9 +41,11 @@ class Enemy(Entity):
         pass
 
     def do_turn(self, player, debug):
-        self.intent.play(self, player, [player], debug)
+        self.intent.play(self, [self], player, [player], debug)
         self.num_turns += 1
         self.choose_intent()
+
+        self.end_turn([player], debug)
 
     def __str__(self):
         return "ENEMY\nHealth: " + str(self.health) + " Block: " + str(self.block)

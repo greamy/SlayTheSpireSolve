@@ -10,9 +10,9 @@ class WreathofFlame(Card):
         self.attack_listener = Listener(Listener.Event.ATTACK_PLAYED, self.temp_strength)
         self.temp_strength_gain = 5
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Your next Attack deals 5(8) additional damage.
-        super().play(player, target_enemy, enemies, debug)
+        super().play(player, player_list, target_enemy, enemies, debug)
         player.damage_dealt_modifier += self.temp_strength_gain
         player.add_listener(self.attack_listener)
 

@@ -12,8 +12,8 @@ class WaveoftheHand(Card):
         self.end_listener = Listener(Listener.Event.END_TURN, self.end_card)
         self.weak = 1
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Whenever you gain {{Block}} this turn, apply 1(2) {{Weak}} to ALL enemies
         player.add_listener(self.listener)

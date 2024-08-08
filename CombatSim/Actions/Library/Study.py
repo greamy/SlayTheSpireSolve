@@ -10,9 +10,9 @@ class Study(Card):
         super().__init__("Study", Card.Type.POWER, 2, 0, 0, 0, 0, 0, False, False, player, None)
         self.listener = Listener(Listener.Event.END_TURN, self.do_power)
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # At the end of your turn, shuffle an {{C|Insight}} into your draw pile.
-        super().play(player, target_enemy, enemies, debug)
+        super().play(player, player_list, target_enemy, enemies, debug)
         player.add_listener(self.listener)
 
     def do_power(self, player, enemy, enemies, debug):

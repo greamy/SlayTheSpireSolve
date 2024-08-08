@@ -8,10 +8,10 @@ class SpiritShield(Card):
         super().__init__("SpiritShield", Card.Type.SKILL, 2, 0, 0, 0, 0, 0, False, False, player, None)
         self.card_block = 3
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Gain 3(4) {{Block}} for each card in your hand.
         self.block = self.card_block * len(player.deck.hand)
-        super().play(player, target_enemy, enemies, debug)
+        super().play(player, player_list, target_enemy, enemies, debug)
 
     def upgrade(self):
         super().upgrade()

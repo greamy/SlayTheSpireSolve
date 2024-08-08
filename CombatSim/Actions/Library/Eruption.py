@@ -7,8 +7,8 @@ class Eruption(Card):
     def __init__(self, player: Player):
         super().__init__("Eruption", Card.Type.ATTACK, 2, 9, 1, 0, 0, 0, False, False, player, Player.Stance.WRATH)
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Deal 9 damage. Enter {{Wrath}}.
 

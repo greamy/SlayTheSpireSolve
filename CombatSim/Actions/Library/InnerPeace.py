@@ -9,8 +9,8 @@ class InnerPeace(Card):
                          0, False, False, player, None)
         self.draw_amount = 3
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         #
         # If you are in {{Calm}}, draw 3(4) cards, otherwise Enter {{Calm}}.
         if player.stance == player.Stance.CALM:

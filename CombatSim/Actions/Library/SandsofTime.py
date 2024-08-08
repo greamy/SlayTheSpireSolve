@@ -10,8 +10,8 @@ class SandsofTime(Card):
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_retain)
         player.add_listener(self.listener)
 
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # {{Retain}}. Deal 20(26) damage. Whenever this card is {{Retained}}, lower its cost by 1.
 

@@ -10,9 +10,9 @@ class Weave(Card):
         self.listener = Listener(Listener.Event.SCRY_OCCURRED, self.return_to_hand)
         player.add_listener(self.listener)
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Deal 4(6) damage. Whenever you {{Scry}}, return this from the discard pile to your Hand.
-        super().play(player, target_enemy, enemies, debug)
+        super().play(player, player_list, target_enemy, enemies, debug)
 
     def return_to_hand(self, player: Player, enemy: Enemy, enemies: list[Enemy], debug: bool):
         if self in player.deck.discard_pile:

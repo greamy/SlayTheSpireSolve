@@ -22,8 +22,8 @@ class Name(Card):
     def __init__(self):
         super().__init__("name", Card.Type.cardType, energy, damage, attacks, block, draw, discard, exhaust, retain, status, stance)
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # DESCRIPTION"""
 

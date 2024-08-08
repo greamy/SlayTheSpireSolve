@@ -11,8 +11,8 @@ class Meditate(Card):
         self.num_cards = 1
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_retain)
         
-    def play(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        super().play(player, target_enemy, enemies, debug)
+    def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Put 1(2) card(s) from your discard pile into your hand and {{Retain}} it. Enter {{Calm}}. End your turn.
         if self.num_cards > len(player.deck.discard_pile):
