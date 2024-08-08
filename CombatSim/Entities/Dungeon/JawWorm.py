@@ -10,10 +10,7 @@ class JawWorm(Enemy):
 
     def __init__(self, ascension: int):
         intent_set = [
-            Intent("Chomp", 12, 1, 0, 25),
-            Intent("Thrash", 7, 1, 5, 30),
-            self.Bellow(ascension)
-        ]
+            self.Chomp(ascension), self.Thrash, self.Bellow(ascension)]
         if ascension >= 7:
             super().__init__(random.randint(42, 46), intent_set, ascension, minion=False)
         else:
@@ -36,10 +33,10 @@ class JawWorm(Enemy):
 
     class Bellow(Intent):
         def __init__(self, ascension: int):
-            if ascension < 2:
+            if ascension < 1:
                 self.block = 6
                 self.strength = 3
-            elif ascension < 17:
+            elif ascension < 16:
                 self.block = 6
                 self.strength = 4
             else:
@@ -51,3 +48,13 @@ class JawWorm(Enemy):
         def play(self, enemy, player, player_list, debug):
             super().play(enemy, player, player_list, debug)
             enemy.damage_dealt_modifier += self.strength
+
+    class Chomp(Intent):
+        def __init__(self, ascension: int):
+            if ascension < 1:
+                self.damage = 12
+            super().__init__("Chomp", 11, 1, 0, 25)
+
+    class Thrash(Intent):
+        def __init__(self, ascension: int):
+            super().__init__("Thrash", 7, 1, 5, 30)
