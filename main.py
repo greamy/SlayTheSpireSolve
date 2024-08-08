@@ -39,7 +39,7 @@ def main():
     num_turns = []
     player_healths = []
     num_died = 0
-    num_combat = 10000
+    num_combat = 1000
     start = time.time()
     for i in range(num_combat):
         grants_ass = Player(health=69, energy=3, gold=690, potions=[], relics=[],
