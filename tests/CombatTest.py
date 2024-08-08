@@ -1,8 +1,8 @@
 import unittest
-from Actions.Card import Card
-from Entities.Player import Player
-from Entities.Enemy import Enemy
-from Actions.Intent import Intent
+from CombatSim.Actions.Card import Card
+from CombatSim.Entities.Player import Player
+from CombatSim.Entities.Enemy import Enemy
+from CombatSim.Actions.Intent import Intent
 from Combat import Combat
 
 

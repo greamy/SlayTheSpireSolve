@@ -1,23 +1,21 @@
 import importlib
 import os
 
-from Actions.Card import Card
-from Entities.Player import Player
-from Entities.Enemy import Enemy
+from CombatSim.Entities.Dungeon.JawWorm import JawWorm
+from CombatSim.Entities.Player import Player
+from CombatSim.Entities.Enemy import Enemy
 from Combat import Combat
-from Actions.Intent import Intent
-import copy
+from CombatSim.Actions.Intent import Intent
 import time
-from Actions.Library.Alpha import Alpha
 
 
 def get_cards(player: Player):
     my_cards = []
-    card_name_list = os.listdir(os.path.join(os.curdir, "./Actions/Library"))
+    card_name_list = os.listdir(os.path.join(os.curdir, "./CombatSim/Actions/Library"))
     for card_name in card_name_list:
         if card_name != "Expunger.py" and card_name.endswith(".py"):
             card_name = card_name[:-3]
-            module = importlib.import_module("Actions.Library." + card_name)
+            module = importlib.import_module("CombatSim.Actions.Library." + card_name)
             class_ = getattr(module, card_name)
             my_cards.append(class_(player))
 
@@ -45,9 +43,10 @@ def main():
         grants_ass = Player(health=69, energy=3, gold=690, potions=[], relics=[],
                             cards=[])
         grants_ass.deck = Player.Deck(get_cards(grants_ass))
-        jaw_worm = Enemy(health=51, status_list=[], intent_set=[Intent(12, 1, 0, 25),
-                                                                         Intent(7, 1, 5, 30),
-                                                                         Intent(5, 1, 9, 45)])
+        # jaw_worm = Enemy(health=51, status_list=[], intent_set=[Intent(12, 1, 0, 25),
+        #                                                                  Intent(7, 1, 5, 30),
+        #                                                                  Intent(5, 1, 9, 45)])
+        jaw_worm = JawWorm(20)
         combat = Combat(grants_ass, [jaw_worm], False)
         num_turn, player_health, is_alive = combat.start()
         num_turns.append(num_turn)

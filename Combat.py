@@ -1,5 +1,5 @@
-from Entities.Player import Player
-from Entities.Enemy import Enemy
+from CombatSim.Entities.Player import Player
+from CombatSim.Entities.Enemy import Enemy
 
 
 class Combat:

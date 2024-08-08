@@ -1,5 +1,5 @@
 import unittest
-from Entities.Player import Player
+from CombatSim.Entities.Player import Player
 
 
 class PlayerTest(unittest.TestCase):
