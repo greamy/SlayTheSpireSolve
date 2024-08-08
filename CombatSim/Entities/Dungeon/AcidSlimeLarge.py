@@ -52,8 +52,9 @@ class AcidSlimeLarge(Enemy):
 
     def take_damage(self, amount):
         super().take_damage(amount)
-        # if self.health <= self.start_health:
-        #     self.intent = self.intent_set[self.SPLIT]
+        if self.health <= self.start_health and not self.split:
+            self.intent = self.intent_set[self.SPLIT]
+            self.split = True
 
     class Lick(Intent):
         def __init__(self, ascension: int):
