@@ -28,7 +28,7 @@ class Cultist(Enemy):
 
     def is_valid_intent(self, intent: Intent) -> bool:
         # 0 = First Turn
-        if self.num_turns > 0 and self.intent == self.intent_set[self.INCANTATION]:\
+        if self.num_turns > 0 and self.intent == self.intent_set[self.INCANTATION]:
             return False
         return True
 
