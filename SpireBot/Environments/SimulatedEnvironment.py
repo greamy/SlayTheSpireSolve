@@ -8,7 +8,6 @@ class SimulatedEnvironment(Environment):
         self.player = player
         self.enemies = enemies
         self.debug = debug
-        self.state = {'commands'}
         combat = Combat(player, enemies, debug)
 
     def get_state(self) -> dict:

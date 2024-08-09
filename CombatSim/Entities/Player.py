@@ -1,3 +1,6 @@
+import importlib
+import os
+
 from CombatSim.Entities.Entity import Entity
 import random
 from enum import Enum
@@ -5,20 +8,42 @@ from CombatSim.Actions.Listener import Listener
 
 
 class Player(Entity):
-    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list):
+    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str]):
         super().__init__(health)
         self.energy = energy
         self.gold = gold
         self.potions = potions
         self.relics = relics
-        self.deck = self.Deck(cards)
         self.draw_amount = 5
         self.max_energy = 3
         self.mantra = 0
         self.stance = self.Stance.NONE
         self.turn_over = False
         self.innate_cards = []
+        self.implemented_cards = self.get_implemented_cards("../Actions/Library")
+        self.deck = self.Deck(self.create_deck(cards))
 
+    @staticmethod
+    def get_implemented_cards(library_path: str) -> dict:
+        my_cards = {}
+        card_name_list = os.listdir(os.path.join(os.curdir, library_path))
+        module_path = library_path.replace("../", "").replace("/", ".") + "."
+        for card_name in card_name_list:
+            if card_name.endswith(".py"):
+                card_name = card_name[:-3]
+                module = importlib.import_module(module_path + card_name)
+                my_cards[card_name] = module
+        return my_cards
+
+    def create_deck(self, cards: list[str]) -> list:
+        deck = []
+        for card in cards:
+            if card in self.implemented_cards.keys():
+                class_ = getattr(self.implemented_cards[card], card)
+                deck.append(class_(self))
+            else:
+                raise Exception(f"No implemented card named {card}")
+        return deck
 
     def begin_combat(self):
         self.deck.reshuffle()
