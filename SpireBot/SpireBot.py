@@ -19,7 +19,7 @@ class SpireBot:
             while True:
                 time.sleep(1)
                 self.state = input()
-                self.logger.write(self.state + "\n")
+                self.logger.write(self.state)
                 self.state = decoder.decode(self.state)
                 self.process_state(self.state)
             self.logger.close()
@@ -31,7 +31,7 @@ class SpireBot:
         try:
             game_ready = state['ready_for_command']
             if not game_ready:
-                self.logger.write("Game not ready for commands.\n")
+                self.logger.write("Game not ready for commands.")
                 return
             commands = state['available_commands']
             if "choose" in commands:
@@ -44,7 +44,7 @@ class SpireBot:
             choices = state['game_state']['choice_list']
             self.logger.write(str(choices))
         except KeyError:
-            self.logger.write("ERROR: No Choices Available. Might be in combat.\n")
+            self.logger.write("ERROR: No Choices Available. Might be in combat.")
             return
         choice = random.choice(choices)
         self.logger.write("Chosen " + str(choice) + " from " + str(choices))
