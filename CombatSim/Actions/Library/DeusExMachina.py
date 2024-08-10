@@ -24,3 +24,6 @@ class DeusExMachina(Card):
             if len(player.deck.hand) + 2 > Player.Deck.MAX_HAND_SIZE:
                 num_cards = Player.Deck.MAX_HAND_SIZE - len(player.deck.hand)
             player.deck.hand.extend([Miracle(player) for _ in range(num_cards)])
+            player.deck.exhaust_pile.append(self)
+            player.deck.hand.remove(self)
+            player.listeners.remove(self.listener)

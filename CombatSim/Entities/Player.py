@@ -5,6 +5,7 @@ from CombatSim.Entities.Entity import Entity
 import random
 from enum import Enum
 from CombatSim.Actions.Listener import Listener
+from SpireBot.SpireBot import SpireBot
 
 
 class Player(Entity):
@@ -20,8 +21,10 @@ class Player(Entity):
         self.stance = self.Stance.NONE
         self.turn_over = False
         self.innate_cards = []
-        self.implemented_cards = self.get_implemented_cards("../Actions/Library")
+        self.implemented_cards = self.get_implemented_cards("CombatSim/Actions/Library")
         self.deck = self.Deck(self.create_deck(cards))
+
+        self.bot = SpireBot()
 
     @staticmethod
     def get_implemented_cards(library_path: str) -> dict:
@@ -65,23 +68,17 @@ class Player(Entity):
         # TODO: Make player play potions
         playable_cards = [card for card in self.deck.hand if card.energy <= self.energy]
         while len(playable_cards) > 0 and not self.turn_over:
-            card_choice = random.choice(self.deck.hand)
-            targeted_enemy = random.choice(enemies)
+            card_choice, targeted_enemy = self.bot.combat_choose_next_action(playable_cards, enemies, None)
             success = self.play_card(card_choice, targeted_enemy, enemies, debug)
             if not success:
-                for card in self.deck.hand:
-                    if card.energy <= self.energy:
-                        success = self.play_card(card, targeted_enemy, enemies, debug)
-                        break
+                playable_cards.remove(card_choice)
+                continue
 
-            if not success:
-                break
-            else:
-                for enemy in enemies:
-                    if not enemy.is_alive():
-                        enemies.remove(enemy)
-                if len(enemies) == 0:
-                    return
+            for enemy in enemies:
+                if not enemy.is_alive():
+                    enemies.remove(enemy)
+            if len(enemies) == 0:
+                return
             playable_cards = [card for card in self.deck.hand if card.energy <= self.energy]
 
         self.end_turn(enemies, debug)
@@ -170,8 +167,9 @@ class Player(Entity):
         # TODO: Make better Scry AI
         index = 0
         cards = self.deck.draw_pile[0:amount]
-        for card in cards:
-            if random.randint(0, 1) == 0:
+        to_scry = self.bot.scry(cards, enemies, None)
+        for i, card in enumerate(cards):
+            if to_scry[i]:
                 self.discard(self.deck.draw_pile.pop(index), enemies, debug)
             else:
                 index += 1

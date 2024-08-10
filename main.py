@@ -9,17 +9,17 @@ from CombatSim.Actions.Intent import Intent
 import time
 
 
-def get_cards(player: Player):
-    my_cards = []
-    card_name_list = os.listdir(os.path.join(os.curdir, "./CombatSim/Actions/Library"))
-    for card_name in card_name_list:
-        if card_name != "Expunger.py" and card_name.endswith(".py"):
-            card_name = card_name[:-3]
-            module = importlib.import_module("CombatSim.Actions.Library." + card_name)
-            class_ = getattr(module, card_name)
-            my_cards.append(class_(player))
-
-    return my_cards
+# def get_cards(player: Player):
+#     my_cards = []
+#     card_name_list = os.listdir(os.path.join(os.curdir, "./CombatSim/Actions/Library"))
+#     for card_name in card_name_list:
+#         if card_name != "Expunger.py" and card_name.endswith(".py"):
+#             card_name = card_name[:-3]
+#             module = importlib.import_module("CombatSim.Actions.Library." + card_name)
+#             class_ = getattr(module, card_name)
+#             my_cards.append(class_(player))
+#
+#     return my_cards
 
 def main():
     # my_cards = [Card(name="Strike" + str(i), card_type=Card.Type.ATTACK, energy=1, damage=6, attacks=1, block=0, draw=0, discard=0, retain=False, exhaust=False,
@@ -40,9 +40,10 @@ def main():
     num_combat = 1000
     start = time.time()
     for i in range(num_combat):
+        cards = list(Player.get_implemented_cards("CombatSim/Actions/Library").keys())
+        cards.remove("Expunger")
         grants_ass = Player(health=69, energy=3, gold=690, potions=[], relics=[],
-                            cards=[])
-        grants_ass.deck = Player.Deck(get_cards(grants_ass))
+                            cards=cards)
         # jaw_worm = Enemy(health=51, status_list=[], intent_set=[Intent(12, 1, 0, 25),
         #                                                                  Intent(7, 1, 5, 30),
         #                                                                  Intent(5, 1, 9, 45)])
