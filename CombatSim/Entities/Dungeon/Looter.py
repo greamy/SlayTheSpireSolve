@@ -34,6 +34,10 @@ class Looter(Enemy):
         else:
             super().choose_intent()
 
+    def is_valid_intent(self, intent: Intent) -> bool:
+        if self.last_intent == self.intent_set[self.LUNGE] and self.num_turns == 2:
+            pass
+
 
 
 
@@ -46,6 +50,7 @@ class Looter(Enemy):
             super().__init__("Mug", self.damage, 1, 0, 0)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
+            super().play(enemy, enemy_list, player, player_list, debug)
             player.gold += enemy.thievery
             enemy.gold_stolen += enemy.thievery
 
@@ -58,6 +63,11 @@ class Looter(Enemy):
             else:
                 self.damage = 14
             super().__init__("Lunge", self.damage, 1, 0, 50)
+
+        def play(self, enemy, enemy_list, player, player_list, debug):
+            super().play(enemy, enemy_list, player, player_list, debug)
+            player.gold += enemy.thievery
+            enemy.gold_stolen += enemy.thievery
 
     class SmokeBomb(Intent):
         def __init__(self, ascension: int):
