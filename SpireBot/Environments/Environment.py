@@ -10,3 +10,6 @@ class Environment:
 
     def get_state(self) -> (Player, list[Enemy], Map):
         pass
+
+    def get_possible_actions(self) -> list:
+        pass
