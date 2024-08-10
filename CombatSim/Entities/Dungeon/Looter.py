@@ -45,6 +45,10 @@ class Looter(Enemy):
                 self.damage = 11
             super().__init__("Mug", self.damage, 1, 0, 0)
 
+        def play(self, enemy, enemy_list, player, player_list, debug):
+            player.gold += enemy.thievery
+            enemy.gold_stolen += enemy.thievery
+
 
 
     class Lunge(Intent):
@@ -58,4 +62,8 @@ class Looter(Enemy):
     class SmokeBomb(Intent):
         def __init__(self, ascension: int):
             super().__init__("SmokeBomb", 0, 0, 6, 50)
+
+    class Escape(Intent):
+        def __init__(self, ascension: int):
+            super().__init__("Escape", 0, 0, 0, 0)
 

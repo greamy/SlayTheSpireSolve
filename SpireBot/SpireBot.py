@@ -8,7 +8,7 @@ from SpireBot.Logging.Logger import Logger
 class SpireBot:
     def __init__(self):
         self.state = None
-        self.logger = Logger("C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\spire_com", ".log")
+        # self.logger = Logger("C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\spire_com", ".log")
 
     # def run(self):
     #     try:
@@ -54,3 +54,6 @@ class SpireBot:
 
     def scry(self, cards, enemies, player_state):
         return [random.choice([True, False]) for _ in cards]
+
+    def choose_option(self, options, player_state):
+        return random.choice(options)

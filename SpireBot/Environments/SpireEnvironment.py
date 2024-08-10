@@ -6,18 +6,50 @@ from CombatSim.Entities.Player import Player
 
 from SpireBot.Environments.Environment import Environment
 from SpireBot.Environments.States.Map import Map
+from SpireBot.Logging.Logger import Logger
+from SpireBot.SpireBot import SpireBot
 
 
 class SpireEnvironment(Environment):
 
-    def __init__(self):
+    def __init__(self, logger: Logger):
         super().__init__()
         self.decoder = json.JSONDecoder()
-        self.state: dict = self.get_state()
+        self.state: dict = None
+        self.bot = SpireBot()
+        self.logger = logger
+
+    def run(self):
+        print("READY")
+        self.state = self.get_state()
+        print("START Watcher 0")
+        # Click through menus
+        while True:
+            time.sleep(1)
+            self.get_state()
+            self.process_state(self.state)
+
+
+    def process_state(self, state):
+        try:
+            game_ready = state['ready_for_command']
+            if not game_ready:
+                self.logger.write("Game not ready for commands.")
+                return
+            commands = state['available_commands']
+            if "choose" in commands:
+                self.bot.choose_option(self.get_possible_actions(), None)
+            elif "play" in commands:
+                # combat = InGameCombat(self, )
+                pass
+        except KeyError:
+            self.logger.write("State has no available commands.")
 
     def get_state(self) -> (Player, list[Enemy], Map):
         raw_state = input()
+        self.logger.write("raw: " + str(raw_state))
         self.state = self.decoder.decode(raw_state)
+        self.logger.write(self.state)
 
     def request_state(self):
         print("STATE")
@@ -28,10 +60,18 @@ class SpireEnvironment(Environment):
         commands = self.state['available_commands']
         game_state = self.state['game_state']
 
-        actions = commands
-        # if game_state['screen_type'] == "EVENT" and "choose" in commands:
-        #     for choice in game_state['choice_list']:
-        #         actions.append("choose " + choice)
+        actions = []
+        if game_state['screen_type'] == "EVENT" and "choose" in commands:
+            for choice in game_state['choice_list']:
+                actions.append("choose " + choice)
         if "play" in commands:
-            pass
+            actions = commands
         return actions
+
+    def get_menu_options(self, state):
+        try:
+            choices = state['game_state']['choice_list']
+            self.logger.write(str(choices))
+        except KeyError:
+            self.logger.write("ERROR: No Choices Available. Might be in combat.")
+            return
