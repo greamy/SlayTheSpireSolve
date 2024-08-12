@@ -9,7 +9,7 @@ from SpireBot.SpireBot import SpireBot
 
 
 class Player(Entity):
-    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str]):
+    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], library_path="CombatSim/Actions/Library"):
         super().__init__(health)
         self.energy = energy
         self.gold = gold
@@ -21,7 +21,7 @@ class Player(Entity):
         self.stance = self.Stance.NONE
         self.turn_over = False
         self.innate_cards = []
-        self.implemented_cards = self.get_implemented_cards("CombatSim/Actions/Library")
+        self.implemented_cards = self.get_implemented_cards(library_path)
         self.deck = self.Deck(self.create_deck(cards))
 
         self.bot = SpireBot()

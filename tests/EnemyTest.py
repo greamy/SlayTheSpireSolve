@@ -36,7 +36,7 @@ class EnemyTest(unittest.TestCase):
         self.player.deck = Player.Deck(cards)
 
     def createPlayer(self):
-        return Player(self.health, self.energy, self.gold, self.potions, self.relics, [])
+        return Player(self.health, self.energy, self.gold, self.potions, self.relics, [], "../CombatSim/Actions/Library")
 
     def createEnemy(self, name: str, ascension: int, act: int):
         module = importlib.import_module("CombatSim.Entities.Dungeon." + name)

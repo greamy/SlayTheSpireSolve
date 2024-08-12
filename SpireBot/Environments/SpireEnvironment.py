@@ -6,6 +6,7 @@ from CombatSim.Entities.Player import Player
 
 from SpireBot.Environments.Environment import Environment
 from SpireBot.Environments.States.Map import Map
+from SpireBot.InGameCombat import InGameCombat
 from SpireBot.Logging.Logger import Logger
 from SpireBot.SpireBot import SpireBot
 
@@ -21,7 +22,7 @@ class SpireEnvironment(Environment):
 
     def run(self):
         print("READY")
-        self.state = self.get_state()
+        self.get_state()
         print("START Watcher 0")
         # Click through menus
         while True:
@@ -29,8 +30,7 @@ class SpireEnvironment(Environment):
             self.get_state()
             self.process_state(self.state)
 
-
-    def process_state(self, state):
+    def process_state(self, state: dict):
         try:
             game_ready = state['ready_for_command']
             if not game_ready:
@@ -38,18 +38,22 @@ class SpireEnvironment(Environment):
                 return
             commands = state['available_commands']
             if "choose" in commands:
-                self.bot.choose_option(self.get_possible_actions(), None)
+                possible_choices = self.get_possible_actions()
+                choice = self.bot.choose_option(self.get_possible_actions(), None)
+                self.logger.write("Chose " + str(choice) + " from " + str(possible_choices))
+                print(choice)
             elif "play" in commands:
-                # combat = InGameCombat(self, )
-                pass
+                combat = InGameCombat(self.state, self, None, self.logger, self.bot, False)
+                combat.start()
         except KeyError:
             self.logger.write("State has no available commands.")
 
-    def get_state(self) -> (Player, list[Enemy], Map):
+    def get_state(self):
         raw_state = input()
         self.logger.write("raw: " + str(raw_state))
         self.state = self.decoder.decode(raw_state)
         self.logger.write(self.state)
+        return self.state
 
     def request_state(self):
         print("STATE")
@@ -61,11 +65,13 @@ class SpireEnvironment(Environment):
         game_state = self.state['game_state']
 
         actions = []
-        if game_state['screen_type'] == "EVENT" and "choose" in commands:
+        if (game_state['screen_type'] == "EVENT" or game_state['screen_type'] == "MAP") and "choose" in commands:
             for choice in game_state['choice_list']:
                 actions.append("choose " + choice)
         if "play" in commands:
-            actions = commands
+            cards_in_hand = game_state['combat_state']['hand']
+            self.logger.write("Available cards: " + str(cards_in_hand))
+            actions = cards_in_hand
         return actions
 
     def get_menu_options(self, state):

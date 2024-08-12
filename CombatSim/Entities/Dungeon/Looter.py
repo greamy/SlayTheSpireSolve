@@ -1,4 +1,5 @@
 from CombatSim.Actions.Intent import Intent
+from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
 import random
 
@@ -16,7 +17,9 @@ class Looter(Enemy):
         intent_set = [self.Mug(ascension),
                       self.Lunge(ascension),
                       self.SmokeBomb(ascension),
-                      self.Escape]
+                      self.Escape(ascension)]
+
+        self.next_intent = None
 
         if ascension < 7:
             super().__init__(random.randint(44, 48), intent_set, ascension, minion=False)
@@ -28,18 +31,28 @@ class Looter(Enemy):
         else:
             self.thievery = 20
 
+        self.listener = Listener(Listener.Event.TAKEN_DAMAGE, self.return_gold)
+
+    def return_gold(self, enemy, player, player_list, debug):
+        if enemy.health <= 0:
+            player.gold += enemy.gold_stolen
+
     def choose_intent(self):
-        if self.num_turns == 1 and self.num_turns == 0:
+        if self.num_turns == 1 or self.num_turns == 0:
             self.intent = self.intent_set[self.MUG]
+        if self.next_intent is not None:
+            self.intent = self.next_intent
+            self.next_intent = None
         else:
             super().choose_intent()
 
+        if self.num_turns == 2 and self.intent == self.intent_set[self.LUNGE]:
+            self.next_intent = self.intent_set[self.SMOKEBOMB]
+        elif self.intent == self.intent_set[self.SMOKEBOMB]:
+            self.next_intent = self.intent_set[self.ESCAPE]
+
     def is_valid_intent(self, intent: Intent) -> bool:
-        if self.last_intent == self.intent_set[self.LUNGE] and self.num_turns == 2:
-            pass
-
-
-
+        return True
 
     class Mug(Intent):
         def __init__(self, ascension: int):
@@ -53,8 +66,6 @@ class Looter(Enemy):
             super().play(enemy, enemy_list, player, player_list, debug)
             player.gold += enemy.thievery
             enemy.gold_stolen += enemy.thievery
-
-
 
     class Lunge(Intent):
         def __init__(self, ascension: int):
@@ -76,4 +87,8 @@ class Looter(Enemy):
     class Escape(Intent):
         def __init__(self, ascension: int):
             super().__init__("Escape", 0, 0, 0, 0)
+
+        def play(self, enemy, enemy_list, player, player_list, debug):
+            super().__init__(enemy, enemy_list, player, player_list, debug)
+            enemy_list.remove(enemy)
 
