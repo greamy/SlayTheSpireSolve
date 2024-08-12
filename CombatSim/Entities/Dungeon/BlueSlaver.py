@@ -26,14 +26,14 @@ class BlueSlaver(Enemy):
             self.rake_consec = 2
 
     def choose_intent(self):
-        super().choose_intent()
-
-    def is_valid_intent(self, intent: Intent) -> bool:
         if self.intent == self.intent_set[self.STAB] and self.num_consecutive == 3:
             self.intent = self.intent_set[self.RAKE]
         if self.intent == self.intent_set[self.RAKE] and self.num_consecutive == self.rake_consec:
             self.intent = self.intent_set[self.STAB]
+        super().choose_intent()
 
+    def is_valid_intent(self, intent: Intent) -> bool:
+        return True
 
     class Stab(Intent):
         def __init__(self, ascension: int):
@@ -41,18 +41,20 @@ class BlueSlaver(Enemy):
                 self.damage = 12
             else:
                 self.damage = 13
-            super().__init__("Stab", self.damage, 1, 0, 60)\
-
+            super().__init__("Stab", self.damage, 1, 0, 60)
 
     class Rake(Intent):
-        def __init(self, ascension: int):
+        def __init__(self, ascension: int):
             if ascension < 2:
                 self.damage = 7
-                self.weak = 1
             else:
                 self.damage = 8
             if ascension < 17:
+                self.weak = 1
+            else:
                 self.weak = 2
+
+            super().__init__("Rake", self.damage, 1, 0, 40)
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
             super().play(enemy, enemy_list, player, player_list, debug)
