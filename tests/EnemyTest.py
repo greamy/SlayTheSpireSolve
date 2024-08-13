@@ -55,7 +55,7 @@ class EnemyTest(unittest.TestCase):
                 class_ = getattr(module, enemy_file)
                 for ascension in range(0, 21):
                     for act in range(1, 4):
-                        # print("Creating " + enemy_file + " on Ascension " + str(ascension) + " during act " + str(act))
+                        print("Creating " + enemy_file + " on Ascension " + str(ascension) + " during act " + str(act))
                         enemy = class_(ascension, act)
                         self.player = self.createPlayer()
                         self.addCards(self.cards)
