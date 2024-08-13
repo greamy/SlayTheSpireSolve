@@ -2,6 +2,8 @@ from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
 import random
+
+from CombatSim.Entities.Vulnerable import Vulnerable
 from CombatSim.Entities.Weak import Weak
 from CombatSim.Entities.Player import Player
 
@@ -25,16 +27,16 @@ class RedSlaver(Enemy):
         else:
             super().__init__(random.randint(48, 52), intent_set, ascension, minion=False)
         if ascension < 17:
-            self.intent_pattern = [self.intent_set[self.intent.SCRAPE], self.intent_set[self.intent.SCRAPE],
-                                   self.intent_set[self.intent.STAB]]
+            self.intent_pattern = [self.intent_set[self.SCRAPE], self.intent_set[self.SCRAPE],
+                                   self.intent_set[self.STAB]]
             self.scrape_num_consec = 3
         else:
-            self.intent_pattern = [self.intent_set[self.intent.SCRAPE], self.intent_set[self.intent.STAB]]
+            self.intent_pattern = [self.intent_set[self.SCRAPE], self.intent_set[self.STAB]]
             self.scrape_num_consec = 2
 
     def choose_intent(self):
         if self.num_turns == 0:
-            self.intent = self.intent_set[self.intent.STAB]
+            self.intent = self.intent_set[self.STAB]
         elif not self.entangled_used:
             num = random.randint(1, 4)
             if num == 1:
@@ -49,9 +51,9 @@ class RedSlaver(Enemy):
 
     def is_valid_intent(self, intent: Intent) -> bool:
         if self.entangled_used:
-            if self.intent == self.intent_set[self.intent.SCRAPE] and self.num_consecutive == self.scrape_num_consec:
+            if self.intent == self.intent_set[self.SCRAPE] and self.num_consecutive == self.scrape_num_consec:
                 return False
-            elif self.intent == self.intent_set[self.intent.STAB] and self.num_consecutive == 3:
+            elif self.intent == self.intent_set[self.STAB] and self.num_consecutive == 3:
                 return False
             else:
                 return True
@@ -79,7 +81,7 @@ class RedSlaver(Enemy):
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
-            vuln = Weak(self.vuln, player)
+            vuln = Vulnerable(self.vuln, player)
             listener = Listener(Listener.Event.START_TURN, vuln.decrement)
             player.add_listener(listener)
 

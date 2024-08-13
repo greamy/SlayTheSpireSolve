@@ -1,5 +1,10 @@
 import json
 import time
+from enum import Enum
+
+from spirecomm.communication.action import StartGameAction, ProceedAction, EndTurnAction, CancelAction
+from spirecomm.spire.character import PlayerClass
+from spirecomm.spire.game import Game
 
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
@@ -11,6 +16,13 @@ from SpireBot.Logging.Logger import Logger
 from SpireBot.SpireBot import SpireBot
 
 
+class AllPlayerClasses(Enum):
+    IRONCLAD = PlayerClass.IRONCLAD
+    THE_SILENT = PlayerClass.THE_SILENT
+    DEFECT = PlayerClass.DEFECT
+    WATCHER = 4
+
+
 class SpireEnvironment(Environment):
 
     def __init__(self, logger: Logger):
@@ -20,23 +32,29 @@ class SpireEnvironment(Environment):
         self.bot = SpireBot()
         self.logger = logger
 
-    def run(self):
-        print("READY")
-        self.get_state()
-        print("START Watcher 0")
-        # Click through menus
-        while True:
-            time.sleep(1)
-            self.get_state()
-            self.process_state(self.state)
+    # def run(self):
+    #     print("READY")
+    #     self.get_state()
+    #     print("START Watcher 0")
+    #     # Click through menus
+    #     while True:
+    #         time.sleep(1)
+    #         self.get_state()
+    #         self.process_state(self.state)
 
-    def process_state(self, state: dict):
+    def start_game(self):
+        return StartGameAction(AllPlayerClasses.WATCHER)
+
+    def process_state(self, game_state: Game):
+        self.state = game_state
+        time.sleep(1)
         try:
-            game_ready = state['ready_for_command']
+
+            game_ready = game_state['ready_for_command']
             if not game_ready:
                 self.logger.write("Game not ready for commands.")
                 return
-            commands = state['available_commands']
+            commands = game_state['available_commands']
             if "choose" in commands:
                 possible_choices = self.get_possible_actions()
                 choice = self.bot.choose_option(self.get_possible_actions(), None)

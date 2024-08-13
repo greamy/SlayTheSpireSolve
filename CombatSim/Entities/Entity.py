@@ -1,6 +1,6 @@
 import random
 from CombatSim.Actions.Listener import Listener
-
+import math
 
 class Entity:
 
@@ -11,6 +11,7 @@ class Entity:
         self.damage_dealt_modifier = 0
         self.damage_taken_multiplier = 1.0
         self.block_modifier = 0
+        self.block_multiplier = 1.0
         self.listeners = []
 
     def do_turn(self, opponents, debug):
@@ -25,18 +26,18 @@ class Entity:
 
     def take_damage(self, amount):
         if self.block > 0:
-            self.block -= round(amount*self.damage_taken_multiplier)
+            self.block -= math.floor(amount*self.damage_taken_multiplier)
             if self.block < 0:
                 self.health -= abs(self.block)
                 self.block = 0
         else:
-            self.health -= round(amount*self.damage_taken_multiplier)
+            self.health -= math.floor(amount*self.damage_taken_multiplier)
 
         if self.health <= 0:
             self.health = 0
 
     def gain_block(self, amount, enemies, debug):
-        self.block += amount
+        self.block += math.floor((amount + self.block_modifier) * self.block_multiplier)
         self.notify_listeners(Listener.Event.BLOCK_GAINED, enemies, debug)
 
     def is_alive(self):
