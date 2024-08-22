@@ -27,8 +27,8 @@ class SpireBot:
         if self.state.cancel_available:
             return CancelAction()
 
-    def combat_choose_next_action(self, playable_cards, enemies):
-        # playable_cards = [card for card in self.state.hand if card.is_playable]
+    def combat_choose_next_action(self):
+        playable_cards = [card for card in self.state.hand if card.is_playable]
         if len(playable_cards) == 0:
             return EndTurnAction()
         card_to_play = random.choice(playable_cards)

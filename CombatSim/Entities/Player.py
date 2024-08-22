@@ -68,7 +68,9 @@ class Player(Entity):
         # TODO: Make player play potions
         playable_cards = [card for card in self.deck.hand if card.energy <= self.energy]
         while len(playable_cards) > 0 and not self.turn_over:
-            card_choice, targeted_enemy = self.bot.combat_choose_next_action(playable_cards, enemies)
+            # card_choice, targeted_enemy = self.bot.combat_choose_next_action(playable_cards, enemies)
+            card_choice = random.choice(playable_cards)
+            targeted_enemy = random.choice(enemies)
             success = self.play_card(card_choice, targeted_enemy, enemies, debug)
             if not success:
                 playable_cards.remove(card_choice)
