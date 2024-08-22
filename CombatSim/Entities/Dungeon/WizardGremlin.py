@@ -13,17 +13,39 @@ class WizardGremlin(Enemy):
 
         intent_set = [self.Charging(ascension), self.UltimateBlast(ascension)]
         self.shieldBashFlag = False
-
+        self.loop = True
         if ascension < 7:
             super().__init__(random.randint(23, 25), intent_set, ascension, minion=False)
         else:
             super().__init__(random.randint(22, 26), intent_set, ascension, minion=False)
+        if ascension < 17:
+            self.pattern_index = 1
+            self.pattern = [self.intent_set[0], self.intent_set[0], self.intent_set[0], self.intent_set[1]]
+            self.loop = False
 
     def choose_intent(self):
-        pass
-
+        if self.num_turns < 2:
+            self.intent = self.intent_set[self.CHARGING]
+        elif self.num_turns == 2:
+            self.intent = self.intent_set[self.ULTIMATE_BLAST]
+        elif self.loop and self.num_turns > 2:
+            self.intent = self.intent_set[self.ULTIMATE_BLAST]
+        else:
+            if self.pattern_index > len(self.intent_set):
+                self.pattern_index = 1
+            self.intent = self.intent_set[self.pattern_index]
+            self.pattern_index += 1
     def is_valid_intent(self, intent: Intent) -> bool:
-        pass
+        return True
 
     class Charging(Intent):
-        pass
+        def __init__(self, ascension: int):
+            super().__init__("Charging", 0, 0, 0, 100)
+
+    class UltimateBlast(Intent):
+        def __init__(self, ascension: int):
+            if ascension < 2:
+                self.damage = 25
+            else:
+                self.damage = 30
+            super().__init__("UltimateBlast", self.damage, 1, 0, 0)
