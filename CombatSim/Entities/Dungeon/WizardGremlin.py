@@ -6,6 +6,7 @@ from CombatSim.Entities.Player import Player
 
 
 class WizardGremlin(Enemy):
+    # Must be ordered based on probability. Lowest to highest.
     CHARGING = 0
     ULTIMATE_BLAST = 1
 
@@ -37,8 +38,8 @@ class WizardGremlin(Enemy):
             self.intent = self.intent_set[self.ULTIMATE_BLAST]
             print("Blast 2")
         elif self.loop and self.num_turns > 2:
-            if self.pattern_index > len(self.intent_set):
-                self.pattern_index = 1
+            if self.pattern_index >= len(self.pattern):
+                self.pattern_index = 0
             self.intent = self.pattern[self.pattern_index]
             self.pattern_index += 1
 
@@ -47,7 +48,7 @@ class WizardGremlin(Enemy):
 
     class Charging(Intent):
         def __init__(self, ascension: int):
-            super().__init__("Charging", 0, 0, 0, 100)
+            super().__init__("Charging", 0, 0, 0, 0)
 
     class UltimateBlast(Intent):
         def __init__(self, ascension: int):
@@ -55,4 +56,4 @@ class WizardGremlin(Enemy):
                 self.damage = 25
             else:
                 self.damage = 30
-            super().__init__("UltimateBlast", self.damage, 1, 0, 0)
+            super().__init__("UltimateBlast", self.damage, 1, 0, 100)
