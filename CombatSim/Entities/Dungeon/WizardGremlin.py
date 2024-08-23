@@ -13,28 +13,35 @@ class WizardGremlin(Enemy):
 
         intent_set = [self.Charging(ascension), self.UltimateBlast(ascension)]
         self.shieldBashFlag = False
-        self.loop = True
+        self.loop = False
+
         if ascension < 7:
             super().__init__(random.randint(23, 25), intent_set, ascension, minion=False)
         else:
             super().__init__(random.randint(22, 26), intent_set, ascension, minion=False)
+
         if ascension < 17:
             self.pattern_index = 1
-            self.pattern = [self.intent_set[0], self.intent_set[0], self.intent_set[0], self.intent_set[1]]
-            self.loop = False
+            self.pattern = [self.intent_set[self.CHARGING], self.intent_set[self.CHARGING],
+                            self.intent_set[self.CHARGING], self.intent_set[self.ULTIMATE_BLAST]]
+            self.loop = True
 
     def choose_intent(self):
         if self.num_turns < 2:
             self.intent = self.intent_set[self.CHARGING]
+            print("Charging")
         elif self.num_turns == 2:
             self.intent = self.intent_set[self.ULTIMATE_BLAST]
-        elif self.loop and self.num_turns > 2:
+            print("Blast 1")
+        elif not self.loop and self.num_turns > 2:
             self.intent = self.intent_set[self.ULTIMATE_BLAST]
-        else:
+            print("Blast 2")
+        elif self.loop and self.num_turns > 2:
             if self.pattern_index > len(self.intent_set):
                 self.pattern_index = 1
-            self.intent = self.intent_set[self.pattern_index]
+            self.intent = self.pattern[self.pattern_index]
             self.pattern_index += 1
+
     def is_valid_intent(self, intent: Intent) -> bool:
         return True
 

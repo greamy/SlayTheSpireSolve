@@ -79,6 +79,7 @@ class EnemyTest(unittest.TestCase):
                         num_turn, player_health, is_alive = combat.start()
                         self.assertTrue(num_turn > 0)
                         self.assertTrue(is_alive ^ enemy.is_alive())
+                        #print("Player health: " + str(self.player.health))
 
 
 
