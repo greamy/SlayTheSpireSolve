@@ -28,6 +28,9 @@ class SpikedSlimeLarge(Enemy):
         else:
             self.lick_consec = 3
 
+        self.split = False
+        self.start_health = self.health
+
     def choose_intent(self):
         if self.intent == self.intent_set[self.FLAMETACKLE] and self.num_consecutive == 3:
             self.intent = self.intent_set[self.LICK]
@@ -38,6 +41,12 @@ class SpikedSlimeLarge(Enemy):
 
     def is_valid_intent(self, intent: Intent) -> bool:
         return True
+
+    def take_damage(self, amount):
+        super().take_damage(amount)
+        if self.health <= self.start_health and not self.split:
+            self.intent = self.intent_set[self.SPLIT]
+            self.split = True
 
     class FlameTackle(Intent):
         def __init__(self, ascension: int):
