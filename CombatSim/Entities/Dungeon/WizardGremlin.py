@@ -22,7 +22,7 @@ class WizardGremlin(Enemy):
             super().__init__(random.randint(22, 26), intent_set, ascension, minion=False)
 
         if ascension < 17:
-            self.pattern_index = 1
+            self.pattern_index = 0
             self.pattern = [self.intent_set[self.CHARGING], self.intent_set[self.CHARGING],
                             self.intent_set[self.CHARGING], self.intent_set[self.ULTIMATE_BLAST]]
             self.loop = True

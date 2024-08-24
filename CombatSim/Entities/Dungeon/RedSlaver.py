@@ -9,9 +9,9 @@ from CombatSim.Entities.Player import Player
 
 
 class RedSlaver(Enemy):
-    STAB = 0
-    SCRAPE = 1
-    ENTANGLE = 2
+    ENTANGLE = 0
+    STAB = 1
+    SCRAPE = 2
 
     def __init__(self, ascension: int, act: int):
 
@@ -42,10 +42,10 @@ class RedSlaver(Enemy):
             if num == 1:
                 self.intent = self.intent_set[self.ENTANGLE]
             else:
-                if self.intent_pattern_index > len(self.intent_pattern):
+                if self.intent_pattern_index >= len(self.intent_pattern):
                     self.intent_pattern_index = 1
-                    self.intent = self.intent_pattern[self.intent_pattern_index]
-                    self.intent_pattern_index += 1
+                self.intent = self.intent_pattern[self.intent_pattern_index]
+                self.intent_pattern_index += 1
         elif self.entangled_used:
             super().choose_intent()
 
