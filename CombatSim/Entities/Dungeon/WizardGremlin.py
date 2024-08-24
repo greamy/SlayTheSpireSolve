@@ -30,13 +30,10 @@ class WizardGremlin(Enemy):
     def choose_intent(self):
         if self.num_turns < 2:
             self.intent = self.intent_set[self.CHARGING]
-            print("Charging")
         elif self.num_turns == 2:
             self.intent = self.intent_set[self.ULTIMATE_BLAST]
-            print("Blast 1")
         elif not self.loop and self.num_turns > 2:
             self.intent = self.intent_set[self.ULTIMATE_BLAST]
-            print("Blast 2")
         elif self.loop and self.num_turns > 2:
             if self.pattern_index >= len(self.pattern):
                 self.pattern_index = 0

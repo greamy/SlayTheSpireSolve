@@ -23,7 +23,6 @@ class AcidSlimeLarge(Enemy):
             self.CorrosiveSpit(ascension)
         ]
         self.ascension = ascension
-
         if ascension < 7:
             super().__init__(random.randint(65, 69), intent_set, ascension, minion=False)
         else:
@@ -38,12 +37,12 @@ class AcidSlimeLarge(Enemy):
 
     def is_valid_intent(self, intent: Intent) -> bool:
         if self.ascension < 17:
-            if (intent == self.intent_set[self.TACKLE] and self.num_consecutive == 2):
+            if intent == self.intent_set[self.TACKLE] and self.num_consecutive == 2:
                 return False
             if (intent == self.intent_set[self.CORROSIVE_SPIT] or intent == self.intent_set[self.LICK]) and self.num_consecutive == 3:
                 return False
         else:
-            if (intent == self.intent_set[self.LICK] and self.num_consecutive == 2):
+            if intent == self.intent_set[self.LICK] and self.num_consecutive == 2:
                 return False
             if (intent == self.intent_set[self.CORROSIVE_SPIT] or intent == self.intent_set[self.TACKLE]) and self.num_consecutive == 3:
                 return False

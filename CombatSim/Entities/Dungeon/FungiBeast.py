@@ -22,8 +22,10 @@ class FungiBeast(Enemy):
     def choose_intent(self):
         if self.intent == self.intent_set[self.BITE] and self.num_consecutive == 3:
             self.intent = self.intent_set[self.GROW]
-        if self.intent == self.intent_set[self.GROW] and self.num_consecutive == 2:
+        elif self.intent == self.intent_set[self.GROW] and self.num_consecutive == 2:
             self.intent = self.intent_set[self.BITE]
+        else:
+            super().choose_intent()
 
     def is_valid_intent(self, intent: Intent) -> bool:
         return True
@@ -46,5 +48,3 @@ class FungiBeast(Enemy):
         def __init__(self, ascension: int):
             super().__init__("Bite", 6, 1, 0, 60)
 
-        def play(self, enemy, enemy_list, player, player_list, debug):
-            super().play(enemy, enemy_list, player, player_list, debug)
