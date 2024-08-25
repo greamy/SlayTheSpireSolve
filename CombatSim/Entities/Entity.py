@@ -48,7 +48,8 @@ class Entity:
 
     def notify_listeners(self, event_type, enemies, debug):
         if debug:
-            print("Triggering listeners!")
+            pass
+            # print("Triggering listeners!")
         for listener in self.listeners:
             if event_type in listener.event_types:
                 listener.notify(self, random.choice(enemies), enemies, debug)

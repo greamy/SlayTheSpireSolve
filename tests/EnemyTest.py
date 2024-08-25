@@ -33,6 +33,7 @@ class EnemyTest(unittest.TestCase):
             module = importlib.import_module("CombatSim.Actions.Library." + name)
             class_ = getattr(module, name)
             card = class_(self.player)
+            cards.append(card)
         self.player.deck = Player.Deck(cards)
 
     def createPlayer(self):
@@ -75,7 +76,7 @@ class EnemyTest(unittest.TestCase):
                         self.assertEqual(enemy.num_turns, 1)
                         enemy.listeners.remove(end_listener)
 
-                        combat = Combat(self.player, [enemy], True)
+                        combat = Combat(self.player, [enemy], False)
                         num_turn, player_health, is_alive = combat.start()
                         self.assertTrue(num_turn > 0)
                         self.assertTrue(is_alive ^ enemy.is_alive())
