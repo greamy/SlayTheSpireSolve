@@ -75,7 +75,7 @@ class EnemyTest(unittest.TestCase):
                         self.assertEqual(enemy.num_turns, 1)
                         enemy.listeners.remove(end_listener)
 
-                        combat = Combat(self.player, [enemy], self.debug)
+                        combat = Combat(self.player, [enemy], True)
                         num_turn, player_health, is_alive = combat.start()
                         self.assertTrue(num_turn > 0)
                         self.assertTrue(is_alive ^ enemy.is_alive())
