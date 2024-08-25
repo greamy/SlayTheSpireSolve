@@ -51,7 +51,6 @@ class Entity:
             print("Triggering listeners!")
         for listener in self.listeners:
             if event_type in listener.event_types:
-                # TODO: Don't always randomly choose enemy for power target
                 listener.notify(self, random.choice(enemies), enemies, debug)
 
 
