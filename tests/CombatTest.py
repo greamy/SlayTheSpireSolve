@@ -13,7 +13,7 @@ class CombatTest(unittest.TestCase):
 
     def setUp(self):
         self.energy = 3
-        self.health = 60
+        self.health = 72
         self.gold = 690
         self.potions = []
         self.relics = []
@@ -22,11 +22,13 @@ class CombatTest(unittest.TestCase):
         self.cards = ["Strike" for _ in range(4)]
         self.cards.extend(["Defend" for _ in range(4)])
         self.cards.extend(["Vigilance", "Eruption"])
+        self.cards.extend(["Devotion" for _ in range(5)])
+        self.cards.extend(["SandsofTime" for _ in range(2)])
 
         self.player = self.createPlayer()
         self.addCards(self.cards)
 
-        self.enemy = self.createEnemy("Lagavulin", 20, 1)
+        self.enemy = self.createEnemy("SlimeBoss", 20, 1)
 
     def createPlayer(self):
         return Player(self.health, self.energy, self.gold, self.potions, self.relics, [],
