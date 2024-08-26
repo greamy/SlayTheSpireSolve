@@ -13,6 +13,7 @@ from CombatSim.Actions.Library.Collect import Collect
 from CombatSim.Actions.Library.ConjureBlade import ConjureBlade
 from CombatSim.Actions.Library.Crescendo import Crescendo
 from CombatSim.Actions.Library.CrushJoints import CrushJoints
+from CombatSim.Actions.Library.Dazed import Dazed
 from CombatSim.Actions.Library.DeceiveReality import DeceiveReality
 from CombatSim.Actions.Library.Defend import Defend
 from CombatSim.Actions.Library.DevaForm import DevaForm
@@ -1142,5 +1143,15 @@ class CardTest(unittest.TestCase):
 
         self.assertIn(card, self.player.deck.exhaust_pile)
         self.assertEqual(self.player.energy, self.energy - card.energy)
+
+    def test_Dazed(self):
+        # Unplayable. Ethereal
+        card = Dazed(self.player)
+        self.player.deck.hand.append(card)
+
+        self.player.notify_listeners(Listener.Event.END_TURN)
+
+        self.assertIn(card, self.player.deck.exhaust_pile)
+
 if __name__ == '__main__':
     unittest.main()
