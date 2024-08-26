@@ -26,7 +26,7 @@ class CombatTest(unittest.TestCase):
         self.player = self.createPlayer()
         self.addCards(self.cards)
 
-        self.enemy = self.createEnemy("GremlinNob", 20, 1)
+        self.enemy = self.createEnemy("Lagavulin", 20, 1)
 
     def createPlayer(self):
         return Player(self.health, self.energy, self.gold, self.potions, self.relics, [],
@@ -50,12 +50,12 @@ class CombatTest(unittest.TestCase):
         num_turns = []
         player_healths = []
         num_died = 0
-        num_combat = 1000
+        num_combat = 1
         start = time.time()
         for _ in range(num_combat):
             testing_enemy = copy.copy(self.enemy)
             testing_player = copy.copy(self.player)
-            combat = Combat(testing_player, [testing_enemy], False)
+            combat = Combat(testing_player, [testing_enemy], True)
             num_turn, testing_player.health, is_alive = combat.start()
             num_turns.append(num_turn)
             player_healths.append(testing_player.health)

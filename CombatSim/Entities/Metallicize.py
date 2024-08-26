@@ -8,8 +8,10 @@ class Metallicize(Status):
     def __init__(self, duration, entity: Entity):
         super().__init__(duration, entity)
 
+        self.entity = entity
         self.block_listener = Listener(Listener.Event.END_TURN, self.do_block)
-        entity.add_listener(self.block_listener)
+        self.entity.add_listener(self.block_listener)
+        self.removed = False
 
     def do_block(self, player, enemy, enemies, debug):
         player.gain_block(self.duration, enemies, debug)
@@ -18,4 +20,6 @@ class Metallicize(Status):
         pass
 
     def remove(self):
-        pass
+        if not self.removed:
+            self.entity.listeners.remove(self.block_listener)
+            self.removed = True

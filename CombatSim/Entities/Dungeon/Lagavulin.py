@@ -17,7 +17,7 @@ class Lagavulin(Enemy):
                       self.Attack(ascension),
                       self.SiphonSoul(ascension),
                       ]
-        self.metallicize = 8
+
         self.sleep = True
 
         if ascension < 8:
@@ -26,15 +26,18 @@ class Lagavulin(Enemy):
             super().__init__(random.randint(112, 115), intent_set, ascension, minion=False)
 
         self.start_health = self.health
-        self.add_metallicize = False
         self.pattern_index = 0
         self.pattern = [self.intent_set[self.ATTACK], self.intent_set[self.ATTACK],
                         self.intent_set[self.SIPHONSOUL]]
 
+        self.metallicize_amount = 8
+        self.metallicize = Metallicize(self.metallicize_amount, self)
+
     def take_damage(self, amount):
         super().take_damage(amount)
-        if self.health < self.start_health:
+        if self.health < self.start_health :
             self.sleep = False
+            self.metallicize.remove()
 
     def choose_intent(self):
         if self.num_turns < 3 and self.sleep:
@@ -53,9 +56,8 @@ class Lagavulin(Enemy):
             super().__init__("Sleep", 0, 0, 0, 100)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
-            if not enemy.add_metallicize:
-                Metallicize(enemy.metallicize, player)
-                enemy.add_metallicize = True
+            pass
+
 
     class Attack(Intent):
         def __init__(self, ascension: int):
