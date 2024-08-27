@@ -33,8 +33,21 @@ class Hexaghost(Enemy):
         else:
             super().__init__(264, intent_set, ascension, minion=False)
         self.first_inferno = False
+        self.pattern_index = 1
+        self.pattern = [self.intent_set[self.SEAR], self.intent_set[self.TACKLE], self.intent_set[self.SEAR],
+                        self.intent_set[self.INFLAME], self.intent_set[self.TACKLE], self.intent_set[self.SEAR],
+                        self.intent_set[self.INFERNO]]
+
     def choose_intent(self):
-        pass
+        if self.num_turns == 0:
+            self.intent = self.intent_set[self.ACTIVATE]
+        elif self.num_turns == 1:
+            self.intent = self.intent_set[self.DIVIDER]
+        else:
+            if self.pattern_index >= len(self.pattern):
+                self.pattern_index = 0
+            self.intent = self.pattern[self.pattern_index]
+            self.pattern_index += 1
 
     def is_valid_intent(self, intent: Intent) -> bool:
         return True
@@ -45,7 +58,7 @@ class Hexaghost(Enemy):
 
     class Divider(Intent):
         def __init__(self, ascension):
-            super().__init__("Divider", self.damage, 6, 0, 1)
+            super().__init__("Divider", 1, 6, 0, 1)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -62,6 +75,14 @@ class Hexaghost(Enemy):
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
             player.deck.discard_pile.append(Burn(player) for _ in range(3))
+            if not enemy.first_inferno:
+                for card in player.deck.discard_pile:
+                    if card.name == "Burn":
+                        card.upgrade()
+                for card in player.deck.draw_pile:
+                    if card.name == "Burn":
+                        card.upgrade()
+                enemy.first_inferno = True
 
     class Sear(Intent):
         def __init__(self, ascension: int):
@@ -89,7 +110,7 @@ class Hexaghost(Enemy):
                 self.strength = 2
             else:
                 self.strength = 3
-            super().__init__("Inflame", 0, 0, 12, 5)
+            super().__init__("Inflame", 0, 0, 12, 90)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
