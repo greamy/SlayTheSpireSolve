@@ -96,7 +96,7 @@ class CardTest(unittest.TestCase):
         self.health = 100
         self.energy = 3
         self.gold = 100
-        self.player = Player(self.health, self.energy, self.gold, [], [], [])
+        self.player = Player(self.health, self.energy, self.gold, [], [], [], library_path="../CombatSim/Actions/Library")
         # self.enemy = Enemy(health=self.enemy_start_health,intent_set=[Intent("", 12, 1, 0, 25),
         #                                                                  Intent("", 7, 1, 5, 30),
         #                                                                  Intent("", 5, 1, 9, 45)])
@@ -1149,7 +1149,7 @@ class CardTest(unittest.TestCase):
         card = Dazed(self.player)
         self.player.deck.hand.append(card)
 
-        self.player.notify_listeners(Listener.Event.END_TURN)
+        self.player.notify_listeners(Listener.Event.END_TURN, self.enemies, self.debug)
 
         self.assertIn(card, self.player.deck.exhaust_pile)
 

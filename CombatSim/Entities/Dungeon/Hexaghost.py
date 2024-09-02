@@ -61,8 +61,8 @@ class Hexaghost(Enemy):
             super().__init__("Divider", 1, 6, 0, 1)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
+            self.damage = (floor(player.health / 12) + 1)
             super().play(enemy, enemy_list, player, player_list, debug)
-            self.damage = (floor(player.health/12) + 1)
 
     class Inferno(Intent):
         def __init__(self, ascension):
@@ -74,7 +74,7 @@ class Hexaghost(Enemy):
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
-            player.deck.discard_pile.append(Burn(player) for _ in range(3))
+            player.deck.discard_pile.extend([Burn(player) for _ in range(3)])
             if not enemy.first_inferno:
                 for card in player.deck.discard_pile:
                     if card.name == "Burn":
@@ -94,7 +94,7 @@ class Hexaghost(Enemy):
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
-            player.deck.discard_pile.append(Burn(player) for _ in range(self.burn_amount))
+            player.deck.discard_pile.extend([Burn(player) for _ in range(self.burn_amount)])
 
     class Tackle(Intent):
         def __init__(self, ascension):

@@ -31,7 +31,7 @@ class CombatTest(unittest.TestCase):
         self.enemy = self.createEnemy("SlimeBoss", 20, 1)
 
     def createPlayer(self):
-        return Player(self.health, self.energy, self.gold, self.potions, self.relics, [],
+        return Player(self.health, self.energy, self.gold, self.potions, self.relics, self.cards,
                       "../CombatSim/Actions/Library")
 
     def createEnemy(self, name: str, ascension: int, act: int):
@@ -55,9 +55,9 @@ class CombatTest(unittest.TestCase):
         num_combat = 1
         start = time.time()
         for _ in range(num_combat):
-            testing_enemy = copy.copy(self.enemy)
-            testing_player = copy.copy(self.player)
-            combat = Combat(testing_player, [testing_enemy], True)
+            testing_enemy = self.createEnemy("SlimeBoss", 20, 1)
+            testing_player = self.createPlayer()
+            combat = Combat(testing_player, [testing_enemy, self.createEnemy("SlimeBoss", 20, 1)], True)
             num_turn, testing_player.health, is_alive = combat.start()
             num_turns.append(num_turn)
             player_healths.append(testing_player.health)
