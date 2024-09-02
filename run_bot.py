@@ -1,4 +1,7 @@
+from spirecomm.spire.character import PlayerClass
+
 from SpireBot.Environments.SpireEnvironment import SpireEnvironment
+from SpireBot.Environments.SpireEnvironment import AllPlayerClasses
 from SpireBot.Logging.Logger import Logger
 from SpireBot.SpireBot import SpireBot
 from spirecomm.communication.coordinator import Coordinator
@@ -11,9 +14,10 @@ def main():
 
     coord = Coordinator()
     coord.signal_ready()
-    coord.register_command_error_callback()
+    # coord.register_command_error_callback()
     coord.register_state_change_callback(env.bot.get_next_action)
     coord.register_out_of_game_callback(env.start_game)
+    coord.play_one_game(AllPlayerClasses.WATCHER)
 
 
 if __name__ == '__main__':

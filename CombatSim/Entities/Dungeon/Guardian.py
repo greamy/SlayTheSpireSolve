@@ -31,17 +31,50 @@ class Guardian(Enemy):
                       self.RollAttack(ascension),
                       self.TwinSlam(ascension)
                       ]
-
+        if ascension < 9:
+            self.start_mode_shift = 30
+        elif ascension < 19:
+            self.start_mode_shift = 35
+        else:
+            self.start_mode_shift = 40
+        self.mode_shift = self.start_mode_shift
+        self.offensive_pattern_index = 1
+        self.defensive_pattern_index = 1
         if ascension < 9:
             super().__init__(240, intent_set, ascension, minion=False)
         else:
             super().__init__(254, intent_set, ascension, minion=False)
 
+        self.offensive_pattern = [self.intent_set[self.CHARGINGUP], self.intent_set[self.FIERCEBASH],
+                         self.intent_set[self.VENTSTEAM], self.intent_set[self.WHIRLWIND]]
+
+        self.defensive_pattern = [self.intent_set[self.ROLLATTACK], self.intent_set[self.TWINSLAM]]
+        self.defensive_mode = False
+
     def choose_intent(self):
-        pass
+        if self.num_turns == 0:
+            self.intent_set = self.intent_set[self.CHARGINGUP]
+        elif not self.defensive_mode:
+            if self.offensive_pattern_index >= len(self.offensive_pattern):
+                self.offensive_pattern_index = 0
+            self.intent_set = self.offensive_pattern[self.offensive_pattern_index]
+            self.offensive_pattern_index += 1
+        elif self.defensive_mode:
+            if self.defensive_pattern_index >= len(self.defensive_pattern):
+                self.defensive_pattern_index = 0
+            self.intent_set = self.defensive_pattern[self.defensive_pattern_index]
+            self.defensive_pattern_index += 1
 
     def is_valid_intent(self, intent: Intent) -> bool:
         return True
+
+    def take_damage(self, amount):
+        super().take_damage(amount)
+        self.mode_shift -= amount
+        if self.mode_shift <= 0:
+            pass
+
+
 
     class ChargingUp(Intent):
         def __init__(self, ascension):
@@ -78,7 +111,7 @@ class Guardian(Enemy):
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
-
+            enemy.defensive_mode = True
     class RollAttack(Intent):
         def __init__(self, ascension):
             if ascension < 4:
@@ -90,3 +123,7 @@ class Guardian(Enemy):
     class TwinSlam(Intent):
         def __init__(self, ascension):
             super().__init__("TwinSlam", 8, 2, 0, 7)
+
+        def play(self, enemy, enemy_list, player, player_list, debug):
+            super().play(enemy, enemy_list, player, player_list, debug)
+            enemy.defensive_mode = False

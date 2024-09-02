@@ -69,7 +69,8 @@ class SpireBot:
             self.skipped_cards = False
             return ProceedAction()
         elif self.state.screen_type == ScreenType.MAP:
-            return self.make_map_choice()
+            pass
+            # return self.make_map_choice()
         elif self.state.screen_type == ScreenType.BOSS_REWARD:
             relics = self.state.screen.relics
             # best_boss_relic = self.priorities.get_best_boss_relic(relics)
@@ -93,12 +94,12 @@ class SpireBot:
                 for i in range(num_cards):
                     choices.append(random.choice(self.state.screen.cards))
                 return CardSelectAction(choices)
-        elif self.game.screen_type == ScreenType.HAND_SELECT:
+        elif self.state.screen_type == ScreenType.HAND_SELECT:
             if not self.state.choice_available:
                 return ProceedAction()
                 # Usually, we don't want to choose the whole hand for a hand select. 3 seems like a good compromise.
-            num_cards = min(self.game.screen.num_cards, 3)
-            cards = self.game.screen.cards
+            num_cards = min(self.state.screen.num_cards, 3)
+            cards = self.state.screen.cards
             choices = []
             for i in range(num_cards):
                 choices.append(random.choice(cards))
