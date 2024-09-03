@@ -8,8 +8,8 @@ from spirecomm.communication.coordinator import Coordinator
 
 
 def main():
-    # logger = Logger("C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\spire_com", ".log")
-    logger = Logger("/Users/grant/PycharmProjects/SlayTheSpireSolve/spire_com", ".log")
+    logger = Logger("C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\spire_com", ".log")
+    # logger = Logger("/Users/grant/PycharmProjects/SlayTheSpireSolve/spire_com", ".log")
     env = SpireEnvironment(logger)
     # env.run()
     try:

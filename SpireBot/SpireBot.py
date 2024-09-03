@@ -15,6 +15,7 @@ class SpireBot:
         # self.logger = Logger("C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\spire_com", ".log")
 
     def get_next_action(self, game_state: Game):
+        time.sleep(0.2)
         self.state = game_state
         if self.state.choice_available:
             self.logger.write("Choice Option Available")
@@ -72,7 +73,7 @@ class SpireBot:
             else:
                 self.logger.write("Leaving shop and Proceeding...")
                 self.visited_shop = False
-                ProceedAction()
+                return ProceedAction()
         elif self.state.screen_type == ScreenType.REST:
             self.logger.write("Rest options available")
             return self.choose_rest_option()
@@ -146,6 +147,8 @@ class SpireBot:
         return CardRewardAction(choice)
 
     def make_map_choice(self):
+        if self.state.screen.boss_available:
+            return ChooseMapBossAction()
         if len(self.state.screen.next_nodes) > 0:
             choice = random.choice(self.state.screen.next_nodes)
             return ChooseMapNodeAction(choice)
