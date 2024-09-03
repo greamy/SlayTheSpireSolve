@@ -2,7 +2,7 @@ from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Slimed import Slimed
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Dungeon.AcidSlimeLarge import AcidSlimeLarge
-from CombatSim.Entities.Dungeon.SpikedSlimeLarge import SpikedSlimeLarge
+from CombatSim.Entities.Dungeon.SpikeSlimeLarge import SpikeSlimeLarge
 from CombatSim.Entities.Enemy import Enemy
 import random
 from CombatSim.Entities.Player import Player
@@ -83,7 +83,7 @@ class SlimeBoss(Enemy):
             super().__init__("Split", 0, 0, 0, 97)
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
-            slime1 = SpikedSlimeLarge(self.ascension, self.act)
+            slime1 = SpikeSlimeLarge(self.ascension, self.act)
             slime2 = AcidSlimeLarge(self.ascension, self.act)
             slime1.health = enemy.health
             slime2.health = enemy.health

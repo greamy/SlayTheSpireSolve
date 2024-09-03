@@ -5,11 +5,10 @@ from CombatSim.Entities.Entity import Entity
 import random
 from enum import Enum
 from CombatSim.Actions.Listener import Listener
-from SpireBot.SpireBot import SpireBot
 
 
 class Player(Entity):
-    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], library_path="CombatSim/Actions/Library"):
+    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
         super().__init__(health)
         self.energy = energy
         self.gold = gold
@@ -21,10 +20,10 @@ class Player(Entity):
         self.stance = self.Stance.NONE
         self.turn_over = False
         self.innate_cards = []
-        self.implemented_cards = self.get_implemented_cards(library_path)
+        # self.implemented_cards = self.get_implemented_cards(library_path)
         self.deck = self.Deck(self.create_deck(cards))
 
-        self.bot = SpireBot()
+        # self.bot = SpireBot()
 
     @staticmethod
     def get_implemented_cards(library_path: str) -> dict:
@@ -169,7 +168,8 @@ class Player(Entity):
         # TODO: Make better Scry AI
         index = 0
         cards = self.deck.draw_pile[0:amount]
-        to_scry = self.bot.scry(cards, enemies, None)
+        # to_scry = self.bot.scry(cards, enemies, None)
+        to_scry = [random.choice([True, False]) for _ in cards]
         for i, card in enumerate(cards):
             if to_scry[i]:
                 self.discard(self.deck.draw_pile.pop(index), enemies, debug)

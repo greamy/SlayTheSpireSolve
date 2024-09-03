@@ -5,7 +5,7 @@ import random
 from CombatSim.Entities.Player import Player
 
 
-class SpikedSlimeSmall(Enemy):
+class SpikeSlimeSmall(Enemy):
     # Must be ordered based on probability. Lowest to highest.
     TACKLE = 0
 

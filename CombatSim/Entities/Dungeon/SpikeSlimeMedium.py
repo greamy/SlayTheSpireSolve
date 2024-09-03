@@ -8,7 +8,7 @@ from CombatSim.Entities.Frail import Frail
 from CombatSim.Entities.Player import Player
 
 
-class SpikedSlimeMedium(Enemy):
+class SpikeSlimeMedium(Enemy):
     # Must be ordered based on probability. Lowest to highest.
     FLAMETACKLE = 0
     LICK = 1

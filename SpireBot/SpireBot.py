@@ -1,9 +1,14 @@
-import json
+import copy
+import importlib
+import re
 import random
 import time
 
 from spirecomm.communication.action import *
 from spirecomm.spire.game import Game
+
+from Combat import Combat
+from CombatSim.Entities.Player import Player
 
 
 class SpireBot:
@@ -15,7 +20,7 @@ class SpireBot:
         # self.logger = Logger("C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\spire_com", ".log")
 
     def get_next_action(self, game_state: Game):
-        time.sleep(0.2)
+        time.sleep(1)
         self.state = game_state
         if self.state.choice_available:
             self.logger.write("Choice Option Available")
@@ -34,11 +39,71 @@ class SpireBot:
             self.logger.write("Cancelling...")
             return CancelAction()
 
+    def create_cards(self, names: list, player: Player):
+        cards = []
+        for card in names:
+            module = importlib.import_module("CombatSim.Actions.Library." + card.replace(' ', ''))
+            class_ = getattr(module, card)
+            cards.append(class_(player))
+        return cards
+
     def combat_choose_next_action(self):
         playable_cards = [card for card in self.state.hand if card.is_playable]
+
+        enemies = []
+        for monster in self.state.monsters:
+            monster_name = monster.name.replace(" ", "")
+            # print(monster_name)
+            if "(S)" in monster_name:
+                monster_name = monster_name.replace("(S)", "Small")
+            if "(M)" in monster_name:
+                monster_name = monster_name.replace("(M)", "Medium")
+            if "(L)" in monster_name:
+                monster_name = monster_name.replace("(L)", "Large")
+            module = importlib.import_module("CombatSim.Entities.Dungeon." + monster_name)
+            class_ = getattr(module, monster_name)
+            enemy = class_(self.state.ascension_level, self.state.act)
+            enemy.health = monster.current_hp
+            enemy.block = monster.block
+            enemies.append(class_(self.state.ascension_level, self.state.act))
+        player = Player(self.state.player.current_hp, self.state.player.energy, self.state.gold, self.state.potions, self.state.relics, [])
+        draw_pile = self.create_cards([card.name for card in self.state.draw_pile], player)
+        hand = self.create_cards([card.name for card in self.state.hand], player)
+        discard_pile = self.create_cards([card.name for card in self.state.discard_pile], player)
+        exhaust_pile = self.create_cards([card.name for card in self.state.exhaust_pile], player)
+        player.block = self.state.player.block
+        player.energy = self.state.player.energy
+        combat = Combat(player, enemies, debug=False)
+        card_results = {}
+        for card in hand:
+            player.deck.hand = copy.deepcopy(hand)
+            player.deck.draw_pile = copy.deepcopy(draw_pile)
+            player.deck.discard_pile = copy.deepcopy(discard_pile)
+            player.deck.exhaust_pile = copy.deepcopy(exhaust_pile)
+
+            player.health = self.state.player.current_hp
+            player.block = self.state.player.block
+            player.energy = self.state.player.energy
+            for i, enemy in enumerate(enemies):
+                enemy.health = self.state.monsters[i].current_hp
+                enemy.block = self.state.monsters[i].block
+
+            enemy_health, player_health = combat.run_turn(card)
+            card_results[card.name] = [enemy_health, player_health]
+
+
+
+        best = max(card_results, key=lambda x: card_results.get(x)[1])
+        best_value = card_results.get(best)[1]
+        best_cards = [card for card, values in card_results.items() if values[1] == best_value]
+        best_cards = sorted(best_cards, key=lambda x: x[1][0], reverse=False)
+
+        card_to_play = best_cards[0]
+        card_to_play = playable_cards[[card.name for card in playable_cards].index(card_to_play)]
+
         if len(playable_cards) == 0:
             return EndTurnAction()
-        card_to_play = random.choice(playable_cards)
+        # card_to_play = random.choice(playable_cards)
         # TODO: FINISH!
         if card_to_play.has_target:
             available_monsters = [monster for monster in self.state.monsters if

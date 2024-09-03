@@ -1,7 +1,7 @@
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Slimed import Slimed
 from CombatSim.Actions.Listener import Listener
-from CombatSim.Entities.Dungeon.SpikedSlimeMedium import SpikedSlimeMedium
+from CombatSim.Entities.Dungeon.SpikeSlimeMedium import SpikeSlimeMedium
 from CombatSim.Entities.Enemy import Enemy
 import random
 
@@ -9,7 +9,7 @@ from CombatSim.Entities.Frail import Frail
 from CombatSim.Entities.Player import Player
 
 
-class SpikedSlimeLarge(Enemy):
+class SpikeSlimeLarge(Enemy):
     # Must be ordered based on probability. Lowest to highest.
     SPLIT = 0
     FLAMETACKLE = 1
@@ -82,8 +82,8 @@ class SpikedSlimeLarge(Enemy):
             super().__init__("Split", 0, 0, 0, 0)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
-            slime1 = SpikedSlimeMedium(self.ascension, self.act)
-            slime2 = SpikedSlimeMedium(self.ascension, self.act)
+            slime1 = SpikeSlimeMedium(self.ascension, self.act)
+            slime2 = SpikeSlimeMedium(self.ascension, self.act)
             slime1.health = enemy.health
             slime2.health = enemy.health
             enemy_list.extend([slime1, slime2])

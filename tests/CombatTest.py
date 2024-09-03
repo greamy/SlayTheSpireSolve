@@ -57,7 +57,7 @@ class CombatTest(unittest.TestCase):
         for _ in range(num_combat):
             testing_enemy = self.createEnemy("SlimeBoss", 20, 1)
             testing_player = self.createPlayer()
-            combat = Combat(testing_player, [testing_enemy, self.createEnemy("SlimeBoss", 20, 1)], True)
+            combat = Combat(testing_player, [testing_enemy], True)
             num_turn, testing_player.health, is_alive = combat.start()
             num_turns.append(num_turn)
             player_healths.append(testing_player.health)

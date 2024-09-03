@@ -1,3 +1,5 @@
+import random
+
 from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Enemy import Enemy
 
@@ -12,6 +14,7 @@ class Combat:
 
         self.enemies = enemies
         self.debug = debug
+        self.start_card = None
 
     def start(self):
         self.player.begin_combat()
@@ -26,6 +29,7 @@ class Combat:
         while self.player.health > 0 and self.get_total_enemy_health() > 0:
             self.player.start_turn(self.enemies, self.debug)
             self.player.do_turn(self.enemies, self.debug)
+
 
             for enemy in self.enemies:
                 enemy.start_turn([self.player], self.debug)
@@ -47,6 +51,11 @@ class Combat:
 
         return num_turns, self.player.health, self.player.is_alive()
 
-
+    def run_turn(self, start_card):
+        self.player.play_card(start_card, random.choice(self.enemies), self.enemies, self.debug)
+        for enemy in self.enemies:
+            enemy.start_turn([self.player], self.debug)
+            enemy.do_turn(self.player, self.debug)
+        return self.get_total_enemy_health(), self.player.health
 
 
