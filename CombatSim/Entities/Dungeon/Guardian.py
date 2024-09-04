@@ -40,7 +40,6 @@ class Guardian(Enemy):
             super().__init__(240, intent_set, ascension, minion=False)
         else:
             super().__init__(254, intent_set, ascension, minion=False)
-
         self.offensive_pattern = [self.intent_set[self.CHARGINGUP], self.intent_set[self.FIERCEBASH],
                                   self.intent_set[self.VENTSTEAM], self.intent_set[self.WHIRLWIND]]
 
@@ -49,16 +48,16 @@ class Guardian(Enemy):
 
     def choose_intent(self):
         if self.num_turns == 0:
-            self.intent_set = self.intent_set[self.CHARGINGUP]
+            self.intent = self.intent_set[self.CHARGINGUP]
         elif not self.defensive_mode:
             if self.offensive_pattern_index >= len(self.offensive_pattern):
                 self.offensive_pattern_index = 0
-            self.intent_set = self.offensive_pattern[self.offensive_pattern_index]
+            self.intent = self.offensive_pattern[self.offensive_pattern_index]
             self.offensive_pattern_index += 1
         elif self.defensive_mode:
             if self.defensive_pattern_index >= len(self.defensive_pattern):
                 self.defensive_pattern_index = 0
-            self.intent_set = self.defensive_pattern[self.defensive_pattern_index]
+            self.intent = self.defensive_pattern[self.defensive_pattern_index]
             self.defensive_pattern_index += 1
 
     def is_valid_intent(self, intent: Intent) -> bool:

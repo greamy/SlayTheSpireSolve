@@ -53,7 +53,7 @@ class GremlinNob(Enemy):
 
     class Bellow(Intent):
         def __init__(self, ascension):
-            super().__init__("Bellow", 0, 0, 0, 0, char.Intent.BUFF)
+            super().__init__("Bellow", 0, 0, 0, 0, char.Intent.DEBUG)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             enemy_listener = Listener(Listener.Event.SKILL_PLAYED, self.gain_strength)

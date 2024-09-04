@@ -51,8 +51,8 @@ class Combat:
 
         return num_turns, self.player.health, self.player.is_alive()
 
-    def run_turn(self, start_card):
-        self.player.play_card(start_card, random.choice(self.enemies), self.enemies, self.debug)
+    def run_turn(self, start_card, target_enemy):
+        self.player.play_card(start_card, target_enemy, self.enemies, self.debug)
         for enemy in self.enemies:
             enemy.start_turn([self.player], self.debug)
             enemy.do_turn(self.player, self.debug)

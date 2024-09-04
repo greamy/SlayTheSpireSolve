@@ -87,7 +87,7 @@ class Looter(Enemy):
 
     class Escape(Intent):
         def __init__(self, ascension: int):
-            super().__init__("Escape", 0, 0, 0, 0)
+            super().__init__("Escape", 0, 0, 0, 0, char.Intent.ESCAPE)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().__init__(enemy, enemy_list, player, player_list, debug, char.Intent.ESCAPE)

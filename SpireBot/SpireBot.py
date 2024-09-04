@@ -62,6 +62,16 @@ class SpireBot:
                 monster_name = monster_name.replace("(M)", "Medium")
             if "(L)" in monster_name:
                 monster_name = monster_name.replace("(L)", "Large")
+            if "Louse" in monster_name:
+                if monster.monster_id == "FuzzyLouseDefensive":
+                    monster_name = "GreenLouse"
+                else:
+                    monster_name = "RedLouse"
+            if "Slaver" in monster_name:
+                if monster.monster_id == "SlaverBlue":
+                    monster_name = "BlueSlaver"
+                else:
+                    monster_name = "RedSlaver"
             module = importlib.import_module("CombatSim.Entities.Dungeon." + monster_name)
             class_ = getattr(module, monster_name)
             enemy = class_(self.state.ascension_level, self.state.act)
@@ -86,6 +96,9 @@ class SpireBot:
         player = Player(self.state.player.current_hp, self.state.player.energy, self.state.gold, self.state.potions, self.state.relics, [])
         draw_pile = self.create_cards([card.name for card in self.state.draw_pile], player)
         hand = self.create_cards([card.name for card in self.state.hand], player)
+
+        self.logger.write("Starting hand is: " + str(hand))
+
         discard_pile = self.create_cards([card.name for card in self.state.discard_pile], player)
         exhaust_pile = self.create_cards([card.name for card in self.state.exhaust_pile], player)
         player.block = self.state.player.block
@@ -107,8 +120,12 @@ class SpireBot:
                 enemy.block = self.state.monsters[i].block
                 enemy.intent = enemy_intents[i]
 
-            enemy_health, player_health = combat.run_turn(card)
-            self.logger.write("Enemy health at " + str(enemy.health) + " after playing " + card.name)
+            target_enemy = random.choice(enemies)
+            card_to_play = [player_card for player_card in player.deck.hand if player_card.name == card.name][0]
+            self.logger.write("Playing " + card_to_play.name + " on enemy " + str(target_enemy))
+
+            enemy_health, player_health = combat.run_turn(card_to_play, target_enemy)
+            self.logger.write("Enemy health at " + str(target_enemy.health) + " after playing " + card.name)
             card_results[card.name] = [enemy_health, player_health]
 
         self.logger.write("After playing each, card results found: " + str(card_results))
@@ -116,7 +133,7 @@ class SpireBot:
         best = max(card_results, key=lambda x: card_results.get(x)[1])
         best_value = card_results.get(best)[1]
         best_cards = [card for card, values in card_results.items() if values[1] == best_value]
-        best_cards = sorted(best_cards, key=lambda x: card_results[x][1], reverse=False)
+        best_cards = sorted(best_cards, key=lambda x: card_results[x][0], reverse=False)
 
         self.logger.write("Best card order: " + str(best_cards))
 
