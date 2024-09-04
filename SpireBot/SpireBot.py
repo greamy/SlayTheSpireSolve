@@ -6,6 +6,7 @@ import time
 
 from spirecomm.communication.action import *
 from spirecomm.spire.game import Game
+import spirecomm.spire.character as char
 
 from Combat import Combat
 from CombatSim.Entities.Player import Player
@@ -43,17 +44,18 @@ class SpireBot:
         cards = []
         for card in names:
             module = importlib.import_module("CombatSim.Actions.Library." + card.replace(' ', ''))
-            class_ = getattr(module, card)
+            class_ = getattr(module, card.replace(' ', ''))
             cards.append(class_(player))
         return cards
 
     def combat_choose_next_action(self):
         playable_cards = [card for card in self.state.hand if card.is_playable]
+        playable_card_names = [card.name for card in playable_cards]
 
         enemies = []
+        enemy_intents = []
         for monster in self.state.monsters:
             monster_name = monster.name.replace(" ", "")
-            # print(monster_name)
             if "(S)" in monster_name:
                 monster_name = monster_name.replace("(S)", "Small")
             if "(M)" in monster_name:
@@ -65,6 +67,21 @@ class SpireBot:
             enemy = class_(self.state.ascension_level, self.state.act)
             enemy.health = monster.current_hp
             enemy.block = monster.block
+
+            self.logger.write(monster_name + " intent is " + str(monster.intent))
+            possible_intents = [intent for intent in enemy.intent_set if intent.intent_type == monster.intent]
+            if len(possible_intents) > 1:
+                if monster.intent == char.Intent.ATTACK:
+                    enemy.intent = [intent for intent in enemy.intent_set if intent.damage == monster.move_base_damage][0]
+                else:
+                    enemy.intent = random.choice(enemy.intent)
+            else:
+                enemy.intent = possible_intents[0]
+
+            enemy_intents.append(enemy.intent)
+
+            self.logger.write("Detected " + monster_name + " intent as " + str(enemy.intent))
+
             enemies.append(class_(self.state.ascension_level, self.state.act))
         player = Player(self.state.player.current_hp, self.state.player.energy, self.state.gold, self.state.potions, self.state.relics, [])
         draw_pile = self.create_cards([card.name for card in self.state.draw_pile], player)
@@ -75,7 +92,8 @@ class SpireBot:
         player.energy = self.state.player.energy
         combat = Combat(player, enemies, debug=False)
         card_results = {}
-        for card in hand:
+        playable_sim_cards = [card for i, card in enumerate(hand) if card.name in playable_card_names]
+        for card in playable_sim_cards:
             player.deck.hand = copy.deepcopy(hand)
             player.deck.draw_pile = copy.deepcopy(draw_pile)
             player.deck.discard_pile = copy.deepcopy(discard_pile)
@@ -87,19 +105,23 @@ class SpireBot:
             for i, enemy in enumerate(enemies):
                 enemy.health = self.state.monsters[i].current_hp
                 enemy.block = self.state.monsters[i].block
+                enemy.intent = enemy_intents[i]
 
             enemy_health, player_health = combat.run_turn(card)
+            self.logger.write("Enemy health at " + str(enemy.health) + " after playing " + card.name)
             card_results[card.name] = [enemy_health, player_health]
 
-
+        self.logger.write("After playing each, card results found: " + str(card_results))
 
         best = max(card_results, key=lambda x: card_results.get(x)[1])
         best_value = card_results.get(best)[1]
         best_cards = [card for card, values in card_results.items() if values[1] == best_value]
-        best_cards = sorted(best_cards, key=lambda x: x[1][0], reverse=False)
+        best_cards = sorted(best_cards, key=lambda x: card_results[x][1], reverse=False)
+
+        self.logger.write("Best card order: " + str(best_cards))
 
         card_to_play = best_cards[0]
-        card_to_play = playable_cards[[card.name for card in playable_cards].index(card_to_play)]
+        card_to_play = playable_cards[playable_card_names.index(card_to_play)]
 
         if len(playable_cards) == 0:
             return EndTurnAction()

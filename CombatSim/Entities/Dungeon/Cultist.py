@@ -37,7 +37,7 @@ class Cultist(Enemy):
 
     class Incantation(Intent):
             def __init__(self, ascension: int):
-                super().__init__("Incantation", 0, 0, 0, 0, char.Intent.ATTACK_BUFF)
+                super().__init__("Incantation", 0, 0, 0, 0, char.Intent.BUFF)
                 self.ritual = 3
                 if ascension >= 2:
                     self.ritual = 4
