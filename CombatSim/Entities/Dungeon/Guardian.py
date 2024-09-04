@@ -42,7 +42,7 @@ class Guardian(Enemy):
             super().__init__(254, intent_set, ascension, minion=False)
 
         self.offensive_pattern = [self.intent_set[self.CHARGINGUP], self.intent_set[self.FIERCEBASH],
-                         self.intent_set[self.VENTSTEAM], self.intent_set[self.WHIRLWIND]]
+                                  self.intent_set[self.VENTSTEAM], self.intent_set[self.WHIRLWIND]]
 
         self.defensive_pattern = [self.intent_set[self.ROLLATTACK], self.intent_set[self.TWINSLAM]]
         self.defensive_mode = False
@@ -69,8 +69,6 @@ class Guardian(Enemy):
         self.mode_shift -= amount
         if self.mode_shift <= 0:
             pass
-
-
 
     class ChargingUp(Intent):
         def __init__(self, ascension):
@@ -119,7 +117,7 @@ class Guardian(Enemy):
 
     class TwinSlam(Intent):
         def __init__(self, ascension):
-            super().__init__("TwinSlam", 8, 2, 0, 7, char.Intent.ATTACK_BUFF)
+            super().__init__("TwinSlam", 8, 2, 0, 79, char.Intent.ATTACK_BUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
