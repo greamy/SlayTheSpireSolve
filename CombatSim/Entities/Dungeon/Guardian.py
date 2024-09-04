@@ -35,7 +35,7 @@ class Guardian(Enemy):
             self.start_mode_shift = 40
         self.mode_shift = self.start_mode_shift
         self.offensive_pattern_index = 1
-        self.defensive_pattern_index = 1
+        self.defensive_pattern_index = 0
         if ascension < 9:
             super().__init__(240, intent_set, ascension, minion=False)
         else:
@@ -117,7 +117,7 @@ class Guardian(Enemy):
 
     class TwinSlam(Intent):
         def __init__(self, ascension):
-            super().__init__("TwinSlam", 8, 2, 0, 79, char.Intent.ATTACK_BUFF)
+            super().__init__("TwinSlam", 8, 2, 0, 79, char.Intent.ATTACK)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
