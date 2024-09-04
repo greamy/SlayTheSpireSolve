@@ -1,9 +1,10 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Dazed import Dazed
-from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
-import random
-from CombatSim.Entities.Player import Player
 
 
 class Sentry(Enemy):
@@ -46,7 +47,7 @@ class Sentry(Enemy):
                 self.damage = 9
             else:
                 self.damage = 10
-            super().__init__("Beam", self.damage, 1, 0, 0)
+            super().__init__("Beam", self.damage, 1, 0, 0, char.Intent.ATTACK)
 
     class Bolt(Intent):
         def __init__(self, ascension: int):
@@ -54,7 +55,7 @@ class Sentry(Enemy):
                 self.dazed = 2
             else:
                 self.dazed = 3
-            super().__init__("Bolt", 0, 0, 0, 100)
+            super().__init__("Bolt", 0, 0, 0, 100, char.Intent.DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             for _ in range(self.dazed):

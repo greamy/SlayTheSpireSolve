@@ -1,7 +1,10 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Entities.Enemy import Enemy
-import random
-from CombatSim.Entities.Player import Player
+
 
 
 class SneakyGremlin(Enemy):
@@ -28,4 +31,4 @@ class SneakyGremlin(Enemy):
                 self.damage = 9
             else:
                 self.damage = 10
-            super().__init__("Puncture", self.damage, 1, 0, 100)
+            super().__init__("Puncture", self.damage, 1, 0, 100, char.Intent.ATTACK)

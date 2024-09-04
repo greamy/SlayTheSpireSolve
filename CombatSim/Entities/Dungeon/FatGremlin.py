@@ -1,10 +1,12 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
-import random
 from CombatSim.Entities.Weak import Weak
 from CombatSim.Entities.Frail import Frail
-from CombatSim.Entities.Player import Player
 
 
 class FatGremlin(Enemy):
@@ -35,7 +37,7 @@ class FatGremlin(Enemy):
                 self.damage = 5
             if ascension > 16:
                 self.frail = 1
-            super().__init__("Stab", self.damage, 1, 0, 100)
+            super().__init__("Stab", self.damage, 1, 0, 100, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)

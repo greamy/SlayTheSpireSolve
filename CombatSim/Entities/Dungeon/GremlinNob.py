@@ -1,7 +1,10 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
-import random
 
 from CombatSim.Entities.Vulnerable import Vulnerable
 
@@ -50,7 +53,7 @@ class GremlinNob(Enemy):
 
     class Bellow(Intent):
         def __init__(self, ascension):
-            super().__init__("Bellow", 0, 0, 0, 0)
+            super().__init__("Bellow", 0, 0, 0, 0, char.Intent.BUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             enemy_listener = Listener(Listener.Event.SKILL_PLAYED, self.gain_strength)
@@ -65,17 +68,18 @@ class GremlinNob(Enemy):
                 self.damage = 14
             else:
                 self.damage = 16
-            super().__init__("Rush", self.damage, 1, 0, 67)
+            super().__init__("Rush", self.damage, 1, 0, 67, char.Intent.ATTACK)
 
     class SkullBash(Intent):
         def __init__(self, ascension):
+            self.vulnerable = 2
             if ascension < 3:
                 self.damage = 6
             else:
                 self.damage = 8
-            super().__init__("SkullBash", self.damage, 1, 0, 33)
+            super().__init__("SkullBash", self.damage, 1, 0, 33, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
-            vuln = Vulnerable(2, player)
+            vuln = Vulnerable(self.vulnerable, player)
             player.add_listener(Listener(Listener.Event.START_TURN, vuln.decrement))

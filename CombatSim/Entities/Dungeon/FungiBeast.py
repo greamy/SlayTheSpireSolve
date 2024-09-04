@@ -1,8 +1,9 @@
-from CombatSim.Actions.Intent import Intent
-from CombatSim.Entities.Enemy import Enemy
 import random
 
-from CombatSim.Entities.Player import Player
+import spirecomm.spire.character as char
+
+from CombatSim.Actions.Intent import Intent
+from CombatSim.Entities.Enemy import Enemy
 
 
 class FungiBeast(Enemy):
@@ -38,7 +39,7 @@ class FungiBeast(Enemy):
                 self.strength = 4
             else:
                 self.strength = 5
-            super().__init__("Grow", 0, 0, 0, 40)
+            super().__init__("Grow", 0, 0, 0, 40, char.Intent.BUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -46,5 +47,5 @@ class FungiBeast(Enemy):
 
     class Bite(Intent):
         def __init__(self, ascension: int):
-            super().__init__("Bite", 6, 1, 0, 60)
+            super().__init__("Bite", 6, 1, 0, 60, char.Intent.ATTACK)
 

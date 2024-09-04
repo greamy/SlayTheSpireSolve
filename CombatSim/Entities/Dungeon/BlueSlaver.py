@@ -1,7 +1,10 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
-import random
 from CombatSim.Entities.Weak import Weak
 from CombatSim.Entities.Player import Player
 
@@ -41,7 +44,7 @@ class BlueSlaver(Enemy):
                 self.damage = 12
             else:
                 self.damage = 13
-            super().__init__("Stab", self.damage, 1, 0, 60)
+            super().__init__("Stab", self.damage, 1, 0, 60, char.Intent.ATTACK)
 
     class Rake(Intent):
         def __init__(self, ascension: int):
@@ -54,7 +57,7 @@ class BlueSlaver(Enemy):
             else:
                 self.weak = 2
 
-            super().__init__("Rake", self.damage, 1, 0, 40)
+            super().__init__("Rake", self.damage, 1, 0, 40, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
             super().play(enemy, enemy_list, player, player_list, debug)

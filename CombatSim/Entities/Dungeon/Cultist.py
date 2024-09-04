@@ -1,7 +1,10 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Actions.Listener import Listener
-import random
 from CombatSim.Entities.Player import Player
 
 
@@ -34,7 +37,7 @@ class Cultist(Enemy):
 
     class Incantation(Intent):
             def __init__(self, ascension: int):
-                super().__init__("Incantation", 0, 0, 0, 0)
+                super().__init__("Incantation", 0, 0, 0, 0, char.Intent.ATTACK_BUFF)
                 self.ritual = 3
                 if ascension >= 2:
                     self.ritual = 4
@@ -51,5 +54,5 @@ class Cultist(Enemy):
 
     class DarkStrike(Intent):
         def __init__(self, ascension: int):
-            super().__init__("DarkStrike", 6, 1, 0, 100)
+            super().__init__("DarkStrike", 6, 1, 0, 100, char.Intent.ATTACK)
 

@@ -1,8 +1,9 @@
-from CombatSim.Actions.Intent import Intent
-from CombatSim.Entities.Enemy import Enemy
 import random
 
-from CombatSim.Entities.Player import Player
+import spirecomm.spire.character as char
+
+from CombatSim.Actions.Intent import Intent
+from CombatSim.Entities.Enemy import Enemy
 
 
 class WizardGremlin(Enemy):
@@ -45,7 +46,7 @@ class WizardGremlin(Enemy):
 
     class Charging(Intent):
         def __init__(self, ascension: int):
-            super().__init__("Charging", 0, 0, 0, 0)
+            super().__init__("Charging", 0, 0, 0, 0, char.Intent.UNKNOWN)
 
     class UltimateBlast(Intent):
         def __init__(self, ascension: int):
@@ -53,4 +54,4 @@ class WizardGremlin(Enemy):
                 self.damage = 25
             else:
                 self.damage = 30
-            super().__init__("UltimateBlast", self.damage, 1, 0, 100)
+            super().__init__("UltimateBlast", self.damage, 1, 0, 100, char.Intent.ATTACK)

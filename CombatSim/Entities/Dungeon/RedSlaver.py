@@ -1,11 +1,13 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
-import random
 
 from CombatSim.Entities.Vulnerable import Vulnerable
-from CombatSim.Entities.Weak import Weak
-from CombatSim.Entities.Player import Player
+
 
 
 class RedSlaver(Enemy):
@@ -64,7 +66,7 @@ class RedSlaver(Enemy):
                 self.damage = 13
             else:
                 self.damage = 14
-            super().__init__("Stab", self.damage, 1, 0, 45)
+            super().__init__("Stab", self.damage, 1, 0, 45, char.Intent.ATTACK)
 
     class Scrape(Intent):
         def __init__(self, ascension: int):
@@ -77,7 +79,7 @@ class RedSlaver(Enemy):
                 self.vuln = 1
             else:
                 self.vuln = 2
-            super().__init__("Scrape", self.damage, 1, 0, 55)
+            super().__init__("Scrape", self.damage, 1, 0, 55, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -87,7 +89,7 @@ class RedSlaver(Enemy):
 
     class Entangle(Intent):
         def __init__(self, ascension: int):
-            super().__init__("Entangle", 0, 0, 0, 0)
+            super().__init__("Entangle", 0, 0, 0, 0, char.Intent.STRONG_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)

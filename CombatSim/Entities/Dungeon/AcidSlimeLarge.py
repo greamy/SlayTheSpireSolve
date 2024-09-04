@@ -1,5 +1,7 @@
 import random
 
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Slimed import Slimed
 from CombatSim.Actions.Listener import Listener
@@ -58,7 +60,7 @@ class AcidSlimeLarge(Enemy):
     class Lick(Intent):
         def __init__(self, ascension: int):
             self.probability = 30
-            super().__init__("Lick", 0, 0, 0, self.probability)
+            super().__init__("Lick", 0, 0, 0, self.probability, char.Intent.DEBUFF)
             self.weak = 2
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
@@ -79,7 +81,7 @@ class AcidSlimeLarge(Enemy):
             else:
                 self.probability = 30
 
-            super().__init__("Tackle", self.damage, 1, 0, self.probability)
+            super().__init__("Tackle", self.damage, 1, 0, self.probability, char.Intent.ATTACK)
 
     class CorrosiveSpit(Intent):
         def __init__(self, ascension):
@@ -93,7 +95,7 @@ class AcidSlimeLarge(Enemy):
             else:
                 self.probability = 40
             self.num_cards = 2
-            super().__init__("Corrosive Spit", self.damage, 1, 0, self.probability)
+            super().__init__("Corrosive Spit", self.damage, 1, 0, self.probability, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -103,7 +105,7 @@ class AcidSlimeLarge(Enemy):
         def __init__(self, ascension, act):
             self.act = act
             self.ascension = ascension
-            super().__init__("Split", 0, 0, 0, 0)
+            super().__init__("Split", 0, 0, 0, 0, char.Intent.UNKNOWN)
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
             slime1 = AcidSlimeMedium(self.ascension, self.act)

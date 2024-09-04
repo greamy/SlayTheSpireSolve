@@ -3,15 +3,40 @@ Choice Option Available
 Choice Option Available
 Choice Option Available
 Play card available
+Cultist intent: 3
 Playing Miracle
 Play card available
-Playing Eruption on Cultist
+Cultist intent: 3
+Playing Defend
+Play card available
+Cultist intent: 3
+Playing Defend
+Play card available
+Cultist intent: 3
+Playing Strike on Cultist
+Choice Option Available
 Choice Option Available
 Choice Option Available
 Choice Option Available
 Card rewardds available
-Choosing Tranquility...
+Choosing Sanctity...
 Proceeding...
 Choice Option Available
 Play card available
-No module named 'CombatSim.Entities.Dungeon.Louse'
+SpikeSlimeSmall intent: 1
+AcidSlimeMedium intent: 2
+Playing Defend
+Play card available
+SpikeSlimeSmall intent: 1
+AcidSlimeMedium intent: 2
+Playing Miracle
+Play card available
+SpikeSlimeSmall intent: 1
+AcidSlimeMedium intent: 2
+Playing Vigilance
+Play card available
+SpikeSlimeSmall intent: 1
+AcidSlimeMedium intent: 2
+Playing Defend
+Ending turn...
+'NoneType' object has no attribute 'can_be_executed'

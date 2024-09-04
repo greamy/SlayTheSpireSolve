@@ -1,13 +1,9 @@
-from math import floor
+import spirecomm.spire.character as char
 
 from CombatSim.Actions.Intent import Intent
-from CombatSim.Actions.Library.Burn import Burn
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
-import random
 
-
-from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Vulnerable import Vulnerable
 from CombatSim.Entities.Weak import Weak
 
@@ -78,7 +74,7 @@ class Guardian(Enemy):
 
     class ChargingUp(Intent):
         def __init__(self, ascension):
-            super().__init__("ChargingUp", 0, 0, 9, 1)
+            super().__init__("ChargingUp", 0, 0, 9, 1, char.Intent.DEFEND)
 
     class FierceBash(Intent):
         def __init__(self, ascension):
@@ -86,13 +82,13 @@ class Guardian(Enemy):
                 self.damage = 32
             else:
                 self.damage = 36
-            super().__init__("FierceBash", self.damage, 1, 0, 2)
+            super().__init__("FierceBash", self.damage, 1, 0, 2, char.Intent.ATTACK)
 
     class VentSteam(Intent):
         def __init__(self, ascension):
             self.weak = 2
             self.vulnerable = 2
-            super().__init__("VentSteam", 0, 0, 0, 3)
+            super().__init__("VentSteam", 0, 0, 0, 3, char.Intent.DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -103,26 +99,27 @@ class Guardian(Enemy):
 
     class Whirlwind(Intent):
         def __init__(self, ascension):
-            super().__init__("Whirlwind", 5, 4, 9, 4)
+            super().__init__("Whirlwind", 5, 4, 0, 4, char.Intent.ATTACK)
 
     class DefensiveMode(Intent):
         def __init__(self, ascension):
-            super().__init__("DefensiveMode", 0, 0, 0, 5)
+            super().__init__("DefensiveMode", 0, 0, 0, 5, char.Intent.BUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
             enemy.defensive_mode = True
+
     class RollAttack(Intent):
         def __init__(self, ascension):
             if ascension < 4:
                 self.damage = 9
             else:
                 self.damage = 10
-            super().__init__("RollAttack", self.damage, 1, 0, 6)
+            super().__init__("RollAttack", self.damage, 1, 0, 6, char.Intent.ATTACK)
 
     class TwinSlam(Intent):
         def __init__(self, ascension):
-            super().__init__("TwinSlam", 8, 2, 0, 7)
+            super().__init__("TwinSlam", 8, 2, 0, 7, char.Intent.ATTACK_BUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)

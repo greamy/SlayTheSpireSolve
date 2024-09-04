@@ -1,8 +1,9 @@
-from CombatSim.Actions.Intent import Intent
-from CombatSim.Entities.Enemy import Enemy
 import random
 
-from CombatSim.Entities.Player import Player
+import spirecomm.spire.character as char
+
+from CombatSim.Actions.Intent import Intent
+from CombatSim.Entities.Enemy import Enemy
 
 
 class MadGremlin(Enemy):
@@ -29,4 +30,4 @@ class MadGremlin(Enemy):
                 self.damage = 4
             else:
                 self.damage = 5
-            super().__init__("Scratch", self.damage, 1, 0, 100)
+            super().__init__("Scratch", self.damage, 1, 0, 100, char.Intent.ATTACK)

@@ -1,8 +1,11 @@
-from CombatSim.Actions.Intent import Intent
-from CombatSim.Entities.Enemy import Enemy
 import random
 
-from CombatSim.Entities.Player import Player
+import spirecomm.spire.character as char
+
+
+from CombatSim.Actions.Intent import Intent
+from CombatSim.Entities.Enemy import Enemy
+
 
 
 class SpikeSlimeSmall(Enemy):
@@ -30,4 +33,4 @@ class SpikeSlimeSmall(Enemy):
                 self.damage = 5
             else:
                 self.damage = 6
-            super().__init__("Tackle", self.damage, 1, 0, 100)
+            super().__init__("Tackle", self.damage, 1, 0, 100, char.Intent.ATTACK)

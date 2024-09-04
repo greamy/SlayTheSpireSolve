@@ -1,5 +1,7 @@
 import random
 
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Slimed import Slimed
 from CombatSim.Actions.Listener import Listener
@@ -48,7 +50,7 @@ class AcidSlimeMedium(Enemy):
                 self.probability = 30
             else:
                 self.probability = 20
-            super().__init__("Lick", 0, 0, 0, self.probability)
+            super().__init__("Lick", 0, 0, 0, self.probability, char.Intent.DEBUFF)
             self.weak = 1
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
@@ -66,7 +68,7 @@ class AcidSlimeMedium(Enemy):
 
             self.probability = 40
 
-            super().__init__("Tackle", self.damage, 1, 0, self.probability)
+            super().__init__("Tackle", self.damage, 1, 0, self.probability, char.Intent.ATTACK)
 
     class CorrosiveSpit(Intent):
         def __init__(self, ascension):
@@ -80,7 +82,7 @@ class AcidSlimeMedium(Enemy):
             else:
                 self.probability = 40
             self.num_cards = 1
-            super().__init__("Corrosive Spit", self.damage, 1, 0, self.probability)
+            super().__init__("Corrosive Spit", self.damage, 1, 0, self.probability, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
             super().play(enemy, enemy_list, player, player_list, debug)

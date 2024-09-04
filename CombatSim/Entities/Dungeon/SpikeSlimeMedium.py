@@ -1,11 +1,13 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Slimed import Slimed
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
-import random
 
 from CombatSim.Entities.Frail import Frail
-from CombatSim.Entities.Player import Player
 
 
 class SpikeSlimeMedium(Enemy):
@@ -44,7 +46,7 @@ class SpikeSlimeMedium(Enemy):
                 self.damage = 8
             else:
                 self.damage = 10
-            super().__init__("Tackle", self.damage, 1, 0, 30)
+            super().__init__("Tackle", self.damage, 1, 0, 30, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -53,7 +55,7 @@ class SpikeSlimeMedium(Enemy):
     class Lick(Intent):
         def __init__(self, ascension: int):
             self.frail = 1
-            super().__init__("Lick", 0, 0, 0, 70)
+            super().__init__("Lick", 0, 0, 0, 70, char.Intent.DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)

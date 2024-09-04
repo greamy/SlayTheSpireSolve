@@ -1,6 +1,9 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Entities.Enemy import Enemy
-import random
 
 from CombatSim.Entities.Player import Player
 
@@ -55,7 +58,7 @@ class JawWorm(Enemy):
                 self.block = 9
                 self.strength = 5
 
-            super().__init__("Bellow", 0, 0, self.block, 45)
+            super().__init__("Bellow", 0, 0, self.block, 45, char.Intent.DEFEND_BUFF)
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -67,8 +70,8 @@ class JawWorm(Enemy):
                 self.damage = 12
             else:
                 self.damage = 11
-            super().__init__("Chomp", self.damage, 1, 0, 25)
+            super().__init__("Chomp", self.damage, 1, 0, 25, char.Intent.ATTACK)
 
     class Thrash(Intent):
         def __init__(self, ascension: int):
-            super().__init__("Thrash", 7, 1, 5, 30)
+            super().__init__("Thrash", 7, 1, 5, 30, char.Intent.ATTACK_DEFEND)

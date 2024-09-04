@@ -1,14 +1,10 @@
 from math import floor
 
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Burn import Burn
-from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
-import random
-
-
-from CombatSim.Entities.Player import Player
-
 
 class Hexaghost(Enemy):
     ACTIVATE = 0
@@ -54,11 +50,11 @@ class Hexaghost(Enemy):
 
     class Activate(Intent):
         def __init__(self, ascension):
-            super().__init__("Activate", 0, 0, 0, 0)
+            super().__init__("Activate", 0, 0, 0, 0, char.Intent.UNKNOWN)
 
     class Divider(Intent):
         def __init__(self, ascension):
-            super().__init__("Divider", 1, 6, 0, 1)
+            super().__init__("Divider", 1, 6, 0, 1, char.Intent.ATTACK)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             self.damage = (floor(player.health / 12) + 1)
@@ -70,7 +66,7 @@ class Hexaghost(Enemy):
                 self.damage = 2
             else:
                 self.damage = 3
-            super().__init__("Inferno", self.damage, 6, 0, 2)
+            super().__init__("Inferno", self.damage, 6, 0, 2, char.Intent.ATTACK)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -90,7 +86,7 @@ class Hexaghost(Enemy):
                 self.burn_amount = 1
             else:
                 self.burn_amount = 2
-            super().__init__("Sear", 6, 1, 0, 3)
+            super().__init__("Sear", 6, 1, 0, 3, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -102,7 +98,7 @@ class Hexaghost(Enemy):
                 self.damage = 5
             else:
                 self.damage = 6
-            super().__init__("Tackle", self.damage, 2, 0, 4)
+            super().__init__("Tackle", self.damage, 2, 0, 4, char.Intent.ATTACK)
 
     class Inflame(Intent):
         def __init__(self, ascension):
@@ -110,7 +106,7 @@ class Hexaghost(Enemy):
                 self.strength = 2
             else:
                 self.strength = 3
-            super().__init__("Inflame", 0, 0, 12, 90)
+            super().__init__("Inflame", 0, 0, 12, 90, char.Intent.DEFEND_BUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)

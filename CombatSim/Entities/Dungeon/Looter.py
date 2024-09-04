@@ -1,9 +1,10 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
-import random
-
-from CombatSim.Entities.Player import Player
 
 
 class Looter(Enemy):
@@ -60,7 +61,7 @@ class Looter(Enemy):
                 self.damage = 10
             else:
                 self.damage = 11
-            super().__init__("Mug", self.damage, 1, 0, 0)
+            super().__init__("Mug", self.damage, 1, 0, 0, char.Intent.ATTACK)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -73,7 +74,7 @@ class Looter(Enemy):
                 self.damage = 12
             else:
                 self.damage = 14
-            super().__init__("Lunge", self.damage, 1, 0, 50)
+            super().__init__("Lunge", self.damage, 1, 0, 50, char.Intent.ATTACK)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -82,13 +83,13 @@ class Looter(Enemy):
 
     class SmokeBomb(Intent):
         def __init__(self, ascension: int):
-            super().__init__("SmokeBomb", 0, 0, 6, 50)
+            super().__init__("SmokeBomb", 0, 0, 6, 50, char.Intent.DEFEND)
 
     class Escape(Intent):
         def __init__(self, ascension: int):
             super().__init__("Escape", 0, 0, 0, 0)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
-            super().__init__(enemy, enemy_list, player, player_list, debug)
+            super().__init__(enemy, enemy_list, player, player_list, debug, char.Intent.ESCAPE)
             enemy_list.remove(enemy)
 

@@ -1,5 +1,7 @@
 import random
 
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
@@ -42,7 +44,7 @@ class AcidSlimeSmall(Enemy):
 
     class Lick(Intent):
         def __init__(self):
-            super().__init__("Lick", 0, 0, 0, 50)
+            super().__init__("Lick", 0, 0, 0, 50, char.Intent.DEBUFF)
             self.weak = 1
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
@@ -58,4 +60,4 @@ class AcidSlimeSmall(Enemy):
             else:
                 self.damage = 4
 
-            super().__init__("Tackle", self.damage, 1, 0, 50)
+            super().__init__("Tackle", self.damage, 1, 0, 50, char.Intent.ATTACK)

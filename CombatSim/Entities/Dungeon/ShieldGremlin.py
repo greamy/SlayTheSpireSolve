@@ -1,8 +1,9 @@
-from CombatSim.Actions.Intent import Intent
-from CombatSim.Entities.Enemy import Enemy
 import random
 
-from CombatSim.Entities.Player import Player
+import spirecomm.spire.character as char
+
+from CombatSim.Actions.Intent import Intent
+from CombatSim.Entities.Enemy import Enemy
 
 
 class ShieldGremlin(Enemy):
@@ -36,7 +37,7 @@ class ShieldGremlin(Enemy):
                 self.block = 8
             else:
                 self.block = 11
-            super().__init__("Protect", 0, 0, self.block, 100)
+            super().__init__("Protect", 0, 0, self.block, 100, char.Intent.DEFEND)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             if len(enemy_list) > 1:
@@ -52,4 +53,4 @@ class ShieldGremlin(Enemy):
                 self.damage = 6
             else:
                 self.damage = 8
-            super().__init__("ShieldBash", self.damage, 1, 0, 0)
+            super().__init__("ShieldBash", self.damage, 1, 0, 0, char.Intent.ATTACK)

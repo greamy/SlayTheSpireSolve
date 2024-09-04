@@ -1,12 +1,14 @@
+import random
+
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Slimed import Slimed
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Dungeon.SpikeSlimeMedium import SpikeSlimeMedium
 from CombatSim.Entities.Enemy import Enemy
-import random
 
 from CombatSim.Entities.Frail import Frail
-from CombatSim.Entities.Player import Player
 
 
 class SpikeSlimeLarge(Enemy):
@@ -54,7 +56,7 @@ class SpikeSlimeLarge(Enemy):
                 self.damage = 16
             else:
                 self.damage = 18
-            super().__init__("Tackle", self.damage, 1, 0, 30)
+            super().__init__("Tackle", self.damage, 1, 0, 30, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -67,7 +69,7 @@ class SpikeSlimeLarge(Enemy):
                 self.frail = 2
             else:
                 self.frail = 3
-            super().__init__("Lick", 0, 0, 0, 70)
+            super().__init__("Lick", 0, 0, 0, 70, char.Intent.DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -79,7 +81,7 @@ class SpikeSlimeLarge(Enemy):
         def __init__(self, ascension: int, act):
             self.act = act
             self.ascension = ascension
-            super().__init__("Split", 0, 0, 0, 0)
+            super().__init__("Split", 0, 0, 0, 0, char.Intent.UNKNOWN)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             slime1 = SpikeSlimeMedium(self.ascension, self.act)

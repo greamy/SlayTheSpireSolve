@@ -1,10 +1,11 @@
-from CombatSim.Actions.Intent import Intent
-from CombatSim.Actions.Listener import Listener
-from CombatSim.Entities.Enemy import Enemy
 import random
 
+import spirecomm.spire.character as char
+
+from CombatSim.Actions.Intent import Intent
+from CombatSim.Entities.Enemy import Enemy
+
 from CombatSim.Entities.Metallicize import Metallicize
-from CombatSim.Entities.Player import Player
 
 class Lagavulin(Enemy):
     ATTACK = 0
@@ -53,7 +54,7 @@ class Lagavulin(Enemy):
 
     class Sleep(Intent):
         def __init__(self, ascension: int):
-            super().__init__("Sleep", 0, 0, 0, 100)
+            super().__init__("Sleep", 0, 0, 0, 100, char.Intent.SLEEP)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             pass
@@ -65,7 +66,7 @@ class Lagavulin(Enemy):
                 self.damage = 18
             else:
                 self.damage = 20
-            super().__init__("Attack", self.damage, 1, 0, 0)
+            super().__init__("Attack", self.damage, 1, 0, 0, char.Intent.ATTACK)
 
     class SiphonSoul(Intent):
         def __init__(self, ascension: int):
@@ -73,7 +74,7 @@ class Lagavulin(Enemy):
                 self.debuf = 1
             else:
                 self.debuf = 2
-            super().__init__("SiphonSoul", 0, 0, 0, 0)
+            super().__init__("SiphonSoul", 0, 0, 0, 0, char.Intent.STRONG_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             player.block_modifier -= self.debuf

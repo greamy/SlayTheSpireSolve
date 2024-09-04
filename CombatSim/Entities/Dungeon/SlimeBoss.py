@@ -1,10 +1,10 @@
+import spirecomm.spire.character as char
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Slimed import Slimed
-from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Dungeon.AcidSlimeLarge import AcidSlimeLarge
 from CombatSim.Entities.Dungeon.SpikeSlimeLarge import SpikeSlimeLarge
 from CombatSim.Entities.Enemy import Enemy
-import random
 from CombatSim.Entities.Player import Player
 
 
@@ -57,7 +57,7 @@ class SlimeBoss(Enemy):
                 self.slimed = 3
             else:
                 self.slimed = 5
-            super().__init__("GoopSpray", 0, 0, 0, 0)
+            super().__init__("GoopSpray", 0, 0, 0, 0, char.Intent.STRONG_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             for _ in range(self.slimed):
@@ -65,7 +65,7 @@ class SlimeBoss(Enemy):
 
     class Prepare(Intent):
         def __init__(self, ascension):
-            super().__init__("Prepare", 0, 0, 0, 1)
+            super().__init__("Prepare", 0, 0, 0, 1, char.Intent.UNKNOWN)
 
     class Slam(Intent):
         def __init__(self, ascension: int):
@@ -74,13 +74,13 @@ class SlimeBoss(Enemy):
             else:
                 self.damage = 38
 
-            super().__init__("Slam", self.damage, 1, 0, 2)
+            super().__init__("Slam", self.damage, 1, 0, 2, char.Intent.ATTACK)
 
     class Split(Intent):
         def __init__(self, ascension: int, act: int):
             self.ascension = ascension
             self.act = act
-            super().__init__("Split", 0, 0, 0, 97)
+            super().__init__("Split", 0, 0, 0, 97, char.Intent.UNKNOWN)
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
             slime1 = SpikeSlimeLarge(self.ascension, self.act)
