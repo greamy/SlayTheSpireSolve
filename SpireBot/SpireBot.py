@@ -48,13 +48,13 @@ class SpireBot:
             cards.append(class_(player))
         return cards
 
-    def combat_choose_next_action(self):
-        playable_cards = [card for card in self.state.hand if card.is_playable]
+    def combat_choose_next_action(self, state):
+        playable_cards = [card for card in state.hand if card.is_playable]
         playable_card_names = [card.name for card in playable_cards]
 
         enemies = []
         enemy_intents = []
-        for monster in self.state.monsters:
+        for monster in state.monsters:
             monster_name = monster.name.replace(" ", "")
             if "(S)" in monster_name:
                 monster_name = monster_name.replace("(S)", "Small")
@@ -74,7 +74,7 @@ class SpireBot:
                     monster_name = "RedSlaver"
             module = importlib.import_module("CombatSim.Entities.Dungeon." + monster_name)
             class_ = getattr(module, monster_name)
-            enemy = class_(self.state.ascension_level, self.state.act)
+            enemy = class_(state.ascension_level, state.act)
             enemy.health = monster.current_hp
             enemy.block = monster.block
 
@@ -92,17 +92,17 @@ class SpireBot:
 
             self.logger.write("Detected " + monster_name + " intent as " + str(enemy.intent))
 
-            enemies.append(class_(self.state.ascension_level, self.state.act))
-        player = Player(self.state.player.current_hp, self.state.player.energy, self.state.gold, self.state.potions, self.state.relics, [])
-        draw_pile = self.create_cards([card.name for card in self.state.draw_pile], player)
-        hand = self.create_cards([card.name for card in self.state.hand], player)
+            enemies.append(class_(state.ascension_level, state.act))
+        player = Player(state.player.current_hp, state.player.energy, state.gold, state.potions, state.relics, [])
+        draw_pile = self.create_cards([card.name for card in state.draw_pile], player)
+        hand = self.create_cards([card.name for card in state.hand], player)
 
         self.logger.write("Starting hand is: " + str(hand))
 
         discard_pile = self.create_cards([card.name for card in self.state.discard_pile], player)
         exhaust_pile = self.create_cards([card.name for card in self.state.exhaust_pile], player)
-        player.block = self.state.player.block
-        player.energy = self.state.player.energy
+        player.block = state.player.block
+        player.energy = state.player.energy
         combat = Combat(player, enemies, debug=False)
         card_results = {}
         playable_sim_cards = [card for i, card in enumerate(hand) if card.name in playable_card_names]
@@ -112,12 +112,12 @@ class SpireBot:
             player.deck.discard_pile = copy.deepcopy(discard_pile)
             player.deck.exhaust_pile = copy.deepcopy(exhaust_pile)
 
-            player.health = self.state.player.current_hp
-            player.block = self.state.player.block
-            player.energy = self.state.player.energy
+            player.health = state.player.current_hp
+            player.block = state.player.block
+            player.energy = state.player.energy
             for i, enemy in enumerate(enemies):
-                enemy.health = self.state.monsters[i].current_hp
-                enemy.block = self.state.monsters[i].block
+                enemy.health = state.monsters[i].current_hp
+                enemy.block = state.monsters[i].block
                 enemy.intent = enemy_intents[i]
 
             target_enemy = random.choice(enemies)
@@ -145,7 +145,7 @@ class SpireBot:
         # card_to_play = random.choice(playable_cards)
         # TODO: FINISH!
         if card_to_play.has_target:
-            available_monsters = [monster for monster in self.state.monsters if
+            available_monsters = [monster for monster in state.monsters if
                                   monster.current_hp > 0 and not monster.half_dead and not monster.is_gone]
             if len(available_monsters) == 0:
                 return EndTurnAction()
@@ -159,17 +159,17 @@ class SpireBot:
     def scry(self, cards, enemies, player_state):
         return [random.choice([True, False]) for _ in cards]
 
-    def choose_option(self):
-        if self.state.screen_type == ScreenType.EVENT:
-            if self.state.screen.event_id in ["Vampires", "Masked Bandits", "Knowing Skull", "Ghosts", "Liars Game",
+    def choose_option(self, state):
+        if state.screen_type == ScreenType.EVENT:
+            if state.screen.event_id in ["Vampires", "Masked Bandits", "Knowing Skull", "Ghosts", "Liars Game",
                                               "Golden Idol", "Drug Dealer", "The Library"]:
-                return ChooseAction(len(self.state.screen.options) - 1)
+                return ChooseAction(len(state.screen.options) - 1)
             else:
                 return ChooseAction(0)
-        if self.state.screen_type == ScreenType.CHEST:
+        if state.screen_type == ScreenType.CHEST:
             self.logger.write("Opening chest...")
             return OpenChestAction()
-        if self.state.screen_type == ScreenType.SHOP_ROOM:
+        if state.screen_type == ScreenType.SHOP_ROOM:
             if not self.visited_shop:
                 self.visited_shop = True
                 self.logger.write("Entering shop...")
@@ -178,15 +178,15 @@ class SpireBot:
                 self.logger.write("Leaving shop and Proceeding...")
                 self.visited_shop = False
                 return ProceedAction()
-        elif self.state.screen_type == ScreenType.REST:
+        elif state.screen_type == ScreenType.REST:
             self.logger.write("Rest options available")
             return self.choose_rest_option()
-        elif self.state.screen_type == ScreenType.CARD_REWARD:
+        elif state.screen_type == ScreenType.CARD_REWARD:
             self.logger.write("Card rewardds available")
             return self.choose_card_reward()
-        elif self.state.screen_type == ScreenType.COMBAT_REWARD:
-            for reward_item in self.state.screen.rewards:
-                if reward_item.reward_type == RewardType.POTION and self.state.are_potions_full():
+        elif state.screen_type == ScreenType.COMBAT_REWARD:
+            for reward_item in state.screen.rewards:
+                if reward_item.reward_type == RewardType.POTION and state.are_potions_full():
                     continue
                 elif reward_item.reward_type == RewardType.CARD and self.skipped_cards:
                     continue
@@ -194,38 +194,38 @@ class SpireBot:
                     return CombatRewardAction(reward_item)
             self.skipped_cards = False
             return ProceedAction()
-        elif self.state.screen_type == ScreenType.MAP:
+        elif state.screen_type == ScreenType.MAP:
             return self.make_map_choice()
-        elif self.state.screen_type == ScreenType.BOSS_REWARD:
-            relics = self.state.screen.relics
+        elif state.screen_type == ScreenType.BOSS_REWARD:
+            relics = state.screen.relics
             # best_boss_relic = self.priorities.get_best_boss_relic(relics)
             return BossRewardAction(random.choice(relics))
-        elif self.state.screen_type == ScreenType.SHOP_SCREEN:
-            if self.state.screen.purge_available and self.state.gold >= self.state.screen.purge_cost:
+        elif state.screen_type == ScreenType.SHOP_SCREEN:
+            if state.screen.purge_available and state.gold >= state.screen.purge_cost:
                 self.logger.write("Choosing purge...")
                 return ChooseAction(name="purge")
-            for relic in self.state.screen.relics:
-                if self.state.gold >= relic.price:
+            for relic in state.screen.relics:
+                if state.gold >= relic.price:
                     return BuyRelicAction(relic)
-            for card in self.state.screen.cards:
-                if self.state.gold >= card.price and random.randint(0, 1) == 0:
+            for card in state.screen.cards:
+                if state.gold >= card.price and random.randint(0, 1) == 0:
                     return BuyCardAction(card)
             return CancelAction()
-        elif self.state.screen_type == ScreenType.GRID:
-            if not self.state.choice_available:
+        elif state.screen_type == ScreenType.GRID:
+            if not state.choice_available:
                 return ProceedAction()
             else:
-                num_cards = self.state.screen.num_cards
+                num_cards = state.screen.num_cards
                 choices = []
                 for i in range(num_cards):
-                    choices.append(random.choice(self.state.screen.cards))
+                    choices.append(random.choice(state.screen.cards))
                 return CardSelectAction(choices)
-        elif self.state.screen_type == ScreenType.HAND_SELECT:
-            if not self.state.choice_available:
+        elif state.screen_type == ScreenType.HAND_SELECT:
+            if not state.choice_available:
                 return ProceedAction()
                 # Usually, we don't want to choose the whole hand for a hand select. 3 seems like a good compromise.
-            num_cards = min(self.state.screen.num_cards, 3)
-            cards = self.state.screen.cards
+            num_cards = min(state.screen.num_cards, 3)
+            cards = state.screen.cards
             choices = []
             for i in range(num_cards):
                 choices.append(random.choice(cards))
@@ -234,9 +234,9 @@ class SpireBot:
         else:
             return ProceedAction()
 
-    def choose_rest_option(self):
-        options = self.state.screen.rest_options
-        if len(options) > 0 and not self.state.screen.has_rested:
+    def choose_rest_option(self, state):
+        options = state.screen.rest_options
+        if len(options) > 0 and not state.screen.has_rested:
             choice = random.choice(options)
             self.logger.write("Choosing " + str(choice) + "...")
             return RestAction(random.choice(options))

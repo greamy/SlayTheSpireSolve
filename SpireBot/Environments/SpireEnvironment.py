@@ -32,18 +32,28 @@ class SpireEnvironment(Environment):
         self.bot = SpireBot(logger)
         self.logger = logger
 
-    # def run(self):
-    #     print("READY")
-    #     self.get_state()
-    #     print("START Watcher 0")
-    #     # Click through menus
-    #     while True:
-    #         time.sleep(1)
-    #         self.get_state()
-    #         self.process_state(self.state)
-
     def start_game(self):
         return StartGameAction(AllPlayerClasses.WATCHER)
 
     def handle_error(self, error):
         self.logger.write(error)
+
+    def get_next_action(self, game_state: Game):
+        time.sleep(1)
+        self.state = game_state
+        if self.state.choice_available:
+            self.logger.write("Choice Option Available")
+            return self.bot.choose_option(self.state)
+        if self.state.proceed_available:
+            self.logger.write("Proceeding...")
+            return ProceedAction()
+        if self.state.play_available:
+            self.logger.write("Play card available")
+            # TODO: Play potions and cards
+            return self.bot.combat_choose_next_action(self.state)
+        if self.state.end_available:
+            self.logger.write("Ending turn...")
+            return EndTurnAction()
+        if self.state.cancel_available:
+            self.logger.write("Cancelling...")
+            return CancelAction()

@@ -3,11 +3,9 @@ Choice Option Available
 Choice Option Available
 Choice Option Available
 Play card available
-SpikeSlimeSmall intent is Intent.ATTACK
-Detected SpikeSlimeSmall intent as INTENT: Tackle - Damage: 5 Attacks: 1 Block: 0 Probability: 100
-AcidSlimeMedium intent is Intent.ATTACK_DEBUFF
-Detected AcidSlimeMedium intent as INTENT: Corrosive Spit - Damage: 7 Attacks: 1 Block: 0 Probability: 30
-Starting hand is: [<CombatSim.Actions.Library.Miracle.Miracle object at 0x0000026146206130>, <CombatSim.Actions.Library.Strike.Strike object at 0x0000026146206F70>, <CombatSim.Actions.Library.Defend.Defend object at 0x0000026146206100>, <CombatSim.Actions.Library.Vigilance.Vigilance object at 0x00000261462236A0>, <CombatSim.Actions.Library.Strike.Strike object at 0x0000026146223370>, <CombatSim.Actions.Library.Defend.Defend object at 0x0000026146223820>]
+Cultist intent is Intent.BUFF
+Detected Cultist intent as INTENT: Incantation - Damage: 0 Attacks: 0 Block: 0 Probability: 0
+Starting hand is: [<CombatSim.Actions.Library.Miracle.Miracle object at 0x000002178E4AEA30>, <CombatSim.Actions.Library.Strike.Strike object at 0x000002178E4B1BB0>, <CombatSim.Actions.Library.Defend.Defend object at 0x000002178E4B87F0>, <CombatSim.Actions.Library.Defend.Defend object at 0x000002178E4B8520>, <CombatSim.Actions.Library.Strike.Strike object at 0x000002178E4B84F0>, <CombatSim.Actions.Library.Strike.Strike object at 0x000002178E4B83A0>]
 Playing Miracle on enemy ENEMY
 Health: 1 Block: 0
 Enemy health at 1 after playing Miracle
@@ -17,132 +15,35 @@ Enemy health at 0 after playing Strike
 Playing Defend on enemy ENEMY
 Health: 1 Block: 0
 Enemy health at 1 after playing Defend
-Playing Vigilance on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Vigilance
-Playing Strike on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 0 after playing Strike
-Playing Defend on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Defend
-After playing each, card results found: {'Miracle': [2, 60], 'Strike': [1, 60], 'Defend': [2, 65], 'Vigilance': [2, 68]}
-Best card order: ['Vigilance']
-Playing Vigilance
-Play card available
-SpikeSlimeSmall intent is Intent.ATTACK
-Detected SpikeSlimeSmall intent as INTENT: Tackle - Damage: 5 Attacks: 1 Block: 0 Probability: 100
-AcidSlimeMedium intent is Intent.ATTACK_DEBUFF
-Detected AcidSlimeMedium intent as INTENT: Corrosive Spit - Damage: 7 Attacks: 1 Block: 0 Probability: 30
-Starting hand is: [<CombatSim.Actions.Library.Miracle.Miracle object at 0x0000026145D57130>, <CombatSim.Actions.Library.Strike.Strike object at 0x0000026145D57940>, <CombatSim.Actions.Library.Defend.Defend object at 0x0000026145D57370>, <CombatSim.Actions.Library.Strike.Strike object at 0x0000026145D579A0>, <CombatSim.Actions.Library.Defend.Defend object at 0x0000026145D575B0>]
-Playing Miracle on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Miracle
-Playing Strike on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 0 after playing Strike
 Playing Defend on enemy ENEMY
 Health: 1 Block: 0
 Enemy health at 1 after playing Defend
 Playing Strike on enemy ENEMY
 Health: 1 Block: 0
 Enemy health at 0 after playing Strike
-Playing Defend on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Defend
-After playing each, card results found: {'Miracle': [2, 68], 'Strike': [1, 68], 'Defend': [2, 72]}
-Best card order: ['Defend']
-Playing Defend
-Play card available
-SpikeSlimeSmall intent is Intent.ATTACK
-Detected SpikeSlimeSmall intent as INTENT: Tackle - Damage: 5 Attacks: 1 Block: 0 Probability: 100
-AcidSlimeMedium intent is Intent.ATTACK_DEBUFF
-Detected AcidSlimeMedium intent as INTENT: Corrosive Spit - Damage: 7 Attacks: 1 Block: 0 Probability: 30
-Starting hand is: [<CombatSim.Actions.Library.Miracle.Miracle object at 0x000002614622FA90>, <CombatSim.Actions.Library.Strike.Strike object at 0x000002614622FAC0>, <CombatSim.Actions.Library.Strike.Strike object at 0x000002614622FA30>, <CombatSim.Actions.Library.Defend.Defend object at 0x000002614622FA60>]
-Playing Miracle on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Miracle
-After playing each, card results found: {'Miracle': [2, 72]}
-Best card order: ['Miracle']
-Playing Miracle
-Play card available
-SpikeSlimeSmall intent is Intent.ATTACK
-Detected SpikeSlimeSmall intent as INTENT: Tackle - Damage: 5 Attacks: 1 Block: 0 Probability: 100
-AcidSlimeMedium intent is Intent.ATTACK_DEBUFF
-Detected AcidSlimeMedium intent as INTENT: Corrosive Spit - Damage: 7 Attacks: 1 Block: 0 Probability: 30
-Starting hand is: [<CombatSim.Actions.Library.Strike.Strike object at 0x0000026146230A90>, <CombatSim.Actions.Library.Strike.Strike object at 0x0000026146230AC0>, <CombatSim.Actions.Library.Defend.Defend object at 0x0000026146230A30>]
 Playing Strike on enemy ENEMY
 Health: 1 Block: 0
 Enemy health at 0 after playing Strike
-Playing Strike on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 0 after playing Strike
-Playing Defend on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Defend
-After playing each, card results found: {'Strike': [1, 72], 'Defend': [2, 72]}
-Best card order: ['Strike', 'Defend']
-Playing Strike on Spike Slime (S)
-Ending turn...
-Play card available
-SpikeSlimeSmall intent is Intent.ATTACK
-Detected SpikeSlimeSmall intent as INTENT: Tackle - Damage: 5 Attacks: 1 Block: 0 Probability: 100
-AcidSlimeMedium intent is Intent.DEBUFF
-Detected AcidSlimeMedium intent as INTENT: Lick - Damage: 0 Attacks: 0 Block: 0 Probability: 30
-Starting hand is: [<CombatSim.Actions.Library.Eruption.Eruption object at 0x0000026146200100>, <CombatSim.Actions.Library.Strike.Strike object at 0x0000026146200160>, <CombatSim.Actions.Library.Defend.Defend object at 0x00000261462001C0>, <CombatSim.Actions.Library.Strike.Strike object at 0x0000026146200130>, <CombatSim.Actions.Library.Defend.Defend object at 0x0000026146200220>]
-Playing Eruption on enemy ENEMY
-Health: 0 Block: 0
-Enemy health at 0 after playing Eruption
-Playing Strike on enemy ENEMY
-Health: 0 Block: 0
-Enemy health at 0 after playing Strike
-Playing Defend on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Defend
-Playing Strike on enemy ENEMY
-Health: 0 Block: 0
-Enemy health at 0 after playing Strike
-Playing Defend on enemy ENEMY
-Health: 0 Block: 0
-Enemy health at 0 after playing Defend
-After playing each, card results found: {'Eruption': [1, 62], 'Strike': [1, 62], 'Defend': [1, 67]}
-Best card order: ['Defend']
-Playing Defend
-Play card available
-SpikeSlimeSmall intent is Intent.ATTACK
-Detected SpikeSlimeSmall intent as INTENT: Tackle - Damage: 5 Attacks: 1 Block: 0 Probability: 100
-AcidSlimeMedium intent is Intent.DEBUFF
-Detected AcidSlimeMedium intent as INTENT: Lick - Damage: 0 Attacks: 0 Block: 0 Probability: 30
-Starting hand is: [<CombatSim.Actions.Library.Eruption.Eruption object at 0x000002614622C820>, <CombatSim.Actions.Library.Strike.Strike object at 0x000002614622CC40>, <CombatSim.Actions.Library.Strike.Strike object at 0x000002614622CE80>, <CombatSim.Actions.Library.Defend.Defend object at 0x000002614622C4F0>]
-Playing Eruption on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 0 after playing Eruption
-Playing Strike on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 0 after playing Strike
-Playing Strike on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 0 after playing Strike
-Playing Defend on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Defend
-After playing each, card results found: {'Eruption': [0, 67], 'Strike': [0, 67], 'Defend': [1, 72]}
-Best card order: ['Defend']
-Playing Defend
-Play card available
-SpikeSlimeSmall intent is Intent.ATTACK
-Detected SpikeSlimeSmall intent as INTENT: Tackle - Damage: 5 Attacks: 1 Block: 0 Probability: 100
-AcidSlimeMedium intent is Intent.DEBUFF
-Detected AcidSlimeMedium intent as INTENT: Lick - Damage: 0 Attacks: 0 Block: 0 Probability: 30
-Starting hand is: [<CombatSim.Actions.Library.Eruption.Eruption object at 0x0000026146201A30>, <CombatSim.Actions.Library.Strike.Strike object at 0x0000026146201A90>, <CombatSim.Actions.Library.Strike.Strike object at 0x0000026146201940>]
-Playing Strike on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 0 after playing Strike
-Playing Strike on enemy ENEMY
-Health: 0 Block: 0
-Enemy health at 0 after playing Strike
-After playing each, card results found: {'Strike': [1, 72]}
-Best card order: ['Strike']
-Playing Strike on Acid Slime (M)
+After playing each, card results found: {'Miracle': [1, 72], 'Strike': [0, 72], 'Defend': [1, 72]}
+Best card order: ['Strike', 'Miracle', 'Defend']
+Playing Strike on Cultist
 Choice Option Available
-'NoneType' object has no attribute 'can_be_executed'
+Choice Option Available
+Choice Option Available
+Choice Option Available
+Card rewardds available
+Choosing Follow-Up...
+Proceeding...
+Choice Option Available
+Choice Option Available
+Choice Option Available
+Choice Option Available
+Choice Option Available
+Choice Option Available
+Choice Option Available
+Play card available
+AcidSlimeSmall intent is Intent.DEBUFF
+Detected AcidSlimeSmall intent as INTENT: Lick - Damage: 0 Attacks: 0 Block: 0 Probability: 50
+SpikeSlimeMedium intent is Intent.DEBUFF
+Detected SpikeSlimeMedium intent as INTENT: Lick - Damage: 0 Attacks: 0 Block: 0 Probability: 70
+No module named 'CombatSim.Actions.Library.Follow-Up'
