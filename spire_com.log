@@ -3,47 +3,5 @@ Choice Option Available
 Choice Option Available
 Choice Option Available
 Play card available
-Cultist intent is Intent.BUFF
-Detected Cultist intent as INTENT: Incantation - Damage: 0 Attacks: 0 Block: 0 Probability: 0
-Starting hand is: [<CombatSim.Actions.Library.Miracle.Miracle object at 0x000002178E4AEA30>, <CombatSim.Actions.Library.Strike.Strike object at 0x000002178E4B1BB0>, <CombatSim.Actions.Library.Defend.Defend object at 0x000002178E4B87F0>, <CombatSim.Actions.Library.Defend.Defend object at 0x000002178E4B8520>, <CombatSim.Actions.Library.Strike.Strike object at 0x000002178E4B84F0>, <CombatSim.Actions.Library.Strike.Strike object at 0x000002178E4B83A0>]
-Playing Miracle on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Miracle
-Playing Strike on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 0 after playing Strike
-Playing Defend on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Defend
-Playing Defend on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 1 after playing Defend
-Playing Strike on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 0 after playing Strike
-Playing Strike on enemy ENEMY
-Health: 1 Block: 0
-Enemy health at 0 after playing Strike
-After playing each, card results found: {'Miracle': [1, 72], 'Strike': [0, 72], 'Defend': [1, 72]}
-Best card order: ['Strike', 'Miracle', 'Defend']
-Playing Strike on Cultist
-Choice Option Available
-Choice Option Available
-Choice Option Available
-Choice Option Available
-Card rewardds available
-Choosing Follow-Up...
-Proceeding...
-Choice Option Available
-Choice Option Available
-Choice Option Available
-Choice Option Available
-Choice Option Available
-Choice Option Available
-Choice Option Available
-Play card available
-AcidSlimeSmall intent is Intent.DEBUFF
-Detected AcidSlimeSmall intent as INTENT: Lick - Damage: 0 Attacks: 0 Block: 0 Probability: 50
-SpikeSlimeMedium intent is Intent.DEBUFF
-Detected SpikeSlimeMedium intent as INTENT: Lick - Damage: 0 Attacks: 0 Block: 0 Probability: 70
-No module named 'CombatSim.Actions.Library.Follow-Up'
+JawWorm intent is Intent.DEBUG
+list index out of range

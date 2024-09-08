@@ -13,12 +13,14 @@ class Entity:
         self.block_modifier = 0
         self.block_multiplier = 1.0
         self.listeners = []
+        self.barricade = False
 
     def do_turn(self, opponents, debug):
         pass
 
     def start_turn(self, opponents, debug):
-        self.block = 0
+        if not self.barricade:
+            self.block = 0
         self.notify_listeners(Listener.Event.START_TURN, opponents, debug)
 
     def end_turn(self, opponents, debug):

@@ -1,6 +1,5 @@
 import copy
 import importlib
-import re
 import random
 import time
 
@@ -25,14 +24,14 @@ class SpireBot:
         self.state = game_state
         if self.state.choice_available:
             self.logger.write("Choice Option Available")
-            return self.choose_option()
+            return self.choose_option(self.state)
         if self.state.proceed_available:
             self.logger.write("Proceeding...")
             return ProceedAction()
         if self.state.play_available:
             self.logger.write("Play card available")
             # TODO: Play potions and cards
-            return self.combat_choose_next_action()
+            return self.combat_choose_next_action(self.state)
         if self.state.end_available:
             self.logger.write("Ending turn...")
             return EndTurnAction()
@@ -180,7 +179,7 @@ class SpireBot:
                 return ProceedAction()
         elif state.screen_type == ScreenType.REST:
             self.logger.write("Rest options available")
-            return self.choose_rest_option()
+            return self.choose_rest_option(state)
         elif state.screen_type == ScreenType.CARD_REWARD:
             self.logger.write("Card rewardds available")
             return self.choose_card_reward()

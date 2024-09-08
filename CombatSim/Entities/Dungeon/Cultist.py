@@ -22,7 +22,6 @@ class Cultist(Enemy):
         else:
             super().__init__(random.randint(50, 56), intent_set, ascension, minion=False)
 
-
     def choose_intent(self):
         if self.num_turns == 0:
             self.intent = self.intent_set[self.INCANTATION]
@@ -36,23 +35,22 @@ class Cultist(Enemy):
         return True
 
     class Incantation(Intent):
-            def __init__(self, ascension: int):
-                super().__init__("Incantation", 0, 0, 0, 0, char.Intent.BUFF)
-                self.ritual = 3
-                if ascension >= 2:
-                    self.ritual = 4
-                elif ascension >= 17:
-                    self.ritual = 5
-                self.listener = Listener(Listener.Event.END_TURN, self.do_ritual)
+        def __init__(self, ascension: int):
+            super().__init__("Incantation", 0, 0, 0, 0, char.Intent.BUFF)
+            self.ritual = 3
+            if ascension >= 2:
+                self.ritual = 4
+            elif ascension >= 17:
+                self.ritual = 5
+            self.listener = Listener(Listener.Event.END_TURN, self.do_ritual)
 
-            def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
-                super().play(enemy, enemy_list, player, player_list, debug)
-                enemy.add_listener(self.listener)
+        def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
+            super().play(enemy, enemy_list, player, player_list, debug)
+            enemy.add_listener(self.listener)
 
-            def do_ritual(self, enemy: Enemy, player: Player, player_list: list[Player], debug: bool):
-                enemy.damage_dealt_modifier += self.ritual
+        def do_ritual(self, enemy: Enemy, player: Player, player_list: list[Player], debug: bool):
+            enemy.damage_dealt_modifier += self.ritual
 
     class DarkStrike(Intent):
         def __init__(self, ascension: int):
             super().__init__("DarkStrike", 6, 1, 0, 100, char.Intent.ATTACK)
-
