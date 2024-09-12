@@ -1,3 +1,6 @@
+import time
+
+from spirecomm.communication.action import ProceedAction
 from spirecomm.spire.character import PlayerClass
 
 from SpireBot.Environments.SpireEnvironment import SpireEnvironment
@@ -14,7 +17,28 @@ def main():
     # env.run()
     try:
         coord = Coordinator()
-        coord.signal_ready()
+        # coord.signal_ready()
+        print("ready")
+        time.sleep(1)
+        input()
+        print("start WATCHER 0")
+        time.sleep(1)
+        input()
+        print("choose 0")
+        time.sleep(1)
+        input()
+        print("choose 0")
+        time.sleep(1)
+        input()
+        print("proceed")
+        time.sleep(1)
+        input()
+        print("choose 0")
+        time.sleep(1)
+        logger.write(input())
+
+
+
         coord.register_command_error_callback(env.handle_error)
         coord.register_state_change_callback(env.get_next_action)
         coord.register_out_of_game_callback(env.start_game)

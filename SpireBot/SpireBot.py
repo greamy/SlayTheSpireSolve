@@ -18,70 +18,20 @@ class SpireBot:
         self.logger = logger
         # self.logger = Logger("C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\spire_com", ".log")
 
-    def create_cards(self, names: list, player: Player):
-        cards = []
-        for card in names:
-            module = importlib.import_module("CombatSim.Actions.Library." + card.replace(' ', ''))
-            class_ = getattr(module, card.replace(' ', ''))
-            cards.append(class_(player))
-        return cards
-
-    def combat_choose_next_action(self, state):
-        playable_cards = [card for card in state.hand if card.is_playable]
+    def combat_choose_next_action(self, playable_cards, monsters, combat):
         playable_card_names = [card.name for card in playable_cards]
 
-        enemies = []
-        enemy_intents = []
-        for monster in state.monsters:
-            monster_name = monster.name.replace(" ", "")
-            if "(S)" in monster_name:
-                monster_name = monster_name.replace("(S)", "Small")
-            if "(M)" in monster_name:
-                monster_name = monster_name.replace("(M)", "Medium")
-            if "(L)" in monster_name:
-                monster_name = monster_name.replace("(L)", "Large")
-            if "Louse" in monster_name:
-                if monster.monster_id == "FuzzyLouseDefensive":
-                    monster_name = "GreenLouse"
-                else:
-                    monster_name = "RedLouse"
-            if "Slaver" in monster_name:
-                if monster.monster_id == "SlaverBlue":
-                    monster_name = "BlueSlaver"
-                else:
-                    monster_name = "RedSlaver"
-            module = importlib.import_module("CombatSim.Entities.Dungeon." + monster_name)
-            class_ = getattr(module, monster_name)
-            enemy = class_(state.ascension_level, state.act)
-            enemy.health = monster.current_hp
-            enemy.block = monster.block
+        player = combat.player
+        enemies = combat.enemies
+        enemy_intents = [enemy.intent for enemy in enemies]
+        enemy_healths = [enemy.health for enemy in enemies]
+        enemy_blocks = [enemy.block for enemy in enemies]
+        hand = player.deck.hand
+        draw_pile = player.deck.draw_pile
+        discard_pile = player.deck.discard_pile
+        exhaust_pile = player.deck.exhaust_pile
 
-            self.logger.write(monster_name + " intent is " + str(monster.intent))
-            possible_intents = [intent for intent in enemy.intent_set if intent.intent_type == monster.intent]
-            if len(possible_intents) > 1:
-                if monster.intent == char.Intent.ATTACK:
-                    enemy.intent = [intent for intent in enemy.intent_set if intent.damage == monster.move_base_damage][0]
-                else:
-                    enemy.intent = random.choice(enemy.intent)
-            else:
-                enemy.intent = possible_intents[0]
 
-            enemy_intents.append(enemy.intent)
-
-            self.logger.write("Detected " + monster_name + " intent as " + str(enemy.intent))
-
-            enemies.append(class_(state.ascension_level, state.act))
-        player = Player(state.player.current_hp, state.player.energy, state.gold, state.potions, state.relics, [])
-        draw_pile = self.create_cards([card.name for card in state.draw_pile], player)
-        hand = self.create_cards([card.name for card in state.hand], player)
-
-        self.logger.write("Starting hand is: " + str(hand))
-
-        discard_pile = self.create_cards([card.name for card in state.discard_pile], player)
-        exhaust_pile = self.create_cards([card.name for card in state.exhaust_pile], player)
-        player.block = state.player.block
-        player.energy = state.player.energy
-        combat = Combat(player, enemies, debug=False)
         card_results = {}
         playable_sim_cards = [card for i, card in enumerate(hand) if card.name in playable_card_names]
         for card in playable_sim_cards:
@@ -90,12 +40,12 @@ class SpireBot:
             player.deck.discard_pile = copy.deepcopy(discard_pile)
             player.deck.exhaust_pile = copy.deepcopy(exhaust_pile)
 
-            player.health = state.player.current_hp
-            player.block = state.player.block
-            player.energy = state.player.energy
+            player.health = player.health
+            player.block = player.block
+            player.energy = player.energy
             for i, enemy in enumerate(enemies):
-                enemy.health = state.monsters[i].current_hp
-                enemy.block = state.monsters[i].block
+                enemy.health = enemy_healths[i]
+                enemy.block = enemy_blocks[i]
                 enemy.intent = enemy_intents[i]
 
             target_enemy = random.choice(enemies)
@@ -123,7 +73,7 @@ class SpireBot:
         # card_to_play = random.choice(playable_cards)
         # TODO: FINISH!
         if card_to_play.has_target:
-            available_monsters = [monster for monster in state.monsters if
+            available_monsters = [monster for monster in monsters if
                                   monster.current_hp > 0 and not monster.half_dead and not monster.is_gone]
             if len(available_monsters) == 0:
                 return EndTurnAction()
