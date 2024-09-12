@@ -16,7 +16,7 @@ def main():
         coord = Coordinator()
         coord.signal_ready()
         coord.register_command_error_callback(env.handle_error)
-        coord.register_state_change_callback(env.bot.get_next_action)
+        coord.register_state_change_callback(env.get_next_action)
         coord.register_out_of_game_callback(env.start_game)
         coord.play_one_game(AllPlayerClasses.WATCHER)
     except Exception as e:

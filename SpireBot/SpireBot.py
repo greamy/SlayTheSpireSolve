@@ -98,8 +98,8 @@ class SpireBot:
 
         self.logger.write("Starting hand is: " + str(hand))
 
-        discard_pile = self.create_cards([card.name for card in self.state.discard_pile], player)
-        exhaust_pile = self.create_cards([card.name for card in self.state.exhaust_pile], player)
+        discard_pile = self.create_cards([card.name for card in state.discard_pile], player)
+        exhaust_pile = self.create_cards([card.name for card in state.exhaust_pile], player)
         player.block = state.player.block
         player.energy = state.player.energy
         combat = Combat(player, enemies, debug=False)
@@ -182,7 +182,7 @@ class SpireBot:
             return self.choose_rest_option(state)
         elif state.screen_type == ScreenType.CARD_REWARD:
             self.logger.write("Card rewardds available")
-            return self.choose_card_reward()
+            return self.choose_card_reward(state)
         elif state.screen_type == ScreenType.COMBAT_REWARD:
             for reward_item in state.screen.rewards:
                 if reward_item.reward_type == RewardType.POTION and state.are_potions_full():
@@ -194,7 +194,7 @@ class SpireBot:
             self.skipped_cards = False
             return ProceedAction()
         elif state.screen_type == ScreenType.MAP:
-            return self.make_map_choice()
+            return self.make_map_choice(state)
         elif state.screen_type == ScreenType.BOSS_REWARD:
             relics = state.screen.relics
             # best_boss_relic = self.priorities.get_best_boss_relic(relics)
@@ -243,16 +243,16 @@ class SpireBot:
             self.logger.write("Proceeding and leaving rest area...")
             return ProceedAction()
 
-    def choose_card_reward(self):
-        cards = self.state.screen.cards
+    def choose_card_reward(self, state):
+        cards = state.screen.cards
         choice = random.choice(cards)
         self.logger.write("Choosing " + choice.name + "...")
         return CardRewardAction(choice)
 
-    def make_map_choice(self):
-        if self.state.screen.boss_available:
+    def make_map_choice(self, state):
+        if state.screen.boss_available:
             return ChooseMapBossAction()
-        if len(self.state.screen.next_nodes) > 0:
-            choice = random.choice(self.state.screen.next_nodes)
+        if len(state.screen.next_nodes) > 0:
+            choice = random.choice(state.screen.next_nodes)
             return ChooseMapNodeAction(choice)
         return ChooseMapNodeAction(0)
