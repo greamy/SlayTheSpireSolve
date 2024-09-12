@@ -13,31 +13,10 @@ from CombatSim.Entities.Player import Player
 
 class SpireBot:
     def __init__(self, logger):
-        self.state = None
         self.visited_shop = False
         self.skipped_cards = False
         self.logger = logger
         # self.logger = Logger("C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\spire_com", ".log")
-
-    def get_next_action(self, game_state: Game):
-        time.sleep(1)
-        self.state = game_state
-        if self.state.choice_available:
-            self.logger.write("Choice Option Available")
-            return self.choose_option(self.state)
-        if self.state.proceed_available:
-            self.logger.write("Proceeding...")
-            return ProceedAction()
-        if self.state.play_available:
-            self.logger.write("Play card available")
-            # TODO: Play potions and cards
-            return self.combat_choose_next_action(self.state)
-        if self.state.end_available:
-            self.logger.write("Ending turn...")
-            return EndTurnAction()
-        if self.state.cancel_available:
-            self.logger.write("Cancelling...")
-            return CancelAction()
 
     def create_cards(self, names: list, player: Player):
         cards = []

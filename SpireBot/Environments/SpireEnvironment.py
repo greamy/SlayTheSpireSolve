@@ -33,6 +33,7 @@ class SpireEnvironment(Environment):
         self.logger = logger
 
     def start_game(self):
+        self.logger.write("Starting Watcher Game")
         return StartGameAction(AllPlayerClasses.WATCHER)
 
     def handle_error(self, error):
@@ -40,6 +41,7 @@ class SpireEnvironment(Environment):
 
     def get_next_action(self, game_state: Game):
         time.sleep(1)
+        self.logger.write("Getting next action...")
         self.state = game_state
         if self.state.choice_available:
             self.logger.write("Choice Option Available")
