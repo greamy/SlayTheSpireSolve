@@ -8,6 +8,7 @@ Getting next action...
 Choice Option Available
 Getting next action...
 Play card available
+<<<<<<< HEAD
 Cultist intent is Intent.BUFF
 Detected Cultist intent as INTENT: Incantation - Damage: 0 Attacks: 0 Block: 0 Probability: 0
 Starting hand is: [<CombatSim.Actions.Library.Miracle.Miracle object at 0x000001DC9EFC5490>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFC5460>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFD85E0>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFD8430>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9EFD8160>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFD82E0>]
@@ -257,4 +258,3 @@ Choice Option Available
 Getting next action...
 Play card available
 MadGremlin intent is Intent.DEBUG
-list index out of range

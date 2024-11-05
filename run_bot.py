@@ -1,3 +1,4 @@
+import json
 import time
 import json
 from spirecomm.communication.action import ProceedAction
@@ -11,7 +12,7 @@ from spirecomm.communication.coordinator import Coordinator
 
 
 def main():
-    logger = Logger("C:\\Users\\Grant\\PycharmProjects\\SlayTheSpireSolve\\spire_com", ".log")
+    logger = Logger("C:\\Users\\Owner\\PycharmProjects\\SlayTheSpireSolve\\spire_com", ".log")
     # logger = Logger("/Users/grant/PycharmProjects/SlayTheSpireSolve/spire_com", ".log")
     env = SpireEnvironment(logger)
     # env.run()
