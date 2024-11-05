@@ -51,6 +51,9 @@ class Combat:
 
         return num_turns, self.player.health, self.player.is_alive()
 
+    def get_state(self) -> CombatState:
+        pass
+
     def run_turn(self, start_card, target_enemy):
         self.player.play_card(start_card, target_enemy, self.enemies, self.debug)
         for enemy in self.enemies:

@@ -5,9 +5,8 @@ import spirecomm.spire.character as char
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Actions.Listener import Listener
-from CombatSim.Entities.Frail import Frail
-from CombatSim.Entities.PlatedArmor import PlatedArmor
-from CombatSim.Entities.Player import Player
+from CombatSim.Entities.Status.Frail import Frail
+from CombatSim.Entities.Status.PlatedArmor import PlatedArmor
 
 
 class ShelledParasite(Enemy):

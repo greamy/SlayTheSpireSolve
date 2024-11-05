@@ -1,7 +1,260 @@
+Getting next action...
 Choice Option Available
+Getting next action...
 Choice Option Available
+Getting next action...
 Choice Option Available
+Getting next action...
 Choice Option Available
+Getting next action...
 Play card available
-JawWorm intent is Intent.DEBUG
+Cultist intent is Intent.BUFF
+Detected Cultist intent as INTENT: Incantation - Damage: 0 Attacks: 0 Block: 0 Probability: 0
+Starting hand is: [<CombatSim.Actions.Library.Miracle.Miracle object at 0x000001DC9EFC5490>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFC5460>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFD85E0>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFD8430>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9EFD8160>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFD82E0>]
+Playing Miracle on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Miracle
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Defend on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Defend
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Strike
+After playing each, card results found: {'Miracle': [1, 72], 'Strike': [1, 72], 'Defend': [1, 72]}
+Best card order: ['Miracle', 'Strike', 'Defend']
+Playing Miracle
+Getting next action...
+Play card available
+Cultist intent is Intent.BUFF
+Detected Cultist intent as INTENT: Incantation - Damage: 0 Attacks: 0 Block: 0 Probability: 0
+Starting hand is: [<CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFA83D0>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFA84C0>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFA8370>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9EFA8460>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFA8310>]
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Defend on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Defend
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Strike
+After playing each, card results found: {'Strike': [1, 72], 'Defend': [1, 72]}
+Best card order: ['Strike', 'Defend']
+Playing Strike on Cultist
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Card rewardds available
+Choosing Windmill Strike...
+Getting next action...
+Proceeding...
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Play card available
+JawWorm intent is Intent.ATTACK
+Detected JawWorm intent as INTENT: Chomp - Damage: 12 Attacks: 1 Block: 0 Probability: 25
+Starting hand is: [<CombatSim.Actions.Library.Miracle.Miracle object at 0x000001DC9EFB5160>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFB5100>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFB5190>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFB56D0>, <CombatSim.Actions.Library.Vigilance.Vigilance object at 0x000001DC9EFB5130>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9EFB5670>]
+Playing Miracle on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Miracle
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Vigilance on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Vigilance
+Playing Defend on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Defend
+After playing each, card results found: {'Miracle': [1, 53], 'Strike': [0, 17], 'Vigilance': [1, 5], 'Defend': [1, 0]}
+Best card order: ['Miracle']
+Playing Miracle
+Getting next action...
+Play card available
+JawWorm intent is Intent.ATTACK
+Detected JawWorm intent as INTENT: Chomp - Damage: 12 Attacks: 1 Block: 0 Probability: 25
+Starting hand is: [<CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFA8B80>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFA83D0>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFA8BB0>, <CombatSim.Actions.Library.Vigilance.Vigilance object at 0x000001DC9EFA8370>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9EFA8310>]
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Vigilance on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Vigilance
+Playing Defend on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Defend
+After playing each, card results found: {'Strike': [0, 29], 'Vigilance': [1, 17], 'Defend': [1, 10]}
+Best card order: ['Strike']
+Playing Strike on Jaw Worm
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Card rewardds available
+Choosing Nirvana...
+Getting next action...
+Proceeding...
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Entering shop...
+Getting next action...
+Choice Option Available
+Choosing purge...
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Cancelling...
+Getting next action...
+Choice Option Available
+Leaving shop and Proceeding...
+Getting next action...
+Choice Option Available
+Getting next action...
+Play card available
+GreenLouse intent is Intent.DEBUFF
+Detected GreenLouse intent as INTENT: Spit - Damage: 0 Attacks: 0 Block: 0 Probability: 25
+RedLouse intent is Intent.ATTACK
+Detected RedLouse intent as INTENT: Bite - Damage: 1 Attacks: 1 Block: 0 Probability: 75
+Starting hand is: [<CombatSim.Actions.Library.Miracle.Miracle object at 0x000001DC9F0968B0>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9F096910>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9F096940>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9F096970>, <CombatSim.Actions.Library.Nirvana.Nirvana object at 0x000001DC9F0969A0>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9F096A00>]
+Playing Miracle on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Miracle
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Defend on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Defend
+Playing Nirvana on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Nirvana
+Playing Defend on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Defend
+After playing each, card results found: {'Miracle': [2, 59], 'Strike': [1, 47], 'Defend': [2, 34], 'Nirvana': [2, 40]}
+Best card order: ['Miracle']
+Playing Miracle
+Getting next action...
+Play card available
+GreenLouse intent is Intent.DEBUFF
+Detected GreenLouse intent as INTENT: Spit - Damage: 0 Attacks: 0 Block: 0 Probability: 25
+RedLouse intent is Intent.ATTACK
+Detected RedLouse intent as INTENT: Bite - Damage: 1 Attacks: 1 Block: 0 Probability: 75
+Starting hand is: [<CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFB5670>, <CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9EFB5C40>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9EFB5FD0>, <CombatSim.Actions.Library.Nirvana.Nirvana object at 0x000001DC9EFB5190>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9EFB5130>]
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Defend on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Defend
+Playing Nirvana on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Nirvana
+Playing Defend on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Defend
+After playing each, card results found: {'Strike': [1, 55], 'Defend': [2, 45], 'Nirvana': [2, 50]}
+Best card order: ['Strike']
+Playing Strike on Louse
+Getting next action...
+Play card available
+GreenLouse intent is Intent.DEBUFF
+Detected GreenLouse intent as INTENT: Spit - Damage: 0 Attacks: 0 Block: 0 Probability: 25
+RedLouse intent is Intent.ATTACK
+Detected RedLouse intent as INTENT: Bite - Damage: 1 Attacks: 1 Block: 0 Probability: 75
+Starting hand is: [<CombatSim.Actions.Library.Strike.Strike object at 0x000001DC9F0B9A90>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9F0B9A30>, <CombatSim.Actions.Library.Nirvana.Nirvana object at 0x000001DC9F0B99A0>, <CombatSim.Actions.Library.Defend.Defend object at 0x000001DC9F0B9940>]
+Playing Strike on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 0 after playing Strike
+Playing Defend on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Defend
+Playing Nirvana on enemy ENEMY
+Health: 0 Block: 0
+Enemy health at 0 after playing Nirvana
+Playing Defend on enemy ENEMY
+Health: 1 Block: 0
+Enemy health at 1 after playing Defend
+After playing each, card results found: {'Strike': [0, 60], 'Defend': [1, 50], 'Nirvana': [1, 55]}
+Best card order: ['Strike']
+Playing Strike on Louse
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Card rewardds available
+Choosing Just Lucky...
+Getting next action...
+Proceeding...
+Getting next action...
+Choice Option Available
+Getting next action...
+Choice Option Available
+Rest options available
+Choosing RestOption.SMITH...
+Getting next action...
+Proceeding...
+Getting next action...
+Choice Option Available
+Getting next action...
+Play card available
+MadGremlin intent is Intent.DEBUG
 list index out of range

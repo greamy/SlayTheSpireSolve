@@ -8,7 +8,7 @@ from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Dungeon.AcidSlimeMedium import AcidSlimeMedium
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
-from CombatSim.Entities.Weak import Weak
+from CombatSim.Entities.Status.Weak import Weak
 
 
 class AcidSlimeLarge(Enemy):

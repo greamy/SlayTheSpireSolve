@@ -2,7 +2,7 @@ from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Actions.Card import Card
 from CombatSim.Actions.Listener import Listener
-from CombatSim.Entities.Weak import Weak
+from CombatSim.Entities.Status.Weak import Weak
 
 
 class SashWhip(Card):

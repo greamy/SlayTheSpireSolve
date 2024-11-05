@@ -2,7 +2,7 @@ from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Actions.Card import Card
-from CombatSim.Entities.Vulnerable import Vulnerable
+from CombatSim.Entities.Status.Vulnerable import Vulnerable
 
 
 class CrushJoints(Card):

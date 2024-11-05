@@ -7,7 +7,7 @@ from CombatSim.Actions.Library.Slimed import Slimed
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
-from CombatSim.Entities.Weak import Weak
+from CombatSim.Entities.Status.Weak import Weak
 
 
 class AcidSlimeMedium(Enemy):

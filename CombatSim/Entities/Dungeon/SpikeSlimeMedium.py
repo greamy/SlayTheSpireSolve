@@ -7,7 +7,7 @@ from CombatSim.Actions.Library.Slimed import Slimed
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
 
-from CombatSim.Entities.Frail import Frail
+from CombatSim.Entities.Status.Frail import Frail
 
 
 class SpikeSlimeMedium(Enemy):

@@ -3,9 +3,10 @@ import spirecomm.spire.character as char
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
+from CombatSim.Entities.Status.DefensiveMode import DefensiveMode
 
-from CombatSim.Entities.Vulnerable import Vulnerable
-from CombatSim.Entities.Weak import Weak
+from CombatSim.Entities.Status.Vulnerable import Vulnerable
+from CombatSim.Entities.Status.Weak import Weak
 
 
 class Guardian(Enemy):
@@ -85,7 +86,7 @@ class Guardian(Enemy):
         def __init__(self, ascension):
             self.weak = 2
             self.vulnerable = 2
-            super().__init__("VentSteam", 0, 0, 0, 3, char.Intent.DEBUFF)
+            super().__init__("VentSteam", 0, 0, 0, 3, char.Intent.DEBUFF, [Weak.ID, Vulnerable.ID])
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -100,7 +101,7 @@ class Guardian(Enemy):
 
     class DefensiveMode(Intent):
         def __init__(self, ascension):
-            super().__init__("DefensiveMode", 0, 0, 0, 5, char.Intent.BUFF)
+            super().__init__("DefensiveMode", 0, 0, 0, 5, char.Intent.BUFF, [DefensiveMode.ID])
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)

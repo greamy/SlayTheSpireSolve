@@ -1,7 +1,7 @@
 from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Actions.Card import Card
-from CombatSim.Entities.PlatedArmor import PlatedArmor
+from CombatSim.Entities.Status.PlatedArmor import PlatedArmor
 import random
 
 class Wish(Card):

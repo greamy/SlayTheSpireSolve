@@ -1,17 +1,17 @@
 from CombatSim.Entities.Entity import Entity
-from CombatSim.Entities.Status import Status
+from CombatSim.Entities.Status.Status import Status
 from CombatSim.Actions.Listener import Listener
 
 
-class PlatedArmor(Status):
-
+class Metallicize(Status):
+    ID = 4
     def __init__(self, duration, entity: Entity):
         super().__init__(duration, entity)
-        self.listener = Listener(Listener.Event.TAKEN_DAMAGE, self.decrement)
-        entity.add_listener(self.listener)
 
+        self.entity = entity
         self.block_listener = Listener(Listener.Event.END_TURN, self.do_block)
-        entity.add_listener(self.block_listener)
+        self.entity.add_listener(self.block_listener)
+        self.removed = False
 
     def do_block(self, player, enemy, enemies, debug):
         player.gain_block(self.duration, enemies, debug)
@@ -20,4 +20,6 @@ class PlatedArmor(Status):
         pass
 
     def remove(self):
-        pass
+        if not self.removed:
+            self.entity.listeners.remove(self.block_listener)
+            self.removed = True

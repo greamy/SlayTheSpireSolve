@@ -4,7 +4,7 @@ import spirecomm.spire.character as char
 
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Entities.Enemy import Enemy
-from CombatSim.Entities.Weak import Weak
+from CombatSim.Entities.Status.Weak import Weak
 from CombatSim.Actions.Listener import Listener
 
 

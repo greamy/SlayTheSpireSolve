@@ -5,7 +5,7 @@ import spirecomm.spire.character as char
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Entities.Enemy import Enemy
 
-from CombatSim.Entities.Metallicize import Metallicize
+from CombatSim.Entities.Status.Metallicize import Metallicize
 
 class Lagavulin(Enemy):
     ATTACK = 0

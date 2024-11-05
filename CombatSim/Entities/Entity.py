@@ -14,6 +14,8 @@ class Entity:
         self.block_multiplier = 1.0
         self.listeners = []
         self.barricade = False
+        self.status_list = []
+        self.gold = 0
 
     def do_turn(self, opponents, debug):
         pass

@@ -8,7 +8,7 @@ from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Dungeon.SpikeSlimeMedium import SpikeSlimeMedium
 from CombatSim.Entities.Enemy import Enemy
 
-from CombatSim.Entities.Frail import Frail
+from CombatSim.Entities.Status.Frail import Frail
 
 
 class SpikeSlimeLarge(Enemy):

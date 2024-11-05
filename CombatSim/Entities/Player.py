@@ -10,6 +10,7 @@ from CombatSim.Actions.Listener import Listener
 class Player(Entity):
     def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
         super().__init__(health)
+        self.max_health = health
         self.energy = energy
         self.gold = gold
         self.potions = potions
@@ -192,6 +193,7 @@ class Player(Entity):
 
     class Deck:
         MAX_HAND_SIZE = 10
+        MAX_CARDS_ENCODING = 25
 
         def __init__(self, cards):
             self.draw_pile = cards
@@ -257,6 +259,20 @@ class Player(Entity):
             if extra_cards is None:
                 extra_cards = list()
             return self.hand + self.draw_pile + self.discard_pile + self.exhaust_pile + self.used_powers + extra_cards
+
+        def get_state(self):
+            # state = [[cards_in_hand]=10, [discard]=50, [draw]=50, [exhaust]=10, [active_powers]=20]\
+
+            state = [[[(1 if self.hand[j].id == i else 0) if j < len(self.hand) else 0 for i in range(150)] for j in range(self.MAX_CARDS_ENCODING)],
+                     [[(1 if self.discard_pile[j].id == i else 0) if j < len(self.discard_pile) else 0 for i in range(150)] for j in range(self.MAX_CARDS_ENCODING)],
+                     [[(1 if self.draw_pile[j].id == i else 0) if j < len(self.draw_pile) else 0 for i in range(150)] for j in range(self.MAX_CARDS_ENCODING)],
+                     [[(1 if self.exhaust_pile[j].id == i else 0) if j < len(self.hand) else 0 for i in range(150)] for j in
+                      range(self.MAX_CARDS_ENCODING)],
+                     [[(1 if self.used_powers[j].id == i else 0) if j < len(self.hand) else 0 for i in range(150)]
+            for j in range(self.MAX_CARDS_ENCODING)]
+                     ]
+            return state
+
 
         def __str__(self):
             return ("Draw Pile:" + str([str(card) for card in self.draw_pile]) +

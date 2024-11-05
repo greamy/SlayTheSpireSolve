@@ -1,8 +1,10 @@
 
 class Status:
+    NUM_STATUSES = 6
     def __init__(self, duration, entity):
         self.duration = duration
         self.entity = entity
+        self.id = -1
 
     def decrement(self, player, enemy, enemies, debug):
         self.duration -= 1
@@ -10,7 +12,7 @@ class Status:
             self.remove()
 
     def apply(self):
-        pass
+        self.entity.status_list.append(self.id)
 
     def remove(self):
         pass
