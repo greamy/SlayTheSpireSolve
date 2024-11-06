@@ -1,6 +1,6 @@
 from CombatSim.Entities.Player import Player
 from SpireBot.Environments.States.EntityState import EntityState
-
+import numpy as np
 
 class PlayerState(EntityState):
 
@@ -18,21 +18,13 @@ class PlayerState(EntityState):
 
     def get_state(self):
         # [[deck_state], [health, block, max_health, gold], [potions], [relics], [status's]]
-        state = []
-        state.append(self.entity.deck.get_state())
+        state = self.entity.deck.get_state()
 
-        nums = []
-        nums.append(self.entity.health)
-        nums.append(self.entity.block)
-        nums.append(self.entity.max_health)
-        nums.append(self.entity.gold)
-        state.append(nums)
-
-        # TODO: Potions and relics
-        state.append([])
-        state.append([])
+        state = np.append(state, [self.entity.health, self.entity.block, self.entity.max_health, self.entity.gold])
 
         # Status Encoding
-        state.append([[(1 if self.entity.status_list.id == i else 0) if j < len(self.entity.status_list) else 0 for i in range(30)] for j in range(self.MAX_STATUS_ENCODING)])
-
+        status_ids = np.array([status.id for status in self.entity.status_list])
+        status_ids = np.pad(status_ids, (0, max(0, self.MAX_STATUS_ENCODING - len(status_ids))),
+                              constant_values=-1)
+        state = np.append(state, status_ids)
         return state

@@ -1,10 +1,13 @@
 import importlib
 import os
+from symbol import power
 
 from CombatSim.Entities.Entity import Entity
 import random
 from enum import Enum
 from CombatSim.Actions.Listener import Listener
+
+import numpy as np
 
 
 class Player(Entity):
@@ -261,16 +264,22 @@ class Player(Entity):
             return self.hand + self.draw_pile + self.discard_pile + self.exhaust_pile + self.used_powers + extra_cards
 
         def get_state(self):
-            # state = [[cards_in_hand]=10, [discard]=50, [draw]=50, [exhaust]=10, [active_powers]=20]\
+            hand_state = np.array([card.id for card in self.hand])
+            hand_state = np.pad(hand_state, (0, max(0, self.MAX_HAND_SIZE - len(hand_state))), constant_values=-1)
 
-            state = [[[(1 if self.hand[j].id == i else 0) if j < len(self.hand) else 0 for i in range(150)] for j in range(self.MAX_CARDS_ENCODING)],
-                     [[(1 if self.discard_pile[j].id == i else 0) if j < len(self.discard_pile) else 0 for i in range(150)] for j in range(self.MAX_CARDS_ENCODING)],
-                     [[(1 if self.draw_pile[j].id == i else 0) if j < len(self.draw_pile) else 0 for i in range(150)] for j in range(self.MAX_CARDS_ENCODING)],
-                     [[(1 if self.exhaust_pile[j].id == i else 0) if j < len(self.hand) else 0 for i in range(150)] for j in
-                      range(self.MAX_CARDS_ENCODING)],
-                     [[(1 if self.used_powers[j].id == i else 0) if j < len(self.hand) else 0 for i in range(150)]
-            for j in range(self.MAX_CARDS_ENCODING)]
-                     ]
+            discard_state = np.array([card.id for card in self.discard_pile])
+            discard_state = np.pad(discard_state, (0, max(0, self.MAX_CARDS_ENCODING - len(discard_state))), constant_values=-1)
+
+            draw_state = np.array([[card.id for card in self.draw_pile]])
+            draw_state = np.pad(draw_state, (0, max(0, self.MAX_CARDS_ENCODING - len(draw_state))), constant_values=-1)
+
+            exhaust_state = np.array([[card.id for card in self.exhaust_pile]])
+            exhaust_state = np.pad(exhaust_state, (0, max(0, self.MAX_CARDS_ENCODING - len(exhaust_state))), constant_values=-1)
+
+            powers_state = np.array([[card.id for card in self.used_powers]])
+            powers_state = np.pad(powers_state, (0, max(0, self.MAX_CARDS_ENCODING - len(powers_state))), constant_values=-1)
+
+            state = np.concatenate((hand_state, discard_state, draw_state, exhaust_state, powers_state))
             return state
 
 
