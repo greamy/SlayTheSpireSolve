@@ -5,5 +5,5 @@ class Map:
         pass
 
     @staticmethod
-    def generate_map(act, ascension):
+    def generate_map(act, ascension) -> Map:
         pass

@@ -1,5 +1,6 @@
 import importlib
 import os
+import numpy as np
 
 from CombatSim.Entities.Player import Player
 from SpireBot.Environments.States.EnemyState import EnemyState
@@ -135,8 +136,7 @@ class CombatState:
 
     def get_state(self):
         # [[player_state], [[enemy_state] x 5]]
-        state = []
-        state.append(self.player_state.get_state())
-        state.extend([enemy_state.get_state for enemy_state in self.enemy_states])
+        deck_state, player_state = self.player_state.get_state()
+        enemy_states = np.array([enemy_state.get_state() for enemy_state in self.enemy_states])
 
-        return state
+        return deck_state, np.concatenate((player_state, enemy_states))

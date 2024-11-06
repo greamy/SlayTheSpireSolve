@@ -1,7 +1,10 @@
 import random
 
+import numpy as np
+
 from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Enemy import Enemy
+from SpireBot.Environments.States.CombatState import CombatState
 
 
 class Combat:
@@ -15,6 +18,7 @@ class Combat:
         self.enemies = enemies
         self.debug = debug
         self.start_card = None
+        self.state = CombatState(self.player, self.enemies)
 
     def start(self):
         self.player.begin_combat()
@@ -51,14 +55,14 @@ class Combat:
 
         return num_turns, self.player.health, self.player.is_alive()
 
-    def get_state(self) -> CombatState:
-        pass
+    def get_state(self) -> np.ndarray:
+        return self.state.get_state()
 
     def run_turn(self, start_card, target_enemy):
         self.player.play_card(start_card, target_enemy, self.enemies, self.debug)
         for enemy in self.enemies:
             enemy.start_turn([self.player], self.debug)
             enemy.do_turn(self.player, self.debug)
-        return self.get_total_enemy_health(), self.player.health
+        return self.get_state()
 
 
