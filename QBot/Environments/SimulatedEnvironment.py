@@ -1,3 +1,4 @@
+import copy
 import importlib
 import os
 import random
@@ -5,6 +6,10 @@ import random
 import numpy as np
 
 from Combat import Combat
+from CombatSim.Actions.Library.Defend import Defend
+from CombatSim.Actions.Library.Eruption import Eruption
+from CombatSim.Actions.Library.Strike import Strike
+from CombatSim.Actions.Library.Vigilance import Vigilance
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
 
@@ -26,7 +31,7 @@ class SimulatedEnvironment():
     def create_enemies(self):
         # TODO: Talk to Lucas about possibly having pre-made combats or at least more consistent than random
         num_enemies = random.randint(1, 3)
-        possible_enemies = np.array(os.listdir(os.path.join(self.path_to_sim, "Entities\\Dungeon")))
+        possible_enemies = np.array(os.listdir(os.path.join(self.path_to_sim, "Entities\\Dungeon")))[:-1]
         enemy_files = np.random.choice(possible_enemies, num_enemies)
         enemies = np.array([])
         print(enemy_files)
@@ -57,6 +62,13 @@ class SimulatedEnvironment():
                 continue
         return list(cards)
 
+    def create_starter_deck(self, player: Player):
+        cards = [Strike(player) for i in range(4)]
+        cards.extend([Defend(player) for i in range(4)])
+        cards.append(Vigilance(player))
+        cards.append(Eruption(player))
+        return cards
+
     def train_model(self, epochs=20, gamma=0.9, rar=0.2, radr=0.99):
         """
         Train the model, something along the lines of:
@@ -76,56 +88,80 @@ class SimulatedEnvironment():
         2. Repeat until a number of epochs have been completed
         :return:
         """
-
+        played_cards = []
+        card_efficiency = []
         for epoch in range(epochs):
             enemies = self.create_enemies()
             self.player = self.create_player()
             cards = self.create_deck(self.player)
+            # cards = self.create_starter_deck(self.player)
             self.player.deck = Player.Deck(cards)
             self.combat = Combat(self.player, enemies, self.debug)
 
             self.player.begin_combat()
             self.player.start_turn(enemies, self.debug)
             deck_state, state = self.combat.get_state()
+            last_state = state
 
             step = 0
-            while self.combat.get_total_enemy_health() > 0 and self.player.is_alive() > 0:
+            enemy_start_health = self.combat.get_total_enemy_health()
+            while self.combat.get_total_enemy_health() > 0 and self.player.is_alive():
                 # TODO: Make use of target network to get target values and call model.train() with these target values.
                 # deep q network - updated every step
                 # target network - only updated every ~10 steps
                 #   weights are copied from the deep q network to the target network every ~10 steps
                 deck_state = deck_state.reshape(1, -1)
                 state = state.reshape(1, -1)
-                q_vals = self.model.predict([deck_state, state])[0]
+                if self.debug:
+                    q_vals = self.model.predict([deck_state, state], verbose=1)[0]
+                else:
+                    q_vals = self.model.predict([deck_state, state], verbose=0)[0]
 
                 playable_mask = np.array([card.playable and card.energy <= self.player.energy for card in self.player.deck.hand])
 
                 # Pad the playable_mask to match the length of q_vals with True values
-                playable_mask = np.pad(playable_mask, (0, len(q_vals) - len(playable_mask)), constant_values=True)
+                playable_mask = np.pad(playable_mask, (0, len(q_vals) - len(playable_mask)), constant_values=False)
 
                 # Set Q-values for unplayable cards to low_value
-                q_vals[~playable_mask] = -float('inf')
+                masked_qs = copy.deepcopy(q_vals)
+                masked_qs[~playable_mask] = -1_000
 
+                if self.debug:
+                    print(masked_qs)
 
                 if random.random() < rar:
+                    if self.debug:
+                        print("Choosing random...")
                     action = random.randint(0, len(self.player.deck.hand)-1)
                 else:
-                    action = np.argmax(q_vals[:len(self.player.deck.hand)])
+                    if self.debug:
+                        print("Choosing best...")
+                    action = np.argmax(masked_qs)
+
+                if self.debug:
+                    print("action: ", action)
 
                 card = self.player.deck.hand[action]
+                played_cards.append(card.name)
 
-                print('[', end='')
-                for card in self.player.deck.hand:
-                    print(card, end=', ')
-                print(']')
+                if self.debug:
+                    print('[', end='')
+                    for c in self.player.deck.hand:
+                        print(c, end=', ')
+                    print(']')
+
                 new_state, reward = self.combat.run_turn(card, enemies[0])
+
                 if new_state is None:  # player or all enemies died
                     target_q = reward
                 else:
                     new_deck_state, new_state = new_state
                     new_deck_state = new_deck_state.reshape(1, -1)
                     new_state = new_state.reshape(1, -1)
-                    future_qs = self.target_model.predict([new_deck_state, new_state])
+                    if self.debug:
+                        future_qs = self.target_model.predict([new_deck_state, new_state], verbose=1)
+                    else:
+                        future_qs = self.target_model.predict([new_deck_state, new_state], verbose=0)
                     max_future_q = np.max(future_qs)
 
                     target_q = reward + gamma * max_future_q
@@ -137,11 +173,20 @@ class SimulatedEnvironment():
                 # TODO: use target network to predict future q values given that action
                 # target = reward + gamma * max(self.target_model.predict([new_deck_state, new_state]))
                 # loss = (target - q)**2
-                self.model.fit([deck_state, new_state], target_qs)
-                deck_state, state = new_deck_state, new_state
+                if self.debug:
+                    self.model.fit([deck_state, state], target_qs, verbose=1)
+                else:
+                    self.model.fit([deck_state, state], target_qs, verbose=0)
+                if new_state is not None:
+                    deck_state, state = new_deck_state, new_state
 
                 if step % 10 == 0:
                     self.target_model.set_weights(self.model.get_weights())
-                    step = 0
 
                 step += 1
+
+            card_efficiency.append(step/enemy_start_health)
+            if epoch % 10 == 0:
+                print("********* Epoch " + str(epoch) + " completed!***********")
+
+        return played_cards, card_efficiency

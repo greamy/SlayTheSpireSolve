@@ -5,8 +5,10 @@ from CombatSim.Actions.Listener import Listener
 
 class PlatedArmor(Status):
     ID = 5
+
     def __init__(self, duration, entity: Entity):
         super().__init__(duration, entity)
+        self.apply()
         self.listener = Listener(Listener.Event.TAKEN_DAMAGE, self.decrement)
         entity.add_listener(self.listener)
 

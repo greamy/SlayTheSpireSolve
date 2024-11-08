@@ -68,7 +68,7 @@ class Player(Entity):
 
     def do_turn(self, enemies, debug):
         # TODO: Make player play potions
-        playable_cards = [card for card in self.deck.hand if card.energy <= self.energy and card.playable]
+        playable_cards = self.get_playable_cards()
         while len(playable_cards) > 0 and not self.turn_over:
             # card_choice, targeted_enemy = self.bot.combat_choose_next_action(playable_cards, enemies)
             card_choice = random.choice(playable_cards)
@@ -83,7 +83,7 @@ class Player(Entity):
                     enemies.remove(enemy)
             if len(enemies) == 0:
                 return
-            playable_cards = [card for card in self.deck.hand if card.energy <= self.energy]
+            playable_cards = self.get_playable_cards()
 
         self.end_turn(enemies, debug)
 
@@ -136,6 +136,9 @@ class Player(Entity):
         if card not in self.deck.get_deck():
             self.discard(card, enemies, debug)
         return True
+
+    def get_playable_cards(self):
+        return [card for card in self.deck.hand if card.energy <= self.energy and card.playable]
 
     def use_potion(self, potion):
         pass
@@ -264,19 +267,19 @@ class Player(Entity):
 
         def get_state(self):
 
-            hand_state = np.array([card.id for card in self.hand])
+            hand_state = np.array([card.id for card in self.hand[:self.MAX_HAND_SIZE]])
             hand_state = np.pad(hand_state, (0, max(0, self.MAX_HAND_SIZE - len(hand_state))), constant_values=-1)
 
-            discard_state = np.array([card.id for card in self.discard_pile])
+            discard_state = np.array([card.id for card in self.discard_pile[:self.MAX_CARDS_ENCODING]])
             discard_state = np.pad(discard_state, (0, max(0, self.MAX_CARDS_ENCODING - len(discard_state))), constant_values=-1)
 
-            draw_state = np.array([card.id for card in self.draw_pile])
+            draw_state = np.array([card.id for card in self.draw_pile[:self.MAX_CARDS_ENCODING]])
             draw_state = np.pad(draw_state, (0, max(0, self.MAX_CARDS_ENCODING - len(draw_state))), constant_values=-1)
 
-            exhaust_state = np.array([card.id for card in self.exhaust_pile])
+            exhaust_state = np.array([card.id for card in self.exhaust_pile[:self.MAX_CARDS_ENCODING]])
             exhaust_state = np.pad(exhaust_state, (0, max(0, self.MAX_CARDS_ENCODING - len(exhaust_state))), constant_values=-1)
 
-            powers_state = np.array([card.id for card in self.used_powers])
+            powers_state = np.array([card.id for card in self.used_powers[:self.MAX_CARDS_ENCODING]])
             powers_state = np.pad(powers_state, (0, max(0, self.MAX_CARDS_ENCODING - len(powers_state))), constant_values=-1)
 
             state = np.concatenate((hand_state, discard_state, draw_state, exhaust_state, powers_state))

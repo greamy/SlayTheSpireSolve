@@ -13,6 +13,7 @@ class Fasting(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
         # Gain 3(4) {{Strength}}. Gain 3(4) {{Dexterity}}. Gain 1 less {{Energy}} at the start of each turn.
+        player.max_energy -= 1
         player.damage_dealt_modifier += self.strength
         player.block_modifier += self.dexterity
 

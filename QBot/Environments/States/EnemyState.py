@@ -28,7 +28,7 @@ class EnemyState(EntityState):
         state = np.concatenate([state, np.array([self.entity.intent.damage*self.entity.intent.attacks, self.entity.intent.block]), intent_type_encoding.flatten(), encoded_buf.flatten()])
 
         # Status Encoding
-        status_id_list = np.array([status.ID for status in self.entity.status_list], dtype=int)
+        status_id_list = np.array(self.entity.status_list, dtype=int)
         state = np.append(state, self.one_hot_encode(status_id_list, Status.NUM_STATUSES, self.MAX_STATUS_ENCODING).flatten())
 
         return state

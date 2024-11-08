@@ -7,6 +7,7 @@ class Metallicize(Status):
     ID = 4
     def __init__(self, duration, entity: Entity):
         super().__init__(duration, entity)
+        self.id = 4
 
         self.entity = entity
         self.block_listener = Listener(Listener.Event.END_TURN, self.do_block)

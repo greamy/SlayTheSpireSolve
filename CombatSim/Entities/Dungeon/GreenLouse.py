@@ -64,7 +64,7 @@ class GreenLouse(Enemy):
     class SpitWeb(Intent):
         def __init__(self, ascension):
             self.weak = 2
-            super().__init__("Spit", 0, 0, 0, 25, char.Intent.DEBUFF)
+            super().__init__("SpitWeb", 0, 0, 0, 25, char.Intent.DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)

@@ -58,19 +58,23 @@ class Combat:
     def get_state(self):
         return self.state.get_state()
 
-    def run_turn(self, start_card, target_enemy):
+    def run_turn(self, card_to_play, target_enemy):
         total_enemy_health = self.get_total_enemy_health()
         player_health = self.player.health
 
-        self.player.play_card(start_card, target_enemy, self.enemies, self.debug)
+        self.player.play_card(card_to_play, target_enemy, self.enemies, self.debug)
+        # if not success:
+        #     return None, None
+        playable_cards = self.player.get_playable_cards()
+
         reward = 0
         for enemy in self.enemies:
-            if enemy.health <= 0:
+            if not enemy.is_alive():
                 self.enemies.remove(enemy)
                 reward += 10
         if self.get_total_enemy_health() <= 0:
             reward += 10
-        elif self.player.energy <= 0 or len(self.player.deck.hand) == 0:
+        elif self.player.energy <= 0 or len(playable_cards) == 0:
             self.player.end_turn(self.enemies, self.debug)
 
             for enemy in self.enemies:
@@ -92,6 +96,5 @@ class Combat:
         if self.player.is_alive() and self.get_total_enemy_health() >= 0:
             return self.get_state(), reward
         else:
-            return (None
-                    , reward)
+            return None, reward
 

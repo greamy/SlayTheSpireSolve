@@ -10,7 +10,7 @@ class Safety(Card):
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
         # TODO: Implement the following:
-        # {{Retain}}. Gain 12(16) {{Block}}.
+        # {{Retain}}. Gain 12(16) {{Block}} Exhaust.
 
     def upgrade(self):
         self.block = 16
