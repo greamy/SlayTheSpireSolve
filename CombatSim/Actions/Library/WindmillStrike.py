@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class WindmillStrike(Card):
     def __init__(self, player: Player):
-        super().__init__("WindmillStrike", Card.Type.ATTACK, 2, 7, 1, 0, 0, 0, False, True, player, None)
+        super().__init__("WindmillStrike", Card.Type.ATTACK, 2, 7, 1, 0, 0, 0, False, True, player, None, id=85)
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_retain)
         player.add_listener(self.listener)
         self.damage_increase = 4

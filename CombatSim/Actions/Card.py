@@ -7,7 +7,7 @@ from enum import Enum
 
 class Card(Playable):
     def __init__(self, name, card_type, energy, damage, attacks, block, draw, discard, exhaust, retain, player,
-                 stance: Player.Stance = None, innate=False, temp_retain=False):
+                 stance: Player.Stance = None, innate=False, temp_retain=False, id=-1):
         super().__init__(damage, attacks, block)
         self.name = name
         self.card_type = card_type
@@ -21,6 +21,7 @@ class Card(Playable):
         self.innate = innate
         self.temp_retain = temp_retain
         self.playable = True
+        self.id = id
 
         # Check for Master Reality listener - Upgrade if master reality has been played
         for listener in player.listeners:

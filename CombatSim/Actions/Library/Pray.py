@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class Pray(Card):
     def __init__(self, player: Player):
-        super().__init__("Pray", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("Pray", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None, id=54)
         self.mantra = 3
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)

@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class MentalFortress(Card):
     def __init__(self, player: Player):
-        super().__init__("MentalFortress", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("MentalFortress", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=48)
         self.listener = Listener([Listener.Event.SKILL_PLAYED, Listener.Event.POWER_PLAYED, Listener.Event.ATTACK_PLAYED], self.do_power)
         self.stance_block = 4
         self.last_stance = player.stance

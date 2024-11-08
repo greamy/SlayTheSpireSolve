@@ -6,7 +6,7 @@ import random
 
 class Wish(Card):
     def __init__(self, player: Player):
-        super().__init__("Wish", Card.Type.SKILL, 3, 0, 0, 0, 0, 0, True, False, player, None)
+        super().__init__("Wish", Card.Type.SKILL, 3, 0, 0, 0, 0, 0, True, False, player, None, id=86)
         self.gold = 25
         self.strength_gain = 3
         self.plated_armor = 6

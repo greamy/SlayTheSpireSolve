@@ -5,7 +5,7 @@ from CombatSim.Actions.Card import Card
 
 class Fasting(Card):
     def __init__(self, player: Player):
-        super().__init__("Fasting", Card.Type.POWER, 2, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("Fasting", Card.Type.POWER, 2, 0, 0, 0, 0, 0, False, False, player, None, id=31)
         self.strength = 3
         self.dexterity = 3
         

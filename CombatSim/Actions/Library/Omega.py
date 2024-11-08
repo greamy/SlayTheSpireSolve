@@ -6,7 +6,7 @@ from CombatSim.Actions.Listener import Listener
 
 class Omega(Card):
     def __init__(self, player: Player):
-        super().__init__("Omega", Card.Type.POWER, 3, 50, 0, 0, 0, 0, False, False,player, None)
+        super().__init__("Omega", Card.Type.POWER, 3, 50, 0, 0, 0, 0, False, False,player, None, id=51)
         self.listener = Listener(Listener.Event.END_TURN, self.do_power)
 
     def play(self, player: Player, player_list: list[Player], enemy: Enemy, enemies: list[Enemy], debug: bool):

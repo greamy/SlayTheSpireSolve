@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class Weave(Card):
     def __init__(self, player: Player):
-        super().__init__("Weave", Card.Type.ATTACK, 0, 4, 1, 0, 0, 0, False, False, player, None)
+        super().__init__("Weave", Card.Type.ATTACK, 0, 4, 1, 0, 0, 0, False, False, player, None, id=83)
         self.listener = Listener(Listener.Event.SCRY_OCCURRED, self.return_to_hand)
         player.add_listener(self.listener)
         

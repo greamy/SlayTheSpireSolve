@@ -4,7 +4,7 @@ import numpy as np
 
 from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Enemy import Enemy
-from SpireBot.Environments.States.CombatState import CombatState
+from QBot.Environments.States.CombatState import CombatState
 
 
 class Combat:
@@ -55,14 +55,43 @@ class Combat:
 
         return num_turns, self.player.health, self.player.is_alive()
 
-    def get_state(self) -> np.ndarray:
+    def get_state(self):
         return self.state.get_state()
 
     def run_turn(self, start_card, target_enemy):
-        self.player.play_card(start_card, target_enemy, self.enemies, self.debug)
-        for enemy in self.enemies:
-            enemy.start_turn([self.player], self.debug)
-            enemy.do_turn(self.player, self.debug)
-        return self.get_state()
+        total_enemy_health = self.get_total_enemy_health()
+        player_health = self.player.health
 
+        self.player.play_card(start_card, target_enemy, self.enemies, self.debug)
+        reward = 0
+        for enemy in self.enemies:
+            if enemy.health <= 0:
+                self.enemies.remove(enemy)
+                reward += 10
+        if self.get_total_enemy_health() <= 0:
+            reward += 10
+        elif self.player.energy <= 0 or len(self.player.deck.hand) == 0:
+            self.player.end_turn(self.enemies, self.debug)
+
+            for enemy in self.enemies:
+                enemy.start_turn([self.player], self.debug)
+                enemy.do_turn(self.player, self.debug)
+
+            if self.player.health <= 0:
+                reward -= 20
+            else:
+                self.player.start_turn(self.enemies, self.debug)
+
+        new_enemy_health = self.get_total_enemy_health()
+        new_player_health = self.player.health
+
+        # receive reward equal to damage done to enemies minus damage taken to health.
+        # +10 for killing enemy
+        # -20 for dying
+        reward = reward + total_enemy_health-new_enemy_health - (player_health - new_player_health)
+        if self.player.is_alive() and self.get_total_enemy_health() >= 0:
+            return self.get_state(), reward
+        else:
+            return (None
+                    , reward)
 

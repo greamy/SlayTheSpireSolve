@@ -5,7 +5,7 @@ from CombatSim.Actions.Card import Card
 
 class CutThroughFate(Card):
     def __init__(self, player: Player):
-        super().__init__("CutThroughFate", Card.Type.ATTACK, 1, 7, 1, 0, 1, 0, False, False, player, None)
+        super().__init__("CutThroughFate", Card.Type.ATTACK, 1, 7, 1, 0, 1, 0, False, False, player, None, id=15)
         self.scry_amount = 2
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):

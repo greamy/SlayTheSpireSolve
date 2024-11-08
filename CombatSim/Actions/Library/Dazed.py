@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class Dazed(Card):
     def __init__(self, player: Player):
-        super().__init__("Dazed", Card.Type.STATUS, 0, 0, 0, 0, 0, 0, True, False, player, None)
+        super().__init__("Dazed", Card.Type.STATUS, 0, 0, 0, 0, 0, 0, True, False, player, None, id=16)
         self.playable = False
         self.ethereal_listener = Listener(Listener.Event.END_TURN, self.do_ethereal)
         player.add_listener(self.ethereal_listener)

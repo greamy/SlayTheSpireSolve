@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class Rushdown(Card):
     def __init__(self, player: Player):
-        super().__init__("Rushdown", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("Rushdown", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=60)
         self.listener = Listener([Listener.Event.ATTACK_PLAYED, Listener.Event.SKILL_PLAYED, Listener.Event.POWER_PLAYED], self.do_card)
         self.drawing_cards = 2
         self.last_stance = player.stance

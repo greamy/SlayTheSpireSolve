@@ -7,7 +7,7 @@ from CombatSim.Actions.Library.Miracle import Miracle
 
 class Collect(Card):
     def __init__(self, player: Player):
-        super().__init__("Collect", Card.Type.SKILL, 0, 0, 0, 0, 0, 0, True, False, player, None)
+        super().__init__("Collect", Card.Type.SKILL, 0, 0, 0, 0, 0, 0, True, False, player, None, id=9)
         self.listener = Listener(Listener.Event.START_TURN, self.do_skill, 0)
         self.x_modifier = 0
         

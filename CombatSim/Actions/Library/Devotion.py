@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class Devotion(Card):
     def __init__(self, player: Player):
-        super().__init__("Devotion", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("Devotion", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=23)
         self.mantra = 2
         self.listener = Listener(Listener.Event.START_TURN, self.do_power)
 

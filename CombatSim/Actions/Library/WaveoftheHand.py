@@ -7,7 +7,7 @@ from CombatSim.Entities.Status.Weak import Weak
 
 class WaveoftheHand(Card):
     def __init__(self, player: Player):
-        super().__init__("WaveoftheHand", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("WaveoftheHand", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None, id=82)
         self.listener = Listener(Listener.Event.BLOCK_GAINED, self.block_gained)
         self.end_listener = Listener(Listener.Event.END_TURN, self.end_card)
         self.weak = 1

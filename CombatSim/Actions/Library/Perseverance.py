@@ -5,7 +5,7 @@ from CombatSim.Actions.Listener import Listener
 
 class Perseverance(Card):
     def __init__(self, player: Player):
-        super().__init__("Perseverance", Card.Type.SKILL, 1, 0, 0, 5, 0, 0, False, True, player, None)
+        super().__init__("Perseverance", Card.Type.SKILL, 1, 0, 0, 5, 0, 0, False, True, player, None, id=53)
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_skill)
         player.add_listener(self.listener)
         self.block_hand_gained = 2

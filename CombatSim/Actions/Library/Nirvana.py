@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class Nirvana(Card):
     def __init__(self, player: Player):
-        super().__init__("Nirvana", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("Nirvana", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=50)
         self.scry_block = 3
         self.listener = Listener(Listener.Event.SCRY_OCCURRED, self.do_power)
 

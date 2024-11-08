@@ -7,7 +7,7 @@ from CombatSim.Actions.Library.Smite import Smite
 
 class BattleHymn(Card):
     def __init__(self, player: Player):
-        super().__init__("BattleHymn", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("BattleHymn", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=2)
         self.listener = Listener(Listener.Event.START_TURN, self.do_power)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):

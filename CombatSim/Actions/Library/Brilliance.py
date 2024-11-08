@@ -5,7 +5,7 @@ from CombatSim.Actions.Card import Card
 
 class Brilliance(Card):
     def __init__(self, player: Player):
-        super().__init__("Brilliance", Card.Type.ATTACK, 1, 12, 1, 0, 0, 0, False, False, player, None)
+        super().__init__("Brilliance", Card.Type.ATTACK, 1, 12, 1, 0, 0, 0, False, False, player, None, id=6)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         self.damage = 12 + player.mantra

@@ -7,7 +7,7 @@ from CombatSim.Actions.Card import Card
 
 class DeusExMachina(Card):
     def __init__(self, player: Player):
-        super().__init__("DeusExMachina", Card.Type.SKILL, 1000, 0, 0, 0, 0, 0, True, False, player, None)
+        super().__init__("DeusExMachina", Card.Type.SKILL, 1000, 0, 0, 0, 0, 0, True, False, player, None, id=21)
         self.listener = Listener(Listener.Event.HAND_CHANGED, self.do_draw)
         player.add_listener(self.listener)
         self.playable = False

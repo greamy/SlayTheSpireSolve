@@ -17,7 +17,7 @@ class PlatedArmor(Status):
         player.gain_block(self.duration, enemies, debug)
 
     def apply(self):
-        pass
+        super().apply()
 
     def remove(self):
-        pass
+        self.entity.listeners.remove(self.block_listener)

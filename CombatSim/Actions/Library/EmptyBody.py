@@ -5,7 +5,7 @@ from CombatSim.Actions.Card import Card
 
 class EmptyBody(Card):
     def __init__(self, player: Player):
-        super().__init__("EmptyBody", Card.Type.SKILL, 1, 0, 0, 7, 0, 0, False, False, player, Player.Stance.NONE)
+        super().__init__("EmptyBody", Card.Type.SKILL, 1, 0, 0, 7, 0, 0, False, False, player, Player.Stance.NONE, id=24)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)

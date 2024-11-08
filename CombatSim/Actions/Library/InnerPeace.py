@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 class InnerPeace(Card):
     def __init__(self, player: Player):
         super().__init__("InnerPeace", Card.Type.SKILL, 1, 0, 0, 0, 0,
-                         0, False, False, player, None)
+                         0, False, False, player, None, id=40)
         self.draw_amount = 3
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):

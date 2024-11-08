@@ -5,7 +5,7 @@ from CombatSim.Actions.Card import Card
 
 class Consecrate(Card):
     def __init__(self, player: Player):
-        super().__init__("Consecrate", Card.Type.ATTACK, 0, 5, 1, 0, 0, 0, False, False, player, None)
+        super().__init__("Consecrate", Card.Type.ATTACK, 0, 5, 1, 0, 0, 0, False, False, player, None, id=12)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         for enemy in enemies:

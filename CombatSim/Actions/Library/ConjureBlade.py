@@ -6,7 +6,7 @@ from CombatSim.Actions.Library.Expunger import Expunger
 
 class ConjureBlade(Card):
     def __init__(self, player: Player):
-        super().__init__("ConjureBlade", Card.Type.SKILL, 0, 0, 0, 0, 0, 0, True, False, player, None)
+        super().__init__("ConjureBlade", Card.Type.SKILL, 0, 0, 0, 0, 0, 0, True, False, player, None, id=11)
         self.x_modifier = 0
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):

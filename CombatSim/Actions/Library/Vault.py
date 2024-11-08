@@ -5,7 +5,7 @@ from CombatSim.Actions.Card import Card
 
 class Vault(Card):
     def __init__(self, player: Player):
-        super().__init__("Vault", Card.Type.SKILL, 3, 0, 0, 0, 0, 0, True, False, player, None)
+        super().__init__("Vault", Card.Type.SKILL, 3, 0, 0, 0, 0, 0, True, False, player, None, id=79)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Take an extra turn after this one. End your turn. {{Exhaust}}.

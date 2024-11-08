@@ -1,5 +1,5 @@
 from CombatSim.Entities.Entity import Entity
-from SpireBot.Environments.States.State import State
+from QBot.Environments.States.State import State
 
 
 class EntityState(State):

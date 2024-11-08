@@ -5,7 +5,7 @@ from CombatSim.Actions.Card import Card
 
 class Judgment(Card):
     def __init__(self, player: Player):
-        super().__init__("Judgment", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("Judgment", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None, id=42)
         self.death = 30
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):

@@ -4,10 +4,10 @@ import json
 from spirecomm.communication.action import ProceedAction
 from spirecomm.spire.character import PlayerClass
 
-from SpireBot.Environments.SpireEnvironment import SpireEnvironment
-from SpireBot.Environments.SpireEnvironment import AllPlayerClasses
-from SpireBot.Logging.Logger import Logger
-from SpireBot.SpireBot import SpireBot
+from QBot.Environments.SpireEnvironment import SpireEnvironment
+from QBot.Environments.SpireEnvironment import AllPlayerClasses
+from QBot.Logging.Logger import Logger
+from QBot.SpireBot import SpireBot
 from spirecomm.communication.coordinator import Coordinator
 
 

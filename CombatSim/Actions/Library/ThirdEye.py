@@ -5,7 +5,7 @@ from CombatSim.Actions.Card import Card
 
 class ThirdEye(Card):
     def __init__(self, player: Player):
-        super().__init__("ThirdEye", Card.Type.SKILL, 1, 0, 0, 7, 0, 0, False, False, player, None)
+        super().__init__("ThirdEye", Card.Type.SKILL, 1, 0, 0, 7, 0, 0, False, False, player, None, id=76)
         self.scry = 3
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):

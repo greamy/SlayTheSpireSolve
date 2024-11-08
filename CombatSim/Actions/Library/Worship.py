@@ -5,7 +5,7 @@ from CombatSim.Actions.Card import Card
 
 class Worship(Card):
     def __init__(self, player: Player):
-        super().__init__("Worship", Card.Type.SKILL, 2, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("Worship", Card.Type.SKILL, 2, 0, 0, 0, 0, 0, False, False, player, None, id=87)
         self.mantra = 5
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # ({{Retain}}.) Gain 5 {{Mantra}}.

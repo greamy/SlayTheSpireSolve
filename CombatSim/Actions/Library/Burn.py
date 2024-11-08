@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class Burn(Card):
     def __init__(self, player: Player):
-        super().__init__("Burn", Card.Type.STATUS, 0, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("Burn", Card.Type.STATUS, 0, 0, 0, 0, 0, 0, False, False, player, None, id=7)
         self.playable = False
         self.end_of_turn_damage = 2
         player.add_listener(Listener(Listener.Event.END_TURN, self.eot_take_damage))

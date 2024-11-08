@@ -6,7 +6,7 @@ from CombatSim.Actions.Listener import Listener
 
 class Blasphemy(Card):
     def __init__(self, player):
-        super().__init__("Blasphemy", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, True, False, player, Player.Stance.DIVINITY)
+        super().__init__("Blasphemy", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, True, False, player, Player.Stance.DIVINITY, id=4)
         self.listener = Listener(Listener.Event.START_TURN, self.do_power, 1)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):

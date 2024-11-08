@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class SimmeringFury(Card):
     def __init__(self, player: Player):
-        super().__init__("SimmeringFury", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("SimmeringFury", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None, id=67)
         self.listener = Listener(Listener.Event.START_TURN, self.do_card, 1)
         self.drawing_cards = 2
 

@@ -1,6 +1,6 @@
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
-from SpireBot.Environments.States.Map import Map
+from QBot.Environments.States.Map import Map
 
 
 class Environment:

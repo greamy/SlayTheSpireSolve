@@ -10,6 +10,7 @@ class Status:
         self.duration -= 1
         if self.duration == 0:
             self.remove()
+            self.entity.status_list.remove(self)
 
     def apply(self):
         self.entity.status_list.append(self.id)

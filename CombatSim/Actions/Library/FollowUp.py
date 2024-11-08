@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class FollowUp(Card):
     def __init__(self, player: Player):
-        super().__init__("FollowUp", Card.Type.ATTACK, 1, 7, 1, 0, 0, 0, False, False, player, None)
+        super().__init__("FollowUp", Card.Type.ATTACK, 1, 7, 1, 0, 0, 0, False, False, player, None, id=35)
         self.attack_listener = Listener(Listener.Event.ATTACK_PLAYED, self.do_attack)
         self.not_Attack_listener = Listener([Listener.Event.SKILL_PLAYED, Listener.Event.POWER_PLAYED], self.do_other)
         self.attack_played = False

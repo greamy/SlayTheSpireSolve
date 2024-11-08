@@ -5,7 +5,7 @@ from CombatSim.Actions.Listener import Listener
 
 class MasterReality(Card):
     def __init__(self, player: Player):
-        super().__init__("MasterReality", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("MasterReality", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=46)
         self.listener = Listener(Listener.Event.CARD_CREATED, self.do_power)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):

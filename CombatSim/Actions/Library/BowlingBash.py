@@ -5,7 +5,7 @@ from CombatSim.Actions.Card import Card
 
 class BowlingBash(Card):
     def __init__(self, player: Player):
-        super().__init__("BowlingBash", Card.Type.ATTACK, 1, 7, 1, 0, 0, 0, False, False, player, None)
+        super().__init__("BowlingBash", Card.Type.ATTACK, 1, 7, 1, 0, 0, 0, False, False, player, None, id=5)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         self.attacks = len(enemies)

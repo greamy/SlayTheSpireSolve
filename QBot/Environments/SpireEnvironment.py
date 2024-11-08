@@ -13,9 +13,9 @@ from Combat import Combat
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
 
-from SpireBot.Environments.Environment import Environment
-from SpireBot.Logging.Logger import Logger
-from SpireBot.SpireBot import SpireBot
+from QBot.Environments.Environment import Environment
+from QBot.Logging.Logger import Logger
+from QBot.SpireBot import SpireBot
 
 
 class AllPlayerClasses(Enum):

@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class SandsofTime(Card):
     def __init__(self, player: Player):
-        super().__init__("SandsofTime", Card.Type.ATTACK, 4, 20, 1, 0, 0, 0, False, True, player, None)
+        super().__init__("SandsofTime", Card.Type.ATTACK, 4, 20, 1, 0, 0, 0, False, True, player, None, id=63)
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_retain)
         player.add_listener(self.listener)
 

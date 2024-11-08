@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class Establishment(Card):
     def __init__(self, player: Player):
-        super().__init__("Establishment", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, True, player, None)
+        super().__init__("Establishment", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, True, player, None, id=28)
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_power)
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):

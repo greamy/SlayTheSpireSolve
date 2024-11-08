@@ -6,7 +6,7 @@ from CombatSim.Actions.Card import Card
 
 class LikeWater(Card):
     def __init__(self, player: Player):
-        super().__init__("LikeWater", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None)
+        super().__init__("LikeWater", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=45)
         self.end_turn_block = 5
         self.listener = Listener(Listener.Event.END_TURN, self.do_power)
 
