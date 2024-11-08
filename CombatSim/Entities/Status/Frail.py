@@ -9,6 +9,7 @@ class Frail(Status):
         self.apply()
 
     def apply(self):
+        super().apply()
         self.entity.block_multiplier *= 0.75
 
     def remove(self):

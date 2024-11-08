@@ -98,7 +98,7 @@ class SimulatedEnvironment():
                 state = state.reshape(1, -1)
                 q_vals = self.model.predict([deck_state, state])[0]
 
-                playable_mask = np.array([card.playable for card in self.player.deck.hand])
+                playable_mask = np.array([card.playable and card.energy <= self.player.energy for card in self.player.deck.hand])
 
                 # Pad the playable_mask to match the length of q_vals with True values
                 playable_mask = np.pad(playable_mask, (0, len(q_vals) - len(playable_mask)), constant_values=True)

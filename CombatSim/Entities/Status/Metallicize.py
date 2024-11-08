@@ -16,9 +16,6 @@ class Metallicize(Status):
     def do_block(self, player, enemy, enemies, debug):
         player.gain_block(self.duration, enemies, debug)
 
-    def apply(self):
-        pass
-
     def remove(self):
         if not self.removed:
             self.entity.listeners.remove(self.block_listener)
