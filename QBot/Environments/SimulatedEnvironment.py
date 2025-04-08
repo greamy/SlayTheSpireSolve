@@ -98,7 +98,7 @@ class SimulatedEnvironment():
             self.player.deck = Player.Deck(cards)
             self.combat = Combat(self.player, enemies, self.debug)
 
-            self.player.begin_combat()
+            self.player.begin_combat(enemies, self.debug)
             self.player.start_turn(enemies, self.debug)
             deck_state, state = self.combat.get_state()
             last_state = state

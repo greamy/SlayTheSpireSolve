@@ -21,7 +21,7 @@ class Combat:
         self.state = CombatState(self.player, self.enemies)
 
     def start(self):
-        self.player.begin_combat()
+        self.player.begin_combat(self.enemies, self.debug)
         return self.run()
 
     def get_total_enemy_health(self):

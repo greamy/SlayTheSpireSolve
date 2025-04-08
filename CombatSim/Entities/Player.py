@@ -8,6 +8,8 @@ from CombatSim.Actions.Listener import Listener
 
 import numpy as np
 
+from CombatSim.Items.Relics.Relic import Relic
+
 
 class Player(Entity):
     def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
@@ -23,6 +25,7 @@ class Player(Entity):
         self.stance = self.Stance.NONE
         self.turn_over = False
         self.innate_cards = []
+        self.relics = []
         # self.implemented_cards = self.get_implemented_cards(library_path)
         self.deck = self.Deck(self.create_deck(cards))
 
@@ -40,6 +43,14 @@ class Player(Entity):
                 my_cards[card_name] = module
         return my_cards
 
+    def add_relic(self, relic: Relic):
+        self.relics.append(relic)
+        relic.on_pickup()
+
+    def drop_relic(self, relic: Relic):
+        self.relics.remove(relic)
+        relic.on_drop()
+
     def create_deck(self, cards: list[str]) -> list:
         deck = []
         for card in cards:
@@ -50,13 +61,15 @@ class Player(Entity):
                 raise Exception(f"No implemented card named {card}")
         return deck
 
-    def begin_combat(self):
+    def begin_combat(self, enemies, debug):
         self.deck.reshuffle()
         num_innate = 0
         for idx, card in enumerate(self.deck.draw_pile):
             if card.innate:
                 self.deck.swap(0 + num_innate, idx)
                 num_innate += 1
+
+        self.notify_listeners(Listener.Event.START_COMBAT, enemies, debug)
 
     def end_combat(self):
         self.mantra = 0

@@ -31,4 +31,6 @@ class Listener:
         ENERGY_CHANGED = 9
         TAKEN_DAMAGE = 10
         BLOCK_GAINED = 11
+        START_COMBAT = 12
+        END_COMBAT = 13
 
