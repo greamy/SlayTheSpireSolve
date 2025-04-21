@@ -2,6 +2,7 @@ import unittest
 
 from CombatSim.Entities.Dungeon.JawWorm import JawWorm
 from CombatSim.Entities.Player import Player
+from CombatSim.Items.Relics.DisplayCase.Anchor import Anchor
 from CombatSim.Items.Relics.DisplayCase.HolyWater import HolyWater
 
 
@@ -35,5 +36,14 @@ class RelicTest(unittest.TestCase):
         self.assertEqual(len(self.player.relics), 0)
         self.player.begin_combat(self.enemies, self.debug)
         self.assertEqual(len(self.player.deck.hand), 0)
+
+    def test_anchor(self):
+        relic = Anchor(self.player)
+        self.player.add_relic(relic)
+        self.player.begin_combat(self.enemies, self.debug)
+        self.assertEqual(self.player.block, 10)
+        self.player.end_turn(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertEqual(self.player.block, 10)
 
 
