@@ -79,10 +79,8 @@ class RelicTest(unittest.TestCase):
         self.player.play_card(card,self.enemy, self.enemies, self.debug)
         self.assertEqual(self.enemy.health, self.enemy_start_health-(card.damage+8))
         self.player.deck.hand.append(card)
-        print(self.enemy.health)
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
-        print(self.enemy.health)
-        # self.assertEqual(self.enemy.health,self.enemy_start_health-(card.damage+8)-card.damage )
+        self.assertEqual(self.enemy.health,self.enemy_start_health-(card.damage+8)-card.damage )
 
 
 

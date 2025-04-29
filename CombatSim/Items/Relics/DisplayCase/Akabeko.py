@@ -11,7 +11,7 @@ class Akabeko(Relic):
         self.listener = Listener(Listener.Event.ATTACK_PLAYED, self.temp_buff)
 
     def temp_buff(self, player, enemy, enemies, debug):
-        self.player.damage_dealt_multiplier -=8
+        self.player.damage_dealt_modifier -=8
         self.player.listeners.remove(self.listener)
 
     def on_pickup(self):
