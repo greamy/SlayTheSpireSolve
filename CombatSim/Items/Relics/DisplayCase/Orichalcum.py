@@ -9,7 +9,7 @@ class Orichalcum(Relic):
 
     def block_check(self, player, enemy, enemies, debug):
         if self.player.block == 0:
-            self.player.block +=6
+            self.player.block += 6
 
     def on_pickup(self):
         self.player.add_listener(self.listener)

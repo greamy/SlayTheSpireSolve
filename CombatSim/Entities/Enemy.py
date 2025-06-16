@@ -1,4 +1,5 @@
 from CombatSim.Actions.Intent import Intent
+from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Entity import Entity
 import random
 
@@ -19,6 +20,18 @@ class Enemy(Entity):
         self.minion = minion
         self.mark = 0
         self.ascension = ascension
+
+    def start_turn(self, opponents, debug):
+        super().start_turn(opponents, debug)
+        self.notify_listeners(Listener.Event.START_TURN, opponents[0], [self], debug)
+
+    def end_turn(self, opponents, debug):
+        super().end_turn(opponents, debug)
+        self.notify_listeners(Listener.Event.END_TURN, opponents[0], [self], debug)
+
+    def gain_block(self, amount, opponents, debug):
+        super().gain_block(amount, opponents, debug)
+        self.notify_listeners(Listener.Event.BLOCK_GAINED, opponents[0], [self], debug)
 
     def choose_intent(self):
         current_prob = 0

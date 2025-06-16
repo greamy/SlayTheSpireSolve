@@ -16,6 +16,16 @@ def main():
     # logger = Logger("/Users/grant/PycharmProjects/SlayTheSpireSolve/spire_com", ".log")
     env = SpireEnvironment(logger)
     # env.run()
+
+    #TODO:
+    # 1. Finish implementing relics, potions, other enemies (maybe other characters)
+    # 2. Slay the spire integration
+    # 3. Training an AI Bot to play
+    #   3a. In-game bot
+    #   3b. Simulated bot
+    #
+
+
     try:
         coord = Coordinator()
         coord.signal_ready()

@@ -135,7 +135,7 @@ class CardTest(unittest.TestCase):
         self.enemy_start_health = 51
         self.enemy.health = self.enemy_start_health
 
-        self.player.notify_listeners(Listener.Event.END_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.END_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.enemy.health, self.enemy_start_health-50)
 
     def test_battle_hymn(self):
@@ -146,10 +146,10 @@ class CardTest(unittest.TestCase):
         self.assertEqual(len(self.player.listeners), 1)
         self.assertIn(card, self.player.deck.used_powers)
 
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertIsInstance(self.player.deck.hand[0], Smite)
 
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertIsInstance(self.player.deck.hand[1], Smite)
 
     def test_smite(self):
@@ -175,17 +175,17 @@ class CardTest(unittest.TestCase):
 
         # Make sure 1_000_000 health is enough to survive
         self.player.health = 1_000_000
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertTrue(self.player.is_alive())
 
         # Ensure listener removes itself after one turn
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertTrue(self.player.is_alive())
 
         # Ensure card kills player when played a second time
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertFalse(self.player.is_alive())
 
     def test_BowlingBash(self):
@@ -247,11 +247,11 @@ class CardTest(unittest.TestCase):
         self.assertEqual(len(self.player.listeners), 1)
         self.assertIn(card, self.player.deck.exhaust_pile)
 
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player,  self.enemies, self.debug)
         self.assertIsInstance(self.player.deck.hand[0], Miracle)
 
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(len(self.player.deck.hand), 3)
 
         self.assertIsInstance(self.player.deck.hand[1], Miracle)
@@ -259,7 +259,7 @@ class CardTest(unittest.TestCase):
 
         self.player.deck.hand.clear()
 
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(len(self.player.deck.hand), 0)
 
     def test_Miracle(self):
@@ -272,7 +272,7 @@ class CardTest(unittest.TestCase):
         self.assertIn(card, self.player.deck.exhaust_pile)
 
         self.player.deck.hand.append(card)
-        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.player, self.enemies, self.debug)
         self.assertIn(card, self.player.deck.hand)
 
     def test_Conclude(self):
@@ -368,7 +368,7 @@ class CardTest(unittest.TestCase):
         self.player.play_card(attack, self.enemy, self.enemies, self.debug)
         self.assertEqual(self.enemy.health, self.enemy_start_health - (1.5*attack.damage) - card.damage)
 
-        self.enemy.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.enemy.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.enemy.damage_taken_multiplier, 1.0)
 
     def test_CutThroughFate(self):
@@ -415,15 +415,15 @@ class CardTest(unittest.TestCase):
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
         self.player.energy = self.energy
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.player.energy, self.energy + 1)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.player.energy, self.energy + 1 + 2)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.player.energy, self.energy + 1 + 2 + 3)
 
         self.player.deck.hand.append(card)
-        self.player.notify_listeners(Listener.Event.END_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.END_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.player.deck.exhaust_pile[0], card)
 
     def test_Devotion(self):
@@ -431,13 +431,13 @@ class CardTest(unittest.TestCase):
         card = Devotion(self.player)
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.player.mantra, card.mantra)
 
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.player.get_mantra_count(), 0)
         self.assertEqual(self.player.stance, Player.Stance.DIVINITY)
 
@@ -602,9 +602,9 @@ class CardTest(unittest.TestCase):
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
         self.assertEqual(self.enemy.damage_taken_multiplier, 1.5)
-        self.enemy.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
-        self.enemy.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
-        self.enemy.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.enemy.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
+        self.enemy.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
+        self.enemy.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.enemy.damage_taken_multiplier, 1.0)
 
     def test_InnerPeace(self):
@@ -659,11 +659,11 @@ class CardTest(unittest.TestCase):
         card = LikeWater(self.player)
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
-        self.player.notify_listeners(Listener.Event.END_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.END_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.player.block, 0)
 
         self.player.stance = Player.Stance.CALM
-        self.player.notify_listeners(Listener.Event.END_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.END_TURN, self.player, self.enemies, self.debug)
         self.assertEqual(self.player.block, card.end_turn_block)
 
     def test_MasterReality(self):
@@ -780,7 +780,7 @@ class CardTest(unittest.TestCase):
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
         self.assertEqual(self.player.block, card.block)
         self.player.deck.hand.append(card)
-        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.player, self.enemies, self.debug)
         self.assertIn(card, self.player.deck.hand)
 
     def test_Ragnarok(self):
@@ -788,13 +788,13 @@ class CardTest(unittest.TestCase):
         card = Ragnarok(self.player)
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemies[0], self.enemies, self.debug)
-        self.assertEqual(self.enemy.health, self.enemy_start_health - card.damage*card.attacks)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - card.damage*card.num_attacks)
         self.enemies[0].health = self.enemy_start_health
         self.enemies.append(copy.deepcopy(self.enemy))
         self.player.energy = 3
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemies[0], self.enemies, self.debug)
-        self.assertEqual((self.enemies[0].health + self.enemies[1].health), self.enemy_start_health * 2 - card.damage * card.attacks)
+        self.assertEqual((self.enemies[0].health + self.enemies[1].health), self.enemy_start_health * 2 - card.damage * card.num_attacks)
 
     def test_ReachHeaven(self):
         # Deal 10(15) damage. Shuffle a {{C|Through Violence}} into your draw pile.
@@ -812,7 +812,7 @@ class CardTest(unittest.TestCase):
         self.assertIn(card, self.player.deck.exhaust_pile)
 
         self.player.deck.hand.append(card)
-        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.player, self.enemies, self.debug)
         self.assertIn(card, self.player.deck.hand)
 
     def test_Rushdown(self):
@@ -893,7 +893,7 @@ class CardTest(unittest.TestCase):
 
         self.player.deck.hand.append(card)
         self.player.deck.hand.append(Strike(self.player))
-        self.player.notify_listeners(Listener.Event.HAND_CHANGED, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.HAND_CHANGED, self.player, self.enemies, self.debug)
         self.player.energy = 3
         self.assertFalse(self.player.play_card(card, self.enemy, self.enemies, self.debug))
 
@@ -904,7 +904,7 @@ class CardTest(unittest.TestCase):
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
 
         self.player.deck.draw_pile.extend([Strike(self.player) for i in range(2)])
-        self.player.notify_listeners(Listener.Event.START_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.START_TURN, self.player, self.enemies, self.debug)
 
         self.assertEqual(self.player.stance, Player.Stance.WRATH)
         self.assertEqual(len(self.player.deck.hand), 2)
@@ -936,7 +936,7 @@ class CardTest(unittest.TestCase):
         self.player.deck.hand.append(card)
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
 
-        self.player.notify_listeners(Listener.Event.END_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.END_TURN, self.player, self.enemies, self.debug)
         self.assertIsInstance(self.player.deck.draw_pile[0], Insight)
 
     def test_Swivel(self):
@@ -947,7 +947,7 @@ class CardTest(unittest.TestCase):
         self.assertEqual(self.player.block, card.block)
 
         self.player.energy = self.energy
-        self.player.notify_listeners(Listener.Event.ENERGY_CHANGED, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.ENERGY_CHANGED, self.player, self.enemies, self.debug)
 
         strike = Strike(self.player)
         self.player.deck.hand.append(strike)
@@ -976,11 +976,19 @@ class CardTest(unittest.TestCase):
         self.player.play_card(strike, self.new_enemy, self.enemies, self.debug)
         self.assertEqual(self.player.block, 0)
 
+        self.enemies = [self.enemy]
         self.player.energy = 3
-        followup = FollowUp(self.player)
-        self.player.deck.hand.append(followup)
-        self.player.play_card(followup, self.enemy, self.enemies, self.debug)
-        self.assertEqual(self.player.block, card.block_gain*followup.attacks)
+        ragnarok = Ragnarok(self.player)
+        self.player.deck.hand.append(ragnarok)
+        self.player.play_card(ragnarok, self.enemy, self.enemies, self.debug)
+        self.assertEqual(self.player.block, card.block_gain*ragnarok.num_attacks)
+
+        self.player.energy = 3
+        self.player.block = 0
+        self.enemy.block = 6
+        self.player.deck.hand.append(strike)
+        self.player.play_card(strike, self.enemy, self.enemies, self.debug)
+        self.assertEqual(self.player.block, card.block_gain)
 
     def test_Tantrum(self):
         # Deal 3 damage 3(4) times. Enter {{Wrath}}. Shuffle this card into your draw pile.
@@ -1092,9 +1100,9 @@ class CardTest(unittest.TestCase):
         self.enemy.health = self.enemy_start_health
 
         self.player.deck.hand.append(card)
-        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.enemies, self.debug)
-        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.enemies, self.debug)
-        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.player, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.player, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.CARD_RETAINED, self.player, self.enemies, self.debug)
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
         self.assertEqual(self.enemy.health, self.enemy_start_health - (initial_damage + (card.damage_increase * 3)))
 
@@ -1149,7 +1157,7 @@ class CardTest(unittest.TestCase):
         card = Dazed(self.player)
         self.player.deck.hand.append(card)
 
-        self.player.notify_listeners(Listener.Event.END_TURN, self.enemies, self.debug)
+        self.player.notify_listeners(Listener.Event.END_TURN, self.player, self.enemies, self.debug)
 
         self.assertIn(card, self.player.deck.exhaust_pile)
 

@@ -18,7 +18,7 @@ class Weave(Card):
         if self in player.deck.discard_pile:
             player.deck.discard_pile.remove(self)
             player.deck.hand.append(self)
-            player.notify_listeners(Listener.Event.HAND_CHANGED, enemies, debug)
+            player.notify_listeners(Listener.Event.HAND_CHANGED, player, enemies, debug)
 
     def upgrade(self):
         super().upgrade()

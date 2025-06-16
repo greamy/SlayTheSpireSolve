@@ -23,10 +23,9 @@ class Entity:
     def start_turn(self, opponents, debug):
         if not self.barricade:
             self.block = 0
-        self.notify_listeners(Listener.Event.START_TURN, opponents, debug)
 
     def end_turn(self, opponents, debug):
-        self.notify_listeners(Listener.Event.END_TURN, opponents, debug)
+        pass
 
     def take_damage(self, amount):
         if self.block > 0:
@@ -42,7 +41,6 @@ class Entity:
 
     def gain_block(self, amount, enemies, debug):
         self.block += math.floor((amount + self.block_modifier) * self.block_multiplier)
-        self.notify_listeners(Listener.Event.BLOCK_GAINED, enemies, debug)
 
     def is_alive(self):
         return self.health > 0
@@ -50,12 +48,12 @@ class Entity:
     def add_listener(self, listener):
         self.listeners.append(listener)
 
-    def notify_listeners(self, event_type, enemies, debug):
+    def notify_listeners(self, event_type, player, enemies, debug):
         if debug:
             pass
             # print("Triggering listeners!")
         for listener in self.listeners:
             if event_type in listener.event_types:
-                listener.notify(self, random.choice(enemies), enemies, debug)
+                listener.notify(player, random.choice(enemies), enemies, debug)
 
 

@@ -1,5 +1,6 @@
 import importlib
 import os
+import numpy as np
 
 from CombatSim.Entities.Dungeon.JawWorm import JawWorm
 from CombatSim.Entities.Player import Player
@@ -8,6 +9,9 @@ from Combat import Combat
 from CombatSim.Actions.Intent import Intent
 import time
 
+def test_nonzero():
+    arr = np.array([])
+    print(arr.nonzero())
 
 def main():
     num_turns = []
@@ -39,4 +43,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    test_nonzero()

@@ -69,13 +69,14 @@ class Player(Entity):
                 self.deck.swap(0 + num_innate, idx)
                 num_innate += 1
 
-        self.notify_listeners(Listener.Event.START_COMBAT, enemies, debug)
+        self.notify_listeners(Listener.Event.START_COMBAT, self, enemies, debug)
 
     def end_combat(self):
         self.mantra = 0
 
     def start_turn(self, enemies, debug):
         super().start_turn(enemies, debug)
+        self.notify_listeners(Listener.Event.START_TURN, self, enemies, debug)
         self.energy = self.max_energy
         self.draw_cards(self.draw_amount, enemies, debug)
 
@@ -102,11 +103,12 @@ class Player(Entity):
 
     def end_turn(self, enemies, debug):
         super().end_turn(enemies, debug)
+        self.notify_listeners(Listener.Event.END_TURN, self, enemies, debug)
 
         self.deck.end_turn(debug)
-        self.notify_listeners(Listener.Event.HAND_CHANGED, enemies, debug)
+        self.notify_listeners(Listener.Event.HAND_CHANGED, self, enemies, debug)
         if len(self.deck.hand) > 0:
-            self.notify_listeners(Listener.Event.CARD_RETAINED, enemies, debug)
+            self.notify_listeners(Listener.Event.CARD_RETAINED, self, enemies, debug)
         if self.stance == self.Stance.DIVINITY:
             self.set_stance(self.Stance.NONE)
 
@@ -114,11 +116,11 @@ class Player(Entity):
 
     def draw_cards(self, amount, enemies, debug):
         self.deck.draw_cards(amount)
-        self.notify_listeners(Listener.Event.HAND_CHANGED, enemies, debug)
+        self.notify_listeners(Listener.Event.HAND_CHANGED,self, enemies, debug)
 
     def discard(self, card, enemies, debug):
         self.deck.discard(card)
-        self.notify_listeners(Listener.Event.HAND_CHANGED, enemies, debug)
+        self.notify_listeners(Listener.Event.HAND_CHANGED, self, enemies, debug)
 
     def play_card(self, card, enemy, enemies, debug):
         if card not in self.deck.hand:
@@ -138,12 +140,12 @@ class Player(Entity):
         card.play(self, [self], enemy, enemies, debug)
 
         if card.is_attack():
-            self.notify_listeners(Listener.Event.ATTACK_PLAYED, enemies, debug)
+            self.notify_listeners(Listener.Event.ATTACK_PLAYED, self, enemies, debug)
         elif card.is_skill():
-            self.notify_listeners(Listener.Event.SKILL_PLAYED, enemies, debug)
+            self.notify_listeners(Listener.Event.SKILL_PLAYED, self, enemies, debug)
         elif card.is_power():
             self.deck.used_powers.append(card)
-            self.notify_listeners(Listener.Event.POWER_PLAYED, enemies, debug)
+            self.notify_listeners(Listener.Event.POWER_PLAYED, self, enemies, debug)
         if card.exhaust:
             self.deck.exhaust_pile.append(card)
         if card not in self.deck.get_deck():
@@ -194,11 +196,15 @@ class Player(Entity):
                 self.discard(self.deck.draw_pile.pop(index), enemies, debug)
             else:
                 index += 1
-        self.notify_listeners(Listener.Event.SCRY_OCCURRED, enemies, debug)
+        self.notify_listeners(Listener.Event.SCRY_OCCURRED, self, enemies, debug)
 
     def gain_gold(self, amount, enemies, debug):
         self.gold += amount
         # TODO: Add gold gained listener notification
+
+    def gain_block(self, amount, enemies, debug):
+        super().gain_block(amount, enemies, debug)
+        self.notify_listeners(Listener.Event.BLOCK_GAINED, self, enemies, debug)
 
     def __str__(self):
         return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\nDeck: " + str(self.deck)

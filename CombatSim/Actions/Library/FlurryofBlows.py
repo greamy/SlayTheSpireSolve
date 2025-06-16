@@ -20,7 +20,7 @@ class FlurryofBlows(Card):
         if self.last_stance != player.stance and len(player.deck.hand) < 10 and self in player.deck.discard_pile:
             player.deck.discard_pile.remove(self)
             player.deck.hand.append(self)
-            player.notify_listeners(Listener.Event.HAND_CHANGED, enemies, debug)
+            player.notify_listeners(Listener.Event.HAND_CHANGED, player, enemies, debug)
 
         self.last_stance = player.stance
 

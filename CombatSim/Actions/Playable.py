@@ -14,7 +14,7 @@ class Playable:
         target_entity.take_damage(self.one_attack_damage * self.attacks)
         primary_entity.gain_block(self.block, target_list, debug)
         for i in range(self.attacks):
-            target_entity.notify_listeners(Listener.Event.TAKEN_DAMAGE, [primary_entity], debug)
+            target_entity.notify_listeners(Listener.Event.TAKEN_DAMAGE, primary_entity, [target_entity], debug)
 
     def __str__(self):
         return ("Damage: " + str(self.damage) + " Attacks: " + str(self.attacks) +
