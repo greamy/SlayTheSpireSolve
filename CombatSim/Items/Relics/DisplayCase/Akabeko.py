@@ -5,6 +5,7 @@ from CombatSim.Items.Relics.Relic import Relic
 
 
 class Akabeko(Relic):
+    # Your first attack each combat deals 8  additional damage.
     def __init__(self, player):
         super().__init__("Akabeko", "common", player)
         self.player.damage_dealt_modifier +=8

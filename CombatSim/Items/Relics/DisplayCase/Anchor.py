@@ -2,8 +2,6 @@ from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Player import Player
 from CombatSim.Items.Relics.Relic import Relic
 
-
-
 class Anchor(Relic):
     # Adds 10 block on turn one
     def __init__(self, player):

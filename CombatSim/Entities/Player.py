@@ -76,9 +76,9 @@ class Player(Entity):
 
     def start_turn(self, enemies, debug):
         super().start_turn(enemies, debug)
-        self.notify_listeners(Listener.Event.START_TURN, self, enemies, debug)
         self.energy = self.max_energy
         self.draw_cards(self.draw_amount, enemies, debug)
+        self.notify_listeners(Listener.Event.START_TURN, self, enemies, debug)
 
     def do_turn(self, enemies, debug):
         # TODO: Make player play potions

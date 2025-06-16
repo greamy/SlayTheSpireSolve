@@ -1,5 +1,6 @@
 import random
 import unittest
+import copy
 
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Alpha import Alpha
@@ -87,7 +88,6 @@ from CombatSim.Actions.Library.EmptyBody import EmptyBody
 from CombatSim.Entities.Dungeon.JawWorm import JawWorm
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
-import copy
 
 
 class CardTest(unittest.TestCase):
