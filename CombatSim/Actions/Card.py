@@ -30,6 +30,14 @@ class Card(Playable):
             if Listener.Event.CARD_CREATED in listener.event_types:
                 self.upgrade()
 
+        # render attributes
+        self.start_x = 50
+        self.x = 50
+        self.y = 450
+        self.dist = 130
+        self.width = 125
+        self.height = 150
+
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
         if debug:
@@ -51,12 +59,14 @@ class Card(Playable):
     def is_attack(self):
         return self.card_type == self.Type.ATTACK
 
-    def render(self, screen, font, pos, text_size):
-        x = 50 + (pos * 130)
-        y = 450
-        pygame.draw.rect(screen, 'white', pygame.Rect(x, y, 125, 150), 10, 2)
+    def render(self, screen, font, pos):
+        self.x = self.start_x + (pos * self.dist)
+        pygame.draw.rect(screen, 'white', pygame.Rect(self.x, self.y, self.width, self.height), 10, 2)
         text = font.render(self.name, True, (255, 255, 255))
-        screen.blit(text, (x+10, y+10))
+        screen.blit(text, (self.x+10, self.y+10))
+
+        cost = font.render(str(self.energy), True, (0, 255, 0))
+        screen.blit(cost, (self.x+30, self.y+40))
 
     def __str__(self):
         return self.name

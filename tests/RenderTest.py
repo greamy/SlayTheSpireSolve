@@ -73,3 +73,47 @@ class RenderTest(unittest.TestCase):
             counter += 1
         time.sleep(2)
         pygame.quit()
+
+    def test_playable_render(self):
+        counter = 0
+        enemy = self.createEnemy("Hexaghost", 20, 1)
+        player = self.createPlayer()
+        combat = Combat(player, [enemy], True)
+        combat.start()
+        while self.running:
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1 and combat.current_turn == combat.PLAYER_TURN:
+                        # get position of mouse click
+                        pos = pygame.mouse.get_pos()
+                        # check if any card was clicked
+                        for card in player.deck.hand:
+                            if card.x < pos[0] < card.x + card.width and card.y < pos[1] < card.y + card.height:
+                                # play the card
+                                success = player.play_card(card, enemy, [enemy], self.debug)
+                                if not success:
+                                    print("Card play failed")
+                                    fail_msg = pygame.font.SysFont("monospace", 20).render("Card play failed", True, (255, 0, 0))
+                                    self.screen.blit(fail_msg, (300, 300))
+
+            self.screen.fill((0, 0, 0))
+            # pygame.draw.circle(self.screen, (255, 255, 255), (100, 100), 50, 25)
+            if combat.current_turn == combat.ENEMY_TURN:
+                if counter % 60 == 0:
+                    self.running = combat.do_next_turn()
+                    counter = 1
+                else:
+                    counter += 1
+            combat.renderall(self.screen)
+            pygame.display.flip()
+            self.clock.tick(60)
+
+            if player.check_turn_done():
+                player.end_turn([enemy], self.debug)
+                combat.current_turn = combat.ENEMY_TURN
+
+        time.sleep(2)
+        pygame.quit()

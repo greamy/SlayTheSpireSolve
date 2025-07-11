@@ -96,7 +96,6 @@ class Player(Entity):
             if not success:
                 playable_cards.remove(card_choice)
                 continue
-            self.card_played = card_choice
             for enemy in enemies:
                 if not enemy.is_alive():
                     enemies.remove(enemy)
@@ -104,6 +103,11 @@ class Player(Entity):
                 return True
         return False
 
+    def check_turn_done(self):
+        playable_cards = self.get_playable_cards()
+        if len(playable_cards) == 0 or self.turn_over:
+            return True
+        return False
 
     def do_turn(self, enemies, debug):
         # TODO: Make player play potions
@@ -176,6 +180,8 @@ class Player(Entity):
             self.deck.exhaust_pile.append(card)
         if card not in self.deck.get_deck():
             self.discard(card, enemies, debug)
+
+        self.card_played = card
         return True
 
     def get_playable_cards(self):
@@ -245,7 +251,7 @@ class Player(Entity):
         pygame.draw.rect(screen, color, (self.x, self.y, self.width, self.height), 50, 5)
 
         for i, card in enumerate(self.deck.hand):
-            card.render(screen, self.font, i, self.text_size)
+            card.render(screen, self.font, i)
 
         if self.card_played is not None:
             text = self.font.render("Played: " + self.card_played.name, True, (255, 255, 255))
