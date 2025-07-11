@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+import pygame
 
 from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Enemy import Enemy
@@ -8,10 +9,13 @@ from QBot.Environments.States.CombatState import CombatState
 
 
 class Combat:
+    PLAYER_TURN = 0
+    ENEMY_TURN = 1
 
     def __init__(self, player: Player, enemies: list[Enemy], debug: bool):
         self.player = player
-
+        self.current_turn = self.PLAYER_TURN
+        self.player_won = None
         if len(enemies) < 1:
             print("No enemies in combat")
 
@@ -22,10 +26,44 @@ class Combat:
 
     def start(self):
         self.player.begin_combat(self.enemies, self.debug)
-        return self.run()
+        # return self.run()
 
     def get_total_enemy_health(self):
         return sum([enemy.health for enemy in self.enemies])
+
+    def do_next_turn(self):
+        if self.current_turn == self.PLAYER_TURN:
+            self.player.start_turn(self.enemies, self.debug)
+            self.player.do_turn(self.enemies, self.debug)
+            self.current_turn = self.ENEMY_TURN
+
+        elif self.current_turn == self.ENEMY_TURN:
+            for enemy in self.enemies:
+                enemy.start_turn([self.player], self.debug)
+                enemy.do_turn(self.player, self.debug)
+            self.current_turn = self.PLAYER_TURN
+        if self.player.health > 0 and self.get_total_enemy_health() > 0:
+            return True
+        else:
+            if self.player.health > 0:
+                self.player_won = True
+            else:
+                self.player_won = False
+            return False
+
+    def renderall(self, screen):
+        self.player.render(screen)
+        for enemy in self.enemies:
+            enemy.render(screen)
+        font = pygame.font.SysFont("monospace", 20)
+        if self.player_won is not None:
+            if self.player_won :
+
+                text = font.render("WINNER WINNER CHICKEN DINNER", True, (255, 255, 255))
+                screen.blit(text, (screen.get_width() / 2 - text.get_width() / 2, 10))
+            else:
+                text = font.render("no chicken :(", True, (255, 255, 255))
+                screen.blit(text, (screen.get_width() / 2 - text.get_width() / 2, 10))
 
     def run(self):
         # Game loop of player turn -> Enemy turn until enemies or player is killed.

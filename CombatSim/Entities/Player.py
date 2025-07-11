@@ -7,6 +7,7 @@ from enum import Enum
 from CombatSim.Actions.Listener import Listener
 
 import numpy as np
+import pygame
 
 from CombatSim.Items.Relics.Relic import Relic
 
@@ -26,7 +27,7 @@ class Player(Entity):
         self.turn_over = False
         self.innate_cards = []
         self.relics = []
-        # self.implemented_cards = self.get_implemented_cards(library_path)
+        self.implemented_cards = self.get_implemented_cards(library_path)
         self.deck = self.Deck(self.create_deck(cards))
 
         # self.bot = QBot()
@@ -205,6 +206,20 @@ class Player(Entity):
     def gain_block(self, amount, enemies, debug):
         super().gain_block(amount, enemies, debug)
         self.notify_listeners(Listener.Event.BLOCK_GAINED, self, enemies, debug)
+
+    def render(self, screen):
+        if self.stance == self.Stance.DIVINITY:
+            color = "purple"
+        elif self.stance == self.Stance.WRATH:
+            color = "red"
+        elif self.stance == self.Stance.CALM:
+            color = "blue"
+        else:
+            color = "gray"
+        health_font = pygame.font.SysFont("TimesNewRoman", 20)
+        health_text = health_font.render("HEALTH:" + str(self.health), True, "green")
+        screen.blit(health_text, [250, 100])
+        pygame.draw.rect(screen, color, (200, 150, 100, 50), 25, 5)
 
     def __str__(self):
         return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\nDeck: " + str(self.deck)

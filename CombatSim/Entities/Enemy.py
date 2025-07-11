@@ -2,7 +2,7 @@ from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Entity import Entity
 import random
-
+import pygame
 
 class Enemy(Entity):
     def __init__(self, health, intent_set, ascension, minion=False):
@@ -59,6 +59,11 @@ class Enemy(Entity):
         self.choose_intent()
 
         self.end_turn([player], debug)
+    def render(self, screen):
+        health_font = pygame.font.SysFont("TimesNewRoman", 20)
+        health_text = health_font.render("HEALTH:" + str(self.health), True, "orange")
+        screen.blit(health_text, [400, 200])
+        pygame.draw.rect(screen, "red", (400, 350, 300, 250), 25, 5)
 
     def __str__(self):
         return "ENEMY\nHealth: " + str(self.health) + " Block: " + str(self.block)
