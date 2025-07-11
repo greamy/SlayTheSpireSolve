@@ -53,7 +53,7 @@ class RenderTest(unittest.TestCase):
 
     def test_render(self):
         counter = 0
-        testing_enemy = self.createEnemy("SlimeBoss", 20, 1)
+        testing_enemy = self.createEnemy("Hexaghost", 20, 1)
         testing_player = self.createPlayer()
         combat = Combat(testing_player, [testing_enemy], True)
         combat.start()

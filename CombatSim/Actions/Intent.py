@@ -21,6 +21,24 @@ class Intent(Playable):
     #     SLEEP = 15
     #     STUN = 16
     #     UNKNOWN = 17
+    class IntentRenderColors(Enum):
+        ATTACK = (255, 0, 0)
+        ATTACK_BUFF = (255, 0, 128)
+        ATTACK_DEBUFF = (255, 128, 0)
+        ATTACK_DEFEND = (255, 0, 200)
+        BUFF = (128, 0, 128)
+        DEBUFF = (0, 200, 0)
+        STRONG_DEBUFF = (0, 255, 0)
+        DEBUG = (50, 50, 50)
+        DEFEND = (0, 0, 255)
+        DEFEND_DEBUFF = (0, 128, 255)
+        DEFEND_BUFF = (0, 128, 128)
+        ESCAPE = (255, 255, 0)
+        MAGIC = (128, 0, 0)
+        NONE = (255, 255, 255)
+        SLEEP = (200, 200, 200)
+        STUN = (200, 200, 0)
+        UNKNOWN = (128, 128, 128)
 
     def __init__(self, name, damage, attacks, block, probability, intent_type, buf_debuff_ids=None):
         super().__init__(damage, attacks, block)
@@ -30,6 +48,12 @@ class Intent(Playable):
         self.name = name
         self.intent_type = intent_type
         self.buf_debuff_ids = buf_debuff_ids
+
+        # render attributes
+        print(self.intent_type)
+        print(intent_type.value)
+        print(list(Intent.IntentRenderColors))
+        self.color = list(Intent.IntentRenderColors)[intent_type.value - 1].value
 
     def play(self, enemy, enemy_list, player, player_list, debug):
         if debug:

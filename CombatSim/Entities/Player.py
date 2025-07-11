@@ -29,6 +29,7 @@ class Player(Entity):
         self.relics = []
         self.implemented_cards = self.get_implemented_cards(library_path)
         self.deck = self.Deck(self.create_deck(cards))
+        self.card_played = None
 
         # self.bot = QBot()
 
@@ -95,7 +96,7 @@ class Player(Entity):
             if not success:
                 playable_cards.remove(card_choice)
                 continue
-
+            self.card_played = card_choice
             for enemy in enemies:
                 if not enemy.is_alive():
                     enemies.remove(enemy)
@@ -137,6 +138,7 @@ class Player(Entity):
             self.set_stance(self.Stance.NONE)
 
         self.turn_over = False
+        self.card_played = None
 
     def draw_cards(self, amount, enemies, debug):
         self.deck.draw_cards(amount)
@@ -231,6 +233,7 @@ class Player(Entity):
         self.notify_listeners(Listener.Event.BLOCK_GAINED, self, enemies, debug)
 
     def render(self, screen):
+        super().render(screen)
         if self.stance == self.Stance.DIVINITY:
             color = "purple"
         elif self.stance == self.Stance.WRATH:
@@ -239,10 +242,14 @@ class Player(Entity):
             color = "blue"
         else:
             color = "gray"
-        health_font = pygame.font.SysFont("TimesNewRoman", 20)
-        health_text = health_font.render("HEALTH:" + str(self.health), True, "green")
-        screen.blit(health_text, [250, 100])
-        pygame.draw.rect(screen, color, (200, 150, 100, 50), 25, 5)
+        pygame.draw.rect(screen, color, (self.x, self.y, self.width, self.height), 50, 5)
+
+        for i, card in enumerate(self.deck.hand):
+            card.render(screen, self.font, i, self.text_size)
+
+        if self.card_played is not None:
+            text = self.font.render("Played: " + self.card_played.name, True, (255, 255, 255))
+            screen.blit(text, (300, 300))
 
     def __str__(self):
         return "PLAYER\nHealth: " + str(self.health) + "\nBlock: " + str(self.block) + "\nDeck: " + str(self.deck)

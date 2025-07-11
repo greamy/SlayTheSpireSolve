@@ -6,7 +6,7 @@ import pygame
 
 class Enemy(Entity):
     def __init__(self, health, intent_set, ascension, minion=False):
-        super().__init__(health)
+        super().__init__(health, x=500)
 
         total_prob = sum([intent.probability for intent in intent_set])
         if total_prob != 100:
@@ -59,11 +59,20 @@ class Enemy(Entity):
         self.choose_intent()
 
         self.end_turn([player], debug)
+
     def render(self, screen):
-        health_font = pygame.font.SysFont("TimesNewRoman", 20)
-        health_text = health_font.render("HEALTH:" + str(self.health), True, "orange")
-        screen.blit(health_text, [400, 200])
-        pygame.draw.rect(screen, "red", (400, 350, 300, 250), 25, 5)
+        super().render(screen)
+        pygame.draw.rect(screen, "red", (self.x, self.y, self.width, self.height), 50, 5)
+
+        intent_str = ["INTENT: " + self.intent.name, str(self.intent.damage) + " * " + str(self.intent.attacks) + " dmg",
+                      str(self.intent.block) + " block"]
+        lines = []
+        for line in intent_str:
+            lines.append(self.font.render(line, True, self.intent.color))
+
+        for i, line in enumerate(lines):
+            screen.blit(line, (self.x + self.width+5, self.y + (i-1) * (self.text_size + 5)))
+
 
     def __str__(self):
         return "ENEMY\nHealth: " + str(self.health) + " Block: " + str(self.block)

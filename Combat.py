@@ -54,13 +54,19 @@ class Combat:
             return False
 
     def renderall(self, screen):
+        font = pygame.font.SysFont("monospace", 40)
         self.player.render(screen)
         for enemy in self.enemies:
             enemy.render(screen)
-        font = pygame.font.SysFont("monospace", 20)
-        if self.player_won is not None:
-            if self.player_won :
 
+        if self.player_won is None:
+            if self.current_turn == self.PLAYER_TURN:
+                text = font.render("PLAYER TURN", True, (100, 100, 255))
+            else:
+                text = font.render("ENEMY TURN", True, (255, 100, 100))
+            screen.blit(text, (screen.get_width() / 2 - text.get_width() / 2, 10))
+        else: # if game is over
+            if self.player_won:
                 text = font.render("WINNER WINNER CHICKEN DINNER", True, (255, 255, 255))
                 screen.blit(text, (screen.get_width() / 2 - text.get_width() / 2, 10))
             else:

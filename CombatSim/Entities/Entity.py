@@ -1,10 +1,13 @@
 import random
+
+import pygame
+
 from CombatSim.Actions.Listener import Listener
 import math
 
 class Entity:
 
-    def __init__(self, health):
+    def __init__(self, health, x=150, y=150, width=100, height=100):
         self.health = health
         self.block = 0
         self.damage_dealt_multiplier = 1.0
@@ -16,6 +19,14 @@ class Entity:
         self.barricade = False
         self.status_list = []
         self.gold = 0
+
+        # render attributes
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.text_size = 20
+        self.font = pygame.font.SysFont("TimesNewRoman", self.text_size)
 
     def do_turn(self, opponents, debug):
         pass
@@ -55,5 +66,11 @@ class Entity:
         for listener in self.listeners:
             if event_type in listener.event_types:
                 listener.notify(player, random.choice(enemies), enemies, debug)
+
+    def render(self, screen):
+        health_text = self.font.render("HEALTH:" + str(self.health), True, "green")
+        block_text = self.font.render("BLOCK:" + str(self.block), True, (100, 100, 255))
+        screen.blit(health_text, [self.x, self.y - (self.text_size+5)*2])
+        screen.blit(block_text, [self.x, self.y - (self.text_size+5)])
 
 

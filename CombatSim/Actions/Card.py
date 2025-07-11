@@ -1,3 +1,5 @@
+import pygame
+
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Actions.Playable import Playable
 from CombatSim.Entities.Player import Player
@@ -48,6 +50,13 @@ class Card(Playable):
 
     def is_attack(self):
         return self.card_type == self.Type.ATTACK
+
+    def render(self, screen, font, pos, text_size):
+        x = 50 + (pos * 130)
+        y = 450
+        pygame.draw.rect(screen, 'white', pygame.Rect(x, y, 125, 150), 10, 2)
+        text = font.render(self.name, True, (255, 255, 255))
+        screen.blit(text, (x+10, y+10))
 
     def __str__(self):
         return self.name
