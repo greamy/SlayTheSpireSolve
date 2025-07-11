@@ -51,8 +51,6 @@ class RenderTest(unittest.TestCase):
         class_ = getattr(module, name)
         return class_(ascension, act)
 
-
-
     def test_render(self):
         counter = 0
         testing_enemy = self.createEnemy("SlimeBoss", 20, 1)

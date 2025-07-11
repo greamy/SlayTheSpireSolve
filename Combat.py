@@ -33,15 +33,17 @@ class Combat:
 
     def do_next_turn(self):
         if self.current_turn == self.PLAYER_TURN:
-            self.player.start_turn(self.enemies, self.debug)
-            self.player.do_turn(self.enemies, self.debug)
-            self.current_turn = self.ENEMY_TURN
+            turn_over = self.player.do_next_action(self.enemies, self.debug)
+            if turn_over:
+                self.current_turn = self.ENEMY_TURN
 
         elif self.current_turn == self.ENEMY_TURN:
             for enemy in self.enemies:
                 enemy.start_turn([self.player], self.debug)
                 enemy.do_turn(self.player, self.debug)
             self.current_turn = self.PLAYER_TURN
+            self.player.start_turn(self.enemies, self.debug)
+
         if self.player.health > 0 and self.get_total_enemy_health() > 0:
             return True
         else:

@@ -81,6 +81,29 @@ class Player(Entity):
         self.draw_cards(self.draw_amount, enemies, debug)
         self.notify_listeners(Listener.Event.START_TURN, self, enemies, debug)
 
+    def do_next_action(self, enemies, debug):
+        playable_cards = self.get_playable_cards()
+        success = False
+        while not success:
+            if len(playable_cards) == 0 or self.turn_over:
+                self.end_turn(enemies, debug)
+                return True
+
+            card_choice = random.choice(playable_cards)
+            targeted_enemy = random.choice(enemies)
+            success = self.play_card(card_choice, targeted_enemy, enemies, debug)
+            if not success:
+                playable_cards.remove(card_choice)
+                continue
+
+            for enemy in enemies:
+                if not enemy.is_alive():
+                    enemies.remove(enemy)
+            if len(enemies) == 0:
+                return True
+        return False
+
+
     def do_turn(self, enemies, debug):
         # TODO: Make player play potions
         playable_cards = self.get_playable_cards()

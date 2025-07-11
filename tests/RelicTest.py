@@ -93,7 +93,6 @@ class RelicTest(unittest.TestCase):
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
         self.assertEqual(self.enemy.health,self.enemy_start_health-(card.damage+8)-card.damage)
 
-
     def test_boot(self):
         # Whenever you would deal 4 or less unblocked Attack damage, increase it to 5.
         relic = TheBoot(self.player)
