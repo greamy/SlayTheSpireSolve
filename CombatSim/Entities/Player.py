@@ -249,6 +249,8 @@ class Player(Entity):
         else:
             color = "gray"
         pygame.draw.rect(screen, color, (self.x, self.y, self.width, self.height), 50, 5)
+        energy_text = self.font.render("ENERGY: " + str(self.energy), True, (255, 255, 0))
+        screen.blit(energy_text, (self.x+self.width, self.y))
 
         for i, card in enumerate(self.deck.hand):
             card.render(screen, self.font, i)

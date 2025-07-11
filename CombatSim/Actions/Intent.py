@@ -50,9 +50,6 @@ class Intent(Playable):
         self.buf_debuff_ids = buf_debuff_ids
 
         # render attributes
-        print(self.intent_type)
-        print(intent_type.value)
-        print(list(Intent.IntentRenderColors))
         self.color = list(Intent.IntentRenderColors)[intent_type.value - 1].value
 
     def play(self, enemy, enemy_list, player, player_list, debug):

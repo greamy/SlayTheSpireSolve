@@ -66,7 +66,7 @@ class Card(Playable):
         screen.blit(text, (self.x+10, self.y+10))
 
         cost = font.render(str(self.energy), True, (0, 255, 0))
-        screen.blit(cost, (self.x+30, self.y+40))
+        screen.blit(cost, (self.x+(self.width - 20), self.y+10))
 
     def __str__(self):
         return self.name
