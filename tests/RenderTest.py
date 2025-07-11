@@ -77,7 +77,7 @@ class RenderTest(unittest.TestCase):
 
     def test_playable_render(self):
         counter = 0
-        enemy = self.createEnemy("Hexaghost", 20, 1)
+        enemy = self.createEnemy("AcidSlimeSmall", 20, 1)
         player = self.createPlayer()
         combat = Combat(player, [enemy], True)
         combat.start()
@@ -101,25 +101,42 @@ class RenderTest(unittest.TestCase):
                                     fail_msg = self.font.render("Card play failed", True, (255, 0, 0))
                                     self.screen.blit(fail_msg, (300, 300))
 
+            if player.check_turn_done():
+                player.end_turn([enemy], self.debug)
+
+                combat.current_turn = combat.ENEMY_TURN
+
+            if combat.get_total_enemy_health() <= 0:
+                combat.player_won = True
+                self.running = False
+
             pos = pygame.mouse.get_pos()
             # check if any card was clicked
             help_box_x = 100
             help_box_y = 300
-            help_box_width = 100
+            help_box_width = 250
             help_box_height = 100
+            card_hovered = None
             for card in player.deck.hand:
                 if card.x < pos[0] < card.x + card.width and card.y < pos[1] < card.y + card.height:
                     # show info about the card
-                    print("HOVERING over card: " + str(card))
-                    pygame.draw.rect(self.screen, (255, 255, 0), (help_box_x, help_box_y, help_box_width, help_box_height), 30)
-                    # dmg = self.font.render("D:" + str(card.damage) + " * " + str(card.attacks), True, (255, 0, 0))
-                    # self.screen.blit(dmg, (help_box_x+5, help_box_y+5))
-                    # block = self.font.render("B:" + str(card.block), True, (0, 255, 0))
-                    # self.screen.blit(block, (help_box_x + 5, help_box_y + 25))
-                    # stance = self.font.render("Stance: " + str(card.stance), True, (0, 0, 255))
-                    # self.screen.blit(stance, (help_box_x + 5, help_box_y + 45))
+                    card_hovered = card
 
-            self.screen.fill((0, 0, 0))
+            self.screen.fill((0, 0, 0)) # SCREEN CLEARING IS HAPPENING HERE!!! BE CAREFUL
+
+            if card_hovered is not None:
+                pygame.draw.rect(self.screen, (255, 255, 255),
+                                 (help_box_x, help_box_y, help_box_width, help_box_height),
+                                 100, 2)
+                dmg = self.font.render("D:" + str(card_hovered.damage) + " * " + str(card_hovered.attacks), True,
+                                       (255, 0, 0))
+                self.screen.blit(dmg, (help_box_x + 5, help_box_y + 5))
+                block = self.font.render("B:" + str(card_hovered.block), True, (0, 255, 0))
+                self.screen.blit(block, (help_box_x + 5, help_box_y + 25))
+                stance_str = str(card_hovered.stance).split('.')[1] if card_hovered.stance is not None else "None"
+                stance = self.font.render("Stance: " + stance_str, True, (0, 0, 255))
+                self.screen.blit(stance, (help_box_x + 5, help_box_y + 45))
+
             # pygame.draw.circle(self.screen, (255, 255, 255), (100, 100), 50, 25)
             if combat.current_turn == combat.ENEMY_TURN:
                 if counter % 60 == 0:
@@ -127,13 +144,11 @@ class RenderTest(unittest.TestCase):
                     counter = 1
                 else:
                     counter += 1
+            else:
+                counter = 0
             combat.renderall(self.screen)
             pygame.display.flip()
             self.clock.tick(60)
 
-            if player.check_turn_done():
-                player.end_turn([enemy], self.debug)
-                combat.current_turn = combat.ENEMY_TURN
-
-        time.sleep(2)
+        time.sleep(4)
         pygame.quit()
