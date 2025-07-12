@@ -13,13 +13,15 @@ class Renderer:
         self.font = pygame.font.SysFont("monospace", 20)
         self.combat = combat
         self.debug = False
+        self.screen_size = screen_size
 
         self.end_turn_x = 525
         self.end_turn_y = 300
         self.end_turn_width = 160
         self.end_turn_height = 80
 
-    def render_combat(self):
+    def render_combat(self, frames_per_action=60, end_delay=2):
+        self.running = True
         counter = 0
         while self.running:
             for event in pygame.event.get():
@@ -28,16 +30,16 @@ class Renderer:
 
             self.screen.fill((0, 0, 0))
             # pygame.draw.circle(self.screen, (255, 255, 255), (100, 100), 50, 25)
-            if counter % 60 == 0:
+            if counter % frames_per_action == 0:
                 self.running = self.combat.do_next_turn()
             self.combat.renderall(self.screen)
             pygame.display.flip()
             self.clock.tick(60)
             counter += 1
-        time.sleep(2)
-        pygame.quit()
+        time.sleep(end_delay)
 
     def render_playable_combat(self):
+        self.running = True
         counter = 0
         fail_msg = None
         fail_msg_counter = 0
@@ -141,6 +143,7 @@ class Renderer:
         pygame.quit()
 
     def render_map(self, map_gen):
+        self.running = True
         map_font = pygame.font.SysFont("Arial", 20)
         regen_btn_x = 750
         regen_btn_y = 25
@@ -159,7 +162,7 @@ class Renderer:
                             map_gen.generate_map()
 
             self.screen.fill((0, 0, 0))
-            map_gen.render(self.screen, map_font)
+            map_gen.render(self.screen, self.screen_size, map_font)
 
             pygame.draw.rect(self.screen, (100, 255, 125), (regen_btn_x, regen_btn_y, 200, 50), 0, 5)
             regen_btn_txt = self.font.render("Re-Generate Map", True, (0, 0, 0))
@@ -167,3 +170,7 @@ class Renderer:
 
             pygame.display.flip()
             self.clock.tick(60)
+
+    def quit_render(self):
+        pygame.quit()
+        self.running = False

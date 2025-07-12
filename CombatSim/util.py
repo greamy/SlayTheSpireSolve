@@ -29,3 +29,11 @@ def createEnemy(name: str, ascension: int, act: int):
     module = importlib.import_module("CombatSim.Entities.Dungeon." + name)
     class_ = getattr(module, name)
     return class_(ascension, act)
+
+def get_default_deck():
+    cards = ["Strike" for _ in range(4)]
+    cards.extend(["Defend" for _ in range(4)])
+    cards.extend(["Vigilance", "Eruption"])
+    cards.extend(["Devotion" for _ in range(5)])
+    cards.extend(["SandsofTime" for _ in range(2)])
+    return cards

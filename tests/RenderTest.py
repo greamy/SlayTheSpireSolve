@@ -4,7 +4,7 @@ import pygame
 from Combat import Combat
 from CombatSim.Map.MapGenerator import MapGenerator
 from CombatSim.Renderer import Renderer
-from CombatSim.util import addCards, createPlayer, createEnemy
+from CombatSim.util import addCards, createPlayer, createEnemy, get_default_deck
 
 
 class RenderTest(unittest.TestCase):
@@ -13,11 +13,7 @@ class RenderTest(unittest.TestCase):
 
         self.debug = False
 
-        cards = ["Strike" for _ in range(4)]
-        cards.extend(["Defend" for _ in range(4)])
-        cards.extend(["Vigilance", "Eruption"])
-        cards.extend(["Devotion" for _ in range(5)])
-        cards.extend(["SandsofTime" for _ in range(2)])
+        cards = get_default_deck()
         self.player = createPlayer()
         addCards(self.player, cards)
 
@@ -29,6 +25,23 @@ class RenderTest(unittest.TestCase):
         self.combat.start()
         renderer = Renderer(self.combat)
         renderer.render_combat()
+        renderer.quit_render()
+
+    def test_fast_render(self):
+        combats = [Combat(createPlayer(), [createEnemy('JawWorm', i, 1)], False) for i in range(20)]
+        renderer = Renderer(combats[0])
+        num_won = 0
+        default_deck = get_default_deck()
+        for combat in combats:
+            addCards(combat.player, default_deck)
+            combat.start()
+
+            renderer.combat = combat
+            renderer.render_combat(frames_per_action=1, end_delay=0)
+            num_won += 1 if renderer.combat.player_won else 0
+        print(f"Number of combats won: {num_won} out of {len(combats)}")
+        renderer.quit_render()
+
 
     def test_playable_render(self):
         self.combat.start()

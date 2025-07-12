@@ -14,7 +14,6 @@ class MapGenerator:
     ROOM_TYPE_SHOP = 'S'
     ROOM_TYPE_UNSET = 'P' # Node in a path that has not been set to a room type
 
-
     def __init__(self):
         self.grid_x = 7
         self.grid_y = 15
@@ -29,6 +28,13 @@ class MapGenerator:
         self.elite_chance = 0.08
 
         self.no_dup_room_types = [self.ROOM_TYPE_SHOP, self.ROOM_TYPE_ELITE, self.ROOM_TYPE_REST]
+
+        # rendering attributes:
+        self.tile_size = 30
+        self.tile_spacing = 15
+        self.x_align = 650 - (self.grid_x * self.tile_size + (self.grid_x - 1) * self.tile_spacing)
+        self.counter = 0
+        self.counter_up = True
 
     def clear_map(self):
         self.map = [[None for _ in range(self.grid_x)] for _ in range(self.grid_y)]
@@ -130,7 +136,8 @@ class MapGenerator:
                 low_step = -1
                 high_step = 1
                 cur_room = paths[i][j]
-                # dont allow steps off the edge of the map
+
+                # don't allow steps off the edge of the map
                 if cur_room == 0:
                     low_step = 0
                 elif cur_room == self.grid_x - 1:
@@ -190,50 +197,88 @@ class MapGenerator:
                 num_changed += 1
         return num_changed
 
-    def render(self, screen, font, screen_size=(1280, 720)):
-        tile_size = 30
-        tile_spacing = 15
-        x_align = 350
+    def calculate_position_from_idx(self, floor_idx, room_idx, screen_size):
+        return (self.x_align + room_idx * self.tile_size + room_idx * self.tile_spacing * 2,
+                (screen_size[1] - self.tile_size - self.tile_spacing) - (
+                            floor_idx * self.tile_size + floor_idx * self.tile_spacing))
 
-        def calculate_position_from_idx(floor_idx, room_idx):
-            return (x_align + room_idx * tile_size + room_idx * tile_spacing*2,
-                    (screen_size[1] - tile_size - tile_spacing) - (floor_idx * tile_size + floor_idx * tile_spacing))
+    def render(self, screen, screen_size, font):
+        # event_room_color = (self.counter,
+        #                     (self.counter+32) % 128 if (self.counter+32) % 128 < 64 else 128 - (self.counter+32),
+        #                     (self.counter+64) % 128 if (self.counter+64) % 128 < 64 else 128 - (self.counter+64))
+                                   # 0,
+                            # 0)
+                            #        255 - self.counter - 127 if self.counter-127 >  else )
+        # print(event_room_color)
+        color_map = {
+            self.ROOM_TYPE_CHEST: (255, 215 + (self.counter // 7), self.counter),  # Gold
+            self.ROOM_TYPE_ELITE: (255, min(self.counter, 200), 0),    # Red
+            self.ROOM_TYPE_EVENT: (0, 255, 255),  # Cyan
+            self.ROOM_TYPE_MONSTER: (175, 125, 0), # Red
+            self.ROOM_TYPE_REST: 'green',     # green
+            self.ROOM_TYPE_SHOP: (255, 0, 0),     # Purple
+            self.ROOM_TYPE_UNSET: (100, 100, 100) # White
+        }
+        counter_amt = 6
+        if self.counter_up and self.counter == 255:
+            self.counter_up = False
+        elif not self.counter_up and self.counter <= 0:
+            self.counter_up = True
+        else:
+            self.counter += counter_amt if self.counter_up else -counter_amt
+            if self.counter > 255:
+                self.counter = 255
+            elif self.counter < 0:
+                self.counter = 0
 
         for y in range(self.grid_y):
             for x in range(self.grid_x):
                 room = self.map[y][x]
-                x_pos, y_pos = calculate_position_from_idx(y, x)
+                x_pos, y_pos = self.calculate_position_from_idx(y, x, screen_size)
                 if room is not None:
-                    pygame.draw.rect(screen, (200, 200, 200), (x_pos, y_pos, tile_size, tile_size))
+                    pygame.draw.rect(screen, color_map[room.type], (x_pos, y_pos, self.tile_size, self.tile_size))
                     text = font.render(room.type, True, (0, 0, 0))
                     screen.blit(text, (x_pos + 5, y_pos + 5))
 
                     prev_rooms = room.prev_rooms
 
                     for prev_room in prev_rooms:
-                        x_pos, y_pos = calculate_position_from_idx(y, x)
+                        x_pos, y_pos = self.calculate_position_from_idx(y, x, screen_size)
                         if prev_room is None:
                             continue
-                        prev_x, prev_y = calculate_position_from_idx(prev_room.floor, prev_room.x)
+                        prev_x, prev_y = self.calculate_position_from_idx(prev_room.floor, prev_room.x, screen_size)
                         if prev_room.x == x:
                             # Vertical connection - move y down to center bottom of tile and x to center
-                            x_pos += tile_size // 2
-                            y_pos += tile_size
+                            x_pos += self.tile_size // 2
+                            y_pos += self.tile_size
 
-                            prev_x += tile_size // 2
+                            prev_x += self.tile_size // 2
                         elif prev_room.x < x:
                             # Diagonal right connection - move x to left side and y to bottom
-                            y_pos += tile_size
-                            x_pos += tile_size // 2
+                            y_pos += self.tile_size
+                            x_pos += self.tile_size // 2
 
-                            prev_x += tile_size
+                            prev_x += self.tile_size
                         elif prev_room.x > x:
                             # Diagonal left connection - move x to right side and y to bottom
-                            x_pos += tile_size // 2
-                            y_pos += tile_size
+                            x_pos += self.tile_size // 2
+                            y_pos += self.tile_size
 
-                        pygame.draw.line(screen, (0, 255, 0), (prev_x, prev_y),(x_pos, y_pos),
+                        pygame.draw.line(screen, (255, 255, 255), (prev_x, prev_y),(x_pos, y_pos),
                                             2)
                 else:
                     # pygame.draw.rect(screen, (100, 100, 100), (x_pos, y_pos, tile_size, tile_size))
                     pass
+        # draw legend
+        legend_x = 10
+        legend_y = 10
+        legend_items = []
+        legend_items.append(font.render(self.ROOM_TYPE_SHOP + ": Shop", True, color_map[self.ROOM_TYPE_SHOP]))
+        legend_items.append(font.render(self.ROOM_TYPE_REST + ": Rest", True, color_map[self.ROOM_TYPE_REST]))
+        legend_items.append(font.render(self.ROOM_TYPE_EVENT + ": Event", True, color_map[self.ROOM_TYPE_EVENT]))
+        legend_items.append(font.render(self.ROOM_TYPE_ELITE + ": Elite", True, color_map[self.ROOM_TYPE_ELITE]))
+        legend_items.append(font.render(self.ROOM_TYPE_MONSTER + ": Monster", True, color_map[self.ROOM_TYPE_MONSTER]))
+        legend_items.append(font.render(self.ROOM_TYPE_CHEST + ": Chest", True, color_map[self.ROOM_TYPE_CHEST]))
+
+        for i, item in enumerate(legend_items):
+            screen.blit(item, (legend_x, legend_y + i * 20))
