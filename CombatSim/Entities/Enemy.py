@@ -64,6 +64,9 @@ class Enemy(Entity):
         super().render(screen, font)
         pygame.draw.rect(screen, "red", (self.x, self.y, self.width, self.height), 50, 5)
 
+        name = font.render(self.__class__.__name__, True, (255, 255, 255))
+        screen.blit(name, (self.x, self.y - (font_size + 5) * 3))
+
         intent_str = ["INTENT: " + self.intent.name, str(self.intent.damage) + " * " + str(self.intent.attacks) + " dmg",
                       str(self.intent.block) + " block"]
         lines = []
