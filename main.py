@@ -1,6 +1,3 @@
-import importlib
-import os
-import numpy as np
 import pygame
 
 from Combat import Combat
@@ -27,7 +24,6 @@ def main():
 
     renderer = Renderer(screen, combat)
     renderer.render_playable_combat()
-
 
 if __name__ == "__main__":
     main()
