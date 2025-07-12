@@ -76,10 +76,10 @@ class Renderer:
 
             pos = pygame.mouse.get_pos()
             # check if any card was clicked
-            help_box_x = 100
-            help_box_y = 300
-            help_box_width = 250
-            help_box_height = 100
+            help_box_x = 50
+            help_box_y = 260
+            help_box_width = 325
+            help_box_height = 175
             card_hovered = None
             for card in self.combat.player.deck.hand:
                 if card.x < pos[0] < card.x + card.width and card.y < pos[1] < card.y + card.height:
@@ -91,15 +91,35 @@ class Renderer:
             if card_hovered is not None:
                 pygame.draw.rect(self.screen, (255, 255, 255),
                                  (help_box_x, help_box_y, help_box_width, help_box_height),
-                                 100, 2)
-                dmg = self.font.render("D:" + str(card_hovered.damage) + " * " + str(card_hovered.attacks), True,
-                                       (255, 0, 0))
-                self.screen.blit(dmg, (help_box_x + 5, help_box_y + 5))
-                block = self.font.render("B:" + str(card_hovered.block), True, (0, 255, 0))
-                self.screen.blit(block, (help_box_x + 5, help_box_y + 25))
-                stance_str = str(card_hovered.stance).split('.')[1] if card_hovered.stance is not None else "None"
-                stance = self.font.render("Stance: " + stance_str, True, (0, 0, 255))
-                self.screen.blit(stance, (help_box_x + 5, help_box_y + 45))
+                                 0, 2)
+                name = self.font.render(card_hovered.name, True, (0, 0, 0))
+                self.screen.blit(name, (help_box_x+5, help_box_y+10))
+                cost = self.font.render("Energy: " + str(card_hovered.energy), True, (0, 255, 0))
+                self.screen.blit(cost, (help_box_x + help_box_width - 125, help_box_y + 10))
+
+                # separate description into 20 characters per line
+                description_lines = []
+                description_text = card_hovered.description
+                while len(description_text) > 25:
+                    line = description_text[:25]
+                    description_lines.append(line)
+                    description_text = description_text[25:]
+                description_lines.append(description_text)
+
+                for i, line in enumerate(description_lines):
+                    text = self.font.render(line, True, (255, 100, 50))
+                    self.screen.blit(text, (help_box_x + 5, help_box_y + 30 + (i * 20)))
+
+                # description = self.font.render(card_hovered.description, True, (255, 100, 50))
+                # self.screen.blit(description, (help_box_x, help_box_y + 35))
+                # dmg = self.font.render("D:" + str(card_hovered.damage) + " * " + str(card_hovered.attacks), True,
+                #                        (255, 0, 0))
+                # self.screen.blit(dmg, (help_box_x + 5, help_box_y + 5))
+                # block = self.font.render("B:" + str(card_hovered.block), True, (0, 255, 0))
+                # self.screen.blit(block, (help_box_x + 5, help_box_y + 25))
+                # stance_str = str(card_hovered.stance).split('.')[1] if card_hovered.stance is not None else "None"
+                # stance = self.font.render("Stance: " + stance_str, True, (0, 0, 255))
+                # self.screen.blit(stance, (help_box_x + 5, help_box_y + 45))
 
             if fail_msg is not None:
                 self.screen.blit(fail_msg, (300, 300))

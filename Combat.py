@@ -55,9 +55,10 @@ class Combat:
 
     def renderall(self, screen):
         font = pygame.font.SysFont("monospace", 40)
-        self.player.render(screen)
+        entity_font = pygame.font.SysFont("monospace", 20)
+        self.player.render(screen, entity_font)
         for enemy in self.enemies:
-            enemy.render(screen)
+            enemy.render(screen, entity_font)
 
         if self.player_won is None:
             if self.current_turn == self.PLAYER_TURN:

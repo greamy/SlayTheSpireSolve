@@ -6,6 +6,7 @@ from CombatSim.Actions.Listener import Listener
 class TalktotheHand(Card):
     def __init__(self, player: Player):
         super().__init__("TalktotheHand", Card.Type.ATTACK, 1, 5, 1, 0, 0, 0, True, False, player, None, id=74)
+        self.description = "Deal 5 damage. Whenever you attack this enemy, gain 2 Block. Exhaust."
         self.block_gain = 2
         self.attack_listener = Listener(Listener.Event.TAKEN_DAMAGE, self.gain_block)
         self.enemy = None
@@ -22,6 +23,7 @@ class TalktotheHand(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Deal 7 damage. Whenever you attack this enemy, gain 3 Block. Exhaust."
         self.damage = 7
         self.block_gain = 3
 

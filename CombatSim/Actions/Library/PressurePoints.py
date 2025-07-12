@@ -6,6 +6,7 @@ from CombatSim.Actions.Card import Card
 class PressurePoints(Card):
     def __init__(self, player: Player):
         super().__init__("PressurePoints", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None, id=55)
+        self.description = "Apply 8 Mark. ALL enemies lose HP equal to their Mark."
         self.card_mark = 8
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
@@ -19,5 +20,6 @@ class PressurePoints(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Apply 11 Mark. ALL enemies lose HP equal to their Mark."
         self.card_mark = 11
 

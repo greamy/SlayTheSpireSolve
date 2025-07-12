@@ -7,6 +7,7 @@ from CombatSim.Actions.Card import Card
 class WindmillStrike(Card):
     def __init__(self, player: Player):
         super().__init__("WindmillStrike", Card.Type.ATTACK, 2, 7, 1, 0, 0, 0, False, True, player, None, id=85)
+        self.description = "Retain. Deal 7 damage. Whenever this card is Retained, increase its damage by 4."
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_retain)
         player.add_listener(self.listener)
         self.damage_increase = 4
@@ -21,5 +22,6 @@ class WindmillStrike(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Retain. Deal 10 damage. Whenever this card is Retained, increase its damage by 5."
         self.damage = 10
         self.damage_increase = 5

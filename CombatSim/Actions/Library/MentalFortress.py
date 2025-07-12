@@ -7,6 +7,7 @@ from CombatSim.Actions.Card import Card
 class MentalFortress(Card):
     def __init__(self, player: Player):
         super().__init__("MentalFortress", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=48)
+        self.description = "Whenever you switch Stances, gain 4 Block."
         self.listener = Listener([Listener.Event.SKILL_PLAYED, Listener.Event.POWER_PLAYED, Listener.Event.ATTACK_PLAYED], self.do_power)
         self.stance_block = 4
         self.last_stance = player.stance
@@ -24,4 +25,5 @@ class MentalFortress(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Whenever you switch Stances, gain 6 Block."
         self.stance_block = 6

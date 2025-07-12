@@ -8,6 +8,7 @@ import random
 class Meditate(Card):
     def __init__(self, player: Player):
         super().__init__("Meditate", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, Player.Stance.CALM, id=47)
+        self.description = "Put 1 card from your discard pile into your hand and Retain it. Enter Calm. End your turn."
         self.num_cards = 1
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_retain)
         
@@ -34,4 +35,5 @@ class Meditate(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Put 2 cards from your discard pile into your hand and Retain them. Enter Calm. End your turn."
         self.num_cards = 2

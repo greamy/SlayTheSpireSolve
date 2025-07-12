@@ -23,6 +23,7 @@ class Card(Playable):
         self.innate = innate
         self.temp_retain = temp_retain
         self.playable = True
+        self.description = ""
         self.id = id
 
         # Check for Master Reality listener - Upgrade if master reality has been played

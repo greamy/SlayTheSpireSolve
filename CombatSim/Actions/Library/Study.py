@@ -8,6 +8,7 @@ from CombatSim.Actions.Library.Insight import Insight
 class Study(Card):
     def __init__(self, player: Player):
         super().__init__("Study", Card.Type.POWER, 2, 0, 0, 0, 0, 0, False, False, player, None, id=72)
+        self.description = "At the end of your turn, shuffle an Insight into your draw pile."
         self.listener = Listener(Listener.Event.END_TURN, self.do_power)
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):

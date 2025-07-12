@@ -7,7 +7,9 @@ from CombatSim.Actions.Card import Card
 class Pray(Card):
     def __init__(self, player: Player):
         super().__init__("Pray", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None, id=54)
+        self.description = "Gain 3 Mantra. Shuffle an Insight into your draw pile."
         self.mantra = 3
+
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
         player.add_mantra(self.mantra)
@@ -17,4 +19,5 @@ class Pray(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Gain 4 Mantra. Shuffle an Insight into your draw pile."
         self.mantra = 4

@@ -7,6 +7,7 @@ import random
 class Wish(Card):
     def __init__(self, player: Player):
         super().__init__("Wish", Card.Type.SKILL, 3, 0, 0, 0, 0, 0, True, False, player, None, id=86)
+        self.description = "Choose one: Gain 6 Plated Armor, 3 Strength, or 25 Gold. Exhaust."
         self.gold = 25
         self.strength_gain = 3
         self.plated_armor = 6
@@ -24,6 +25,7 @@ class Wish(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Choose one: Gain 8 Plated Armor, 4 Strength, or 30 Gold. Exhaust."
         self.strength_gain = 4
         self.plated_armor = 8
         self.gold = 30

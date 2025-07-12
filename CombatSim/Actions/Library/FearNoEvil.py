@@ -6,6 +6,7 @@ from CombatSim.Actions.Card import Card
 class FearNoEvil(Card):
     def __init__(self, player: Player):
         super().__init__("FearNoEvil", Card.Type.ATTACK, 1, 8, 1, 0, 0, 0, False, False, player, None, id=32)
+        self.description = "Deal 8 damage. If the enemy intends to Attack, enter Calm."
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
@@ -15,4 +16,5 @@ class FearNoEvil(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Deal 11 damage. If the enemy intends to Attack, enter Calm."
         self.damage = 11

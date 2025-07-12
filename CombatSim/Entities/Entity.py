@@ -25,8 +25,6 @@ class Entity:
         self.y = y
         self.width = width
         self.height = height
-        self.text_size = 20
-        self.font = pygame.font.SysFont("monospace", self.text_size)
 
     def do_turn(self, opponents, debug):
         pass
@@ -67,10 +65,10 @@ class Entity:
             if event_type in listener.event_types:
                 listener.notify(player, random.choice(enemies), enemies, debug)
 
-    def render(self, screen):
-        health_text = self.font.render("HEALTH:" + str(self.health), True, "green")
-        block_text = self.font.render("BLOCK:" + str(self.block), True, (100, 100, 255))
-        screen.blit(health_text, [self.x, self.y - (self.text_size+5)*2])
-        screen.blit(block_text, [self.x, self.y - (self.text_size+5)])
+    def render(self, screen, font, text_size=20):
+        health_text = font.render("HEALTH:" + str(self.health), True, "green")
+        block_text = font.render("BLOCK:" + str(self.block), True, (100, 100, 255))
+        screen.blit(health_text, [self.x, self.y - (text_size+5)*2])
+        screen.blit(block_text, [self.x, self.y - (text_size+5)])
 
 

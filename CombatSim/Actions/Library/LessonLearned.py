@@ -7,6 +7,7 @@ import random
 class LessonLearned(Card):
     def __init__(self, player: Player):
         super().__init__("LessonLearned", Card.Type.ATTACK, 2, 10, 1, 0, 0, 0, True, False, player, None, id=44)
+        self.description = "Deal 10 damage. If Fatal, Upgrade a random card in your deck. Exhaust."
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
@@ -16,4 +17,5 @@ class LessonLearned(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Deal 13 damage. If Fatal, Upgrade a random card in your deck. Exhaust."
         self.damage = 13

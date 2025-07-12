@@ -7,6 +7,7 @@ from CombatSim.Actions.Card import Card
 class Establishment(Card):
     def __init__(self, player: Player):
         super().__init__("Establishment", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, True, player, None, id=28)
+        self.description = "Whenever a card is Retained, lower its cost by 1."
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_power)
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
@@ -22,4 +23,5 @@ class Establishment(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Innate. " + self.description
         self.innate = True

@@ -6,6 +6,7 @@ from CombatSim.Actions.Listener import Listener
 class MasterReality(Card):
     def __init__(self, player: Player):
         super().__init__("MasterReality", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=46)
+        self.description = "Whenever a card is created during combat, Upgrade it."
         self.listener = Listener(Listener.Event.CARD_CREATED, self.do_power)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
@@ -14,6 +15,7 @@ class MasterReality(Card):
         # Whenever a card is created during combat, {{Upgrade}} it.
 
     def do_power(self, player, enemy, enemies, debug):
+        # TODO: Implement logic to determine the newly created card, and call upgrade()
         pass
 
     def upgrade(self):

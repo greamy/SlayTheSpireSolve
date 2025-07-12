@@ -7,6 +7,7 @@ from CombatSim.Actions.Card import Card
 class SimmeringFury(Card):
     def __init__(self, player: Player):
         super().__init__("SimmeringFury", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None, id=67)
+        self.description = "At the start of your next turn, enter Wrath and draw 2 cards."
         self.listener = Listener(Listener.Event.START_TURN, self.do_card, 1)
         self.drawing_cards = 2
 
@@ -22,4 +23,5 @@ class SimmeringFury(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "At the start of your next turn, enter Wrath and draw 3 cards."
         self.drawing_cards = 3

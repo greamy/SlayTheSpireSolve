@@ -29,6 +29,7 @@ from CombatSim.Actions.Library.FearNoEvil import FearNoEvil
 from CombatSim.Actions.Library.FlurryofBlows import FlurryofBlows
 from CombatSim.Actions.Library.FlyingSleeves import FlyingSleeves
 from CombatSim.Actions.Library.FollowUp import FollowUp
+from CombatSim.Actions.Library.Foresight import Foresight
 from CombatSim.Actions.Library.Halt import Halt
 from CombatSim.Actions.Library.Indignation import Indignation
 from CombatSim.Actions.Library.InnerPeace import InnerPeace
@@ -550,6 +551,19 @@ class CardTest(unittest.TestCase):
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
         self.assertEqual(self.enemy.health, self.enemy_start_health - card.damage - strike.damage)
         self.assertEqual(self.player.energy, self.energy - 1)
+
+    def test_Foresight(self):
+        # At the start of your turn, {{Scry}} 3(4).
+        card = Foresight(self.player)
+        self.player.deck.hand.append(card)
+        draw_pile = [Strike(self.player), Defend(self.player), Strike(self.player)]
+        self.player.deck.draw_pile.extend(draw_pile)
+        self.player.play_card(card, self.enemy, self.enemies, self.debug)
+        self.player.end_turn(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertEqual(len(self.player.deck.draw_pile), len(draw_pile) - card.scry_amount)
+
+
 
     def test_FlurryOfBlows(self):
         # Deal 4(6) damage. On {{Stance}} change, returns from the Discard Pile into your hand.

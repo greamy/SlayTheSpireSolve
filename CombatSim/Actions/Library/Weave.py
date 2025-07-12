@@ -7,6 +7,7 @@ from CombatSim.Actions.Card import Card
 class Weave(Card):
     def __init__(self, player: Player):
         super().__init__("Weave", Card.Type.ATTACK, 0, 4, 1, 0, 0, 0, False, False, player, None, id=83)
+        self.description = "Deal 4 damage. Whenever you Scry, return this from the discard pile to your Hand."
         self.listener = Listener(Listener.Event.SCRY_OCCURRED, self.return_to_hand)
         player.add_listener(self.listener)
         
@@ -22,4 +23,5 @@ class Weave(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Deal 6 damage. Whenever you Scry, return this from the discard pile to your Hand."
         self.damage = 6

@@ -7,6 +7,7 @@ from CombatSim.Actions.Listener import Listener
 class WreathofFlame(Card):
     def __init__(self, player: Player):
         super().__init__("WreathofFlame", Card.Type.SKILL, 1, 0, 0, 0, 0, 0, False, False, player, None, id=88)
+        self.description = "Your next Attack deals 5 additional damage. Exhaust."
         self.attack_listener = Listener(Listener.Event.ATTACK_PLAYED, self.temp_strength)
         self.temp_strength_gain = 5
 
@@ -21,6 +22,7 @@ class WreathofFlame(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Your next Attack deals 8 additional damage. Exhaust."
         self.temp_strength_gain = 8
 
 

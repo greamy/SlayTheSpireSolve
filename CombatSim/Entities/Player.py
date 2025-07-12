@@ -229,6 +229,7 @@ class Player(Entity):
             else:
                 index += 1
         self.notify_listeners(Listener.Event.SCRY_OCCURRED, self, enemies, debug)
+        return amount - index
 
     def gain_gold(self, amount, enemies, debug):
         self.gold += amount
@@ -238,8 +239,8 @@ class Player(Entity):
         super().gain_block(amount, enemies, debug)
         self.notify_listeners(Listener.Event.BLOCK_GAINED, self, enemies, debug)
 
-    def render(self, screen):
-        super().render(screen)
+    def render(self, screen, font):
+        super().render(screen, font)
         if self.stance == self.Stance.DIVINITY:
             color = "purple"
         elif self.stance == self.Stance.WRATH:
@@ -249,14 +250,14 @@ class Player(Entity):
         else:
             color = "gray"
         pygame.draw.rect(screen, color, (self.x, self.y, self.width, self.height), 50, 5)
-        energy_text = self.font.render("ENERGY: " + str(self.energy), True, (255, 255, 0))
+        energy_text = font.render("ENERGY: " + str(self.energy), True, (255, 255, 0))
         screen.blit(energy_text, (self.x+self.width, self.y))
 
         for i, card in enumerate(self.deck.hand):
-            card.render(screen, self.font, i)
+            card.render(screen, font, i)
 
         if self.card_played is not None:
-            text = self.font.render("Played: " + self.card_played.name, True, (255, 255, 255))
+            text = font.render("Played: " + self.card_played.name, True, (255, 255, 255))
             screen.blit(text, (300, 300))
 
     def __str__(self):

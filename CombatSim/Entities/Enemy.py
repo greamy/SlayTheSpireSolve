@@ -60,19 +60,18 @@ class Enemy(Entity):
 
         self.end_turn([player], debug)
 
-    def render(self, screen):
-        super().render(screen)
+    def render(self, screen, font, font_size=20):
+        super().render(screen, font)
         pygame.draw.rect(screen, "red", (self.x, self.y, self.width, self.height), 50, 5)
 
         intent_str = ["INTENT: " + self.intent.name, str(self.intent.damage) + " * " + str(self.intent.attacks) + " dmg",
                       str(self.intent.block) + " block"]
         lines = []
         for line in intent_str:
-            lines.append(self.font.render(line, True, self.intent.color))
+            lines.append(font.render(line, True, self.intent.color))
 
         for i, line in enumerate(lines):
-            screen.blit(line, (self.x + self.width+5, self.y + (i-1) * (self.text_size + 5)))
-
+            screen.blit(line, (self.x + self.width+5, self.y + (i-1) * (font_size + 5)))
 
     def __str__(self):
         return "ENEMY\nHealth: " + str(self.health) + " Block: " + str(self.block)

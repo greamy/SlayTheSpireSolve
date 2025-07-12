@@ -7,6 +7,7 @@ class InnerPeace(Card):
     def __init__(self, player: Player):
         super().__init__("InnerPeace", Card.Type.SKILL, 1, 0, 0, 0, 0,
                          0, False, False, player, None, id=40)
+        self.description = "If you are in Calm, draw 3 cards. Otherwise, enter Calm."
         self.draw_amount = 3
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
@@ -20,5 +21,6 @@ class InnerPeace(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "If you are in Calm, draw 4 cards. Otherwise, enter Calm."
         self.draw_amount = 4
 

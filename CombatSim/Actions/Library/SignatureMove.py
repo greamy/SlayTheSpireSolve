@@ -7,6 +7,7 @@ from CombatSim.Actions.Listener import Listener
 class SignatureMove(Card):
     def __init__(self, player: Player):
         super().__init__("SignatureMove", Card.Type.ATTACK, 2, 30, 1, 0, 0, 0, False, False, player, None, id=66)
+        self.description = "Can only be played if this is the only attack in your hand. Deal 30 damage."
         self.listener = Listener([Listener.Event.POWER_PLAYED, Listener.Event.SKILL_PLAYED, Listener.Event.ATTACK_PLAYED, Listener.Event.HAND_CHANGED], self.do_listen)
         player.add_listener(self.listener)
         
@@ -24,4 +25,5 @@ class SignatureMove(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Can only be played if this is the only attack in your hand. Deal 40 damage."
         self.damage = 40

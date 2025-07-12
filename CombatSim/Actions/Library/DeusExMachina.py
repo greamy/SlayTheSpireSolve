@@ -31,5 +31,5 @@ class DeusExMachina(Card):
 
     def upgrade(self):
         super().upgrade()
-        self.description = "Unplayable. When you draw this card, add 3 Miracle into your hand. Exhaust."
+        self.description = "Unplayable. When you draw this card, add 3 Miracles into your hand. Exhaust."
         self.num_cards = 3

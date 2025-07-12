@@ -7,6 +7,7 @@ from CombatSim.Actions.Listener import Listener
 class Swivel(Card):
     def __init__(self, player: Player):
         super().__init__("Swivel", Card.Type.SKILL, 2, 0, 0, 8, 0, 0, False, False, player, None, id=73)
+        self.description = "Gain 8 Block. The next Attack you play costs 0."
         self.attack_listener = Listener(Listener.Event.ATTACK_PLAYED, self.refund)
         self.other_listener = Listener([Listener.Event.SKILL_PLAYED, Listener.Event.POWER_PLAYED,
                                         Listener.Event.ENERGY_CHANGED], self.update)
@@ -29,4 +30,5 @@ class Swivel(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Gain 11 Block. The next Attack you play costs 0."
         self.block = 11

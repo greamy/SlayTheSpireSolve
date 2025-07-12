@@ -7,12 +7,13 @@ from CombatSim.Actions.Listener import Listener
 class Omega(Card):
     def __init__(self, player: Player):
         super().__init__("Omega", Card.Type.POWER, 3, 50, 0, 0, 0, 0, False, False,player, None, id=51)
+        self.description = "At the end of your turn, deal 50 damage to ALL enemies."
         self.listener = Listener(Listener.Event.END_TURN, self.do_power)
 
     def play(self, player: Player, player_list: list[Player], enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, enemy, enemies, debug)
         # TODO: Implement the following:
-        # At the end of your turn, deal 50 damage to ALL enemies.
+        # At the end of your turn, deal 50(60) damage to ALL enemies.
         player.add_listener(self.listener)
 
     def do_power(self, player, enemy, enemies, debug):
@@ -21,5 +22,6 @@ class Omega(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "At the end of your turn, deal 60 damage to ALL enemies."
         self.damage = 60
 
