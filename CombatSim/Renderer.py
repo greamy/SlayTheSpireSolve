@@ -13,6 +13,11 @@ class Renderer:
         self.combat = combat
         self.debug = False
 
+        self.end_turn_x = 525
+        self.end_turn_y = 300
+        self.end_turn_width = 160
+        self.end_turn_height = 80
+
     def render_combat(self):
         counter = 0
         while self.running:
@@ -33,9 +38,10 @@ class Renderer:
 
 
     def render_playable_combat(self):
-        counter = 1
+        counter = 0
+        fail_msg = None
+        fail_msg_counter = 0
         while self.running:
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -43,6 +49,12 @@ class Renderer:
                     if event.button == 1 and self.combat.current_turn == self.combat.PLAYER_TURN:
                         # get position of mouse click
                         pos = pygame.mouse.get_pos()
+
+                        if self.end_turn_x < pos[0] < self.end_turn_x + self.end_turn_width and \
+                            self.end_turn_y < pos[1] < self.end_turn_y + self.end_turn_height:
+                            self.combat.player.turn_over = True
+                            continue
+
                         # check if any card was clicked
                         for card in self.combat.player.deck.hand:
                             if card.x < pos[0] < card.x + card.width and card.y < pos[1] < card.y + card.height:
@@ -52,7 +64,6 @@ class Renderer:
                                 if not success:
                                     print("Card play failed")
                                     fail_msg = self.font.render("Card play failed", True, (255, 0, 0))
-                                    self.screen.blit(fail_msg, (300, 300))
 
             if self.combat.player.check_turn_done():
                 self.combat.player.end_turn(self.combat.enemies, self.debug)
@@ -90,15 +101,29 @@ class Renderer:
                 stance = self.font.render("Stance: " + stance_str, True, (0, 0, 255))
                 self.screen.blit(stance, (help_box_x + 5, help_box_y + 45))
 
+            if fail_msg is not None:
+                self.screen.blit(fail_msg, (300, 300))
+                fail_msg_counter += 1
+                if fail_msg_counter == 60:
+                    fail_msg = None
+                    fail_msg_counter = 0
+
             # pygame.draw.circle(self.screen, (255, 255, 255), (100, 100), 50, 25)
             if self.combat.current_turn == self.combat.ENEMY_TURN:
-                if counter % 60 == 0:
+                if counter == 60:
                     self.running = self.combat.do_next_turn()
-                    counter = 1
+                    counter = 0
                 else:
                     counter += 1
             else:
                 counter = 0
+
+            pygame.draw.rect(self.screen, (100, 175, 100),
+                             (self.end_turn_x, self.end_turn_y, self.end_turn_width, self.end_turn_height), 0, 5)
+            font = pygame.font.SysFont("monospace", 30)
+            end_turn_text = font.render("End Turn", True, (0, 0, 0))
+            self.screen.blit(end_turn_text, (self.end_turn_x + 5, self.end_turn_y + 5))
+
             self.combat.renderall(self.screen)
             pygame.display.flip()
             self.clock.tick(60)
