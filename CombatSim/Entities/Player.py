@@ -9,11 +9,12 @@ from CombatSim.Actions.Listener import Listener
 import numpy as np
 import pygame
 
+from CombatSim.Input.Controller import PlayerController
 from CombatSim.Items.Relics.Relic import Relic
 
 
 class Player(Entity):
-    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
+    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], controller: PlayerController,library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
         super().__init__(health)
         self.max_health = health
         self.energy = energy
@@ -30,6 +31,8 @@ class Player(Entity):
         self.implemented_cards = self.get_implemented_cards(library_path)
         self.deck = self.Deck(self.create_deck(cards))
         self.card_played = None
+
+        self.controller = controller
 
         # self.bot = QBot()
 
@@ -90,8 +93,10 @@ class Player(Entity):
                 self.end_turn(enemies, debug)
                 return True
 
-            card_choice = random.choice(playable_cards)
-            targeted_enemy = random.choice(enemies)
+            # card_choice = random.choice(playable_cards)
+            _, card_choice = self.controller.get_card_to_play(self, enemies, playable_cards, debug)
+            # targeted_enemy = random.choice(enemies)
+            _, targeted_enemy = self.controller.get_target(self, enemies, card_choice, debug)
             success = self.play_card(card_choice, targeted_enemy, enemies, debug)
             if not success:
                 playable_cards.remove(card_choice)
@@ -113,9 +118,9 @@ class Player(Entity):
         # TODO: Make player play potions
         playable_cards = self.get_playable_cards()
         while len(playable_cards) > 0 and not self.turn_over:
-            # card_choice, targeted_enemy = self.bot.combat_choose_next_action(playable_cards, enemies)
-            card_choice = random.choice(playable_cards)
-            targeted_enemy = random.choice(enemies)
+            _, card_choice = self.controller.get_card_to_play(self, enemies, playable_cards, debug)
+            # targeted_enemy = random.choice(enemies)
+            _, targeted_enemy = self.controller.get_target(self, enemies, card_choice, debug)
             success = self.play_card(card_choice, targeted_enemy, enemies, debug)
             if not success:
                 playable_cards.remove(card_choice)
@@ -222,9 +227,10 @@ class Player(Entity):
         index = 0
         cards = self.deck.draw_pile[0:amount]
         # to_scry = self.bot.scry(cards, enemies, None)
-        to_scry = [random.choice([True, False]) for _ in cards]
+
         for i, card in enumerate(cards):
-            if to_scry[i]:
+            do_scry = self.controller.get_scry(self, enemies, card, debug)
+            if do_scry:
                 self.discard(self.deck.draw_pile.pop(index), enemies, debug)
             else:
                 index += 1
@@ -239,7 +245,7 @@ class Player(Entity):
         super().gain_block(amount, enemies, debug)
         self.notify_listeners(Listener.Event.BLOCK_GAINED, self, enemies, debug)
 
-    def render(self, screen, font):
+    def render(self, screen, font, text_size=20):
         super().render(screen, font)
         if self.stance == self.Stance.DIVINITY:
             color = "purple"

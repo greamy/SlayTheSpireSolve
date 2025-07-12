@@ -89,6 +89,7 @@ from CombatSim.Actions.Library.EmptyBody import EmptyBody
 from CombatSim.Entities.Dungeon.JawWorm import JawWorm
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
+from CombatSim.Input.RandomPlayerController import RandomPlayerController
 
 
 class CardTest(unittest.TestCase):
@@ -97,10 +98,11 @@ class CardTest(unittest.TestCase):
         self.health = 100
         self.energy = 3
         self.gold = 100
-        self.player = Player(self.health, self.energy, self.gold, [], [], [], library_path="../CombatSim/Actions/Library")
-        # self.enemy = Enemy(health=self.enemy_start_health,intent_set=[Intent("", 12, 1, 0, 25),
-        #                                                                  Intent("", 7, 1, 5, 30),
-        #                                                                  Intent("", 5, 1, 9, 45)])
+        # TODO: Define a player controller for tests - always chooses first enemy, always discards scry, etc.
+        # TODO: Use this to get consistent test results for scrying and testing against multiple enemies.
+        self.player = Player(self.health, self.energy, self.gold, [], [], [],
+                             RandomPlayerController(), library_path="../CombatSim/Actions/Library")
+
         self.ascension = 20
         self.act = 1
         self.enemy = JawWorm(self.ascension, self.act)
@@ -1174,6 +1176,7 @@ class CardTest(unittest.TestCase):
         self.player.notify_listeners(Listener.Event.END_TURN, self.player, self.enemies, self.debug)
 
         self.assertIn(card, self.player.deck.exhaust_pile)
+
 
 if __name__ == '__main__':
     unittest.main()

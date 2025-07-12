@@ -1,6 +1,7 @@
 import importlib
 
 from CombatSim.Entities.Player import Player
+from CombatSim.Input.RandomPlayerController import RandomPlayerController
 
 
 def addCards(player, name_list: list[str]):
@@ -20,7 +21,7 @@ def createPlayer(lib_path='../CombatSim/Actions/Library', health=70, energy=3, g
         potions = []
     if cards is None:
         cards = []
-    return Player(health, energy, gold, potions, relics, cards,
+    return Player(health, energy, gold, potions, relics, cards, RandomPlayerController(),
                   lib_path)
 
 

@@ -1,5 +1,3 @@
-import copy
-import importlib
 import time
 import unittest
 from CombatSim.Actions.Card import Card
@@ -7,6 +5,7 @@ from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Actions.Intent import Intent
 from Combat import Combat
+from CombatSim.util import createPlayer, createEnemy, addCards
 
 
 class CombatTest(unittest.TestCase):
@@ -25,28 +24,10 @@ class CombatTest(unittest.TestCase):
         self.cards.extend(["Devotion" for _ in range(5)])
         self.cards.extend(["SandsofTime" for _ in range(2)])
 
-        self.player = self.createPlayer()
-        self.addCards(self.cards)
+        self.player = createPlayer()
+        addCards(self.player, self.cards)
 
-        self.enemy = self.createEnemy("SlimeBoss", 20, 1)
-
-    def createPlayer(self):
-        return Player(self.health, self.energy, self.gold, self.potions, self.relics, self.cards,
-                      "../CombatSim/Actions/Library")
-
-    def createEnemy(self, name: str, ascension: int, act: int):
-        module = importlib.import_module("CombatSim.Entities.Dungeon." + name)
-        class_ = getattr(module, name)
-        return class_(ascension, act)
-
-    def addCards(self, name_list: list[str]):
-        cards = []
-        for name in name_list:
-            module = importlib.import_module("CombatSim.Actions.Library." + name)
-            class_ = getattr(module, name)
-            card = class_(self.player)
-            cards.append(card)
-        self.player.deck = Player.Deck(cards)
+        self.enemy = createEnemy("SlimeBoss", 20, 1)
 
     def test_basic_combat(self):
         num_turns = []
@@ -55,8 +36,8 @@ class CombatTest(unittest.TestCase):
         num_combat = 1
         start = time.time()
         for _ in range(num_combat):
-            testing_enemy = self.createEnemy("SlimeBoss", 20, 1)
-            testing_player = self.createPlayer()
+            testing_enemy = createEnemy("SlimeBoss", 20, 1)
+            testing_player = createPlayer()
             combat = Combat(testing_player, [testing_enemy], True)
             num_turn, testing_player.health, is_alive = combat.start()
             num_turns.append(num_turn)
