@@ -2,6 +2,7 @@ import unittest
 import pygame
 
 from Combat import Combat
+from CombatSim.Map.MapGenerator import MapGenerator
 from CombatSim.Renderer import Renderer
 from CombatSim.util import addCards, createPlayer, createEnemy
 
@@ -9,8 +10,6 @@ from CombatSim.util import addCards, createPlayer, createEnemy
 class RenderTest(unittest.TestCase):
 
     def setUp(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode((800, 600))
 
         self.debug = False
 
@@ -23,20 +22,24 @@ class RenderTest(unittest.TestCase):
         addCards(self.player, cards)
 
         self.enemy = createEnemy("SlimeBoss", 20, 1)
+        self.combat = Combat(self.player, [self.enemy], True)
+        self.renderer = Renderer(self.combat)
 
     def test_render(self):
-        testing_enemy = createEnemy("Hexaghost", 20, 1)
-        testing_player = self.player
-        combat = Combat(testing_player, [testing_enemy], True)
-        combat.start()
-        renderer = Renderer(self.screen, combat)
+        self.combat.start()
+        renderer = Renderer(self.combat)
         renderer.render_combat()
 
     def test_playable_render(self):
-        enemy = createEnemy("AcidSlimeSmall", 20, 1)
-        player = self.player
-        combat = Combat(player, [enemy], True)
-        combat.start()
+        self.combat.start()
 
-        renderer = Renderer(self.screen, combat)
+        renderer = Renderer(self.screen, self.combat)
         renderer.render_playable_combat()
+
+    def test_render_map(self):
+        map_gen = MapGenerator()
+        map_gen.generate_map()
+
+        renderer = Renderer(self.combat)
+        renderer.render_map(map_gen)
+

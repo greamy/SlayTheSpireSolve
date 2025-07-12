@@ -5,8 +5,9 @@ import pygame
 
 class Renderer:
 
-    def __init__(self, screen, combat):
-        self.screen = screen
+    def __init__(self, combat, screen_size=(1280, 720)):
+        pygame.init()
+        self.screen = pygame.display.set_mode(screen_size)
         self.clock = pygame.time.Clock()
         self.running = True
         self.font = pygame.font.SysFont("monospace", 20)
@@ -35,7 +36,6 @@ class Renderer:
             counter += 1
         time.sleep(2)
         pygame.quit()
-
 
     def render_playable_combat(self):
         counter = 0
@@ -110,17 +110,6 @@ class Renderer:
                     text = self.font.render(line, True, (255, 100, 50))
                     self.screen.blit(text, (help_box_x + 5, help_box_y + 30 + (i * 20)))
 
-                # description = self.font.render(card_hovered.description, True, (255, 100, 50))
-                # self.screen.blit(description, (help_box_x, help_box_y + 35))
-                # dmg = self.font.render("D:" + str(card_hovered.damage) + " * " + str(card_hovered.attacks), True,
-                #                        (255, 0, 0))
-                # self.screen.blit(dmg, (help_box_x + 5, help_box_y + 5))
-                # block = self.font.render("B:" + str(card_hovered.block), True, (0, 255, 0))
-                # self.screen.blit(block, (help_box_x + 5, help_box_y + 25))
-                # stance_str = str(card_hovered.stance).split('.')[1] if card_hovered.stance is not None else "None"
-                # stance = self.font.render("Stance: " + stance_str, True, (0, 0, 255))
-                # self.screen.blit(stance, (help_box_x + 5, help_box_y + 45))
-
             if fail_msg is not None:
                 self.screen.blit(fail_msg, (300, 300))
                 fail_msg_counter += 1
@@ -150,3 +139,31 @@ class Renderer:
 
         time.sleep(4)
         pygame.quit()
+
+    def render_map(self, map_gen):
+        map_font = pygame.font.SysFont("Arial", 20)
+        regen_btn_x = 750
+        regen_btn_y = 25
+        regen_btn_width = 200
+        regen_btn_height = 50
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        pos = pygame.mouse.get_pos()
+                        if regen_btn_x < pos[0] < regen_btn_x + regen_btn_width and \
+                           regen_btn_y < pos[1] < regen_btn_y + regen_btn_height:
+                            map_gen.generate_map()
+
+            self.screen.fill((0, 0, 0))
+            map_gen.render(self.screen, map_font)
+
+            pygame.draw.rect(self.screen, (100, 255, 125), (regen_btn_x, regen_btn_y, 200, 50), 0, 5)
+            regen_btn_txt = self.font.render("Re-Generate Map", True, (0, 0, 0))
+            self.screen.blit(regen_btn_txt, (regen_btn_x + 10, regen_btn_y + 10))
+
+            pygame.display.flip()
+            self.clock.tick(60)
