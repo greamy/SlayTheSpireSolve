@@ -60,4 +60,4 @@ class AcidSlimeSmall(Enemy):
             else:
                 self.damage = 4
 
-            super().__init__("Tackle", self.damage, 1, 0, 50, char.Intent.DEBUG)
+            super().__init__("Tackle", self.damage, 1, 0, 50, char.Intent.ATTACK)

@@ -7,6 +7,7 @@ from CombatSim.Actions.Card import Card
 class Devotion(Card):
     def __init__(self, player: Player):
         super().__init__("Devotion", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=23)
+        self.description = "At the start of your turn, gain 2(3) Mantra."
         self.mantra = 2
         self.listener = Listener(Listener.Event.START_TURN, self.do_power)
 
@@ -21,6 +22,7 @@ class Devotion(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "At the start of your turn, gain 3 Mantra."
         self.mantra = 3
 
 

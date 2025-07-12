@@ -7,6 +7,7 @@ from CombatSim.Actions.Card import Card
 class Burn(Card):
     def __init__(self, player: Player):
         super().__init__("Burn", Card.Type.STATUS, 0, 0, 0, 0, 0, 0, False, False, player, None, id=7)
+        self.description = "Unplayable. At the end of your turn take 2 damage."
         self.playable = False
         self.end_of_turn_damage = 2
         player.add_listener(Listener(Listener.Event.END_TURN, self.eot_take_damage))
@@ -16,6 +17,7 @@ class Burn(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
 
     def upgrade(self):
+        self.description = "Unplayable. At the end of your turn take 4 damage."
         self.end_of_turn_damage = 4
 
     def eot_take_damage(self, player, enemy, enemies, debug):

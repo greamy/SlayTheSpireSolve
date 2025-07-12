@@ -8,6 +8,7 @@ from CombatSim.Actions.Library.Miracle import Miracle
 class Collect(Card):
     def __init__(self, player: Player):
         super().__init__("Collect", Card.Type.SKILL, 0, 0, 0, 0, 0, 0, True, False, player, None, id=9)
+        self.description = "Put an Miracle into your hand at the start of your next X(+1) turns. Exhaust."
         self.listener = Listener(Listener.Event.START_TURN, self.do_skill, 0)
         self.x_modifier = 0
         
@@ -23,4 +24,5 @@ class Collect(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Put a Miracle+ into your hand at the start of your next X+1 turns. Exhaust."
         self.x_modifier = 1

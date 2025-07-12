@@ -26,7 +26,7 @@ class Entity:
         self.width = width
         self.height = height
         self.text_size = 20
-        self.font = pygame.font.SysFont("TimesNewRoman", self.text_size)
+        self.font = pygame.font.SysFont("monospace", self.text_size)
 
     def do_turn(self, opponents, debug):
         pass

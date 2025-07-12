@@ -6,6 +6,7 @@ from CombatSim.Actions.Card import Card
 class Brilliance(Card):
     def __init__(self, player: Player):
         super().__init__("Brilliance", Card.Type.ATTACK, 1, 12, 1, 0, 0, 0, False, False, player, None, id=6)
+        self.description = "Deal 12(16) damage. Deals additional damage for all Mantra gained this combat."
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         self.damage = 12 + player.mantra
@@ -14,4 +15,5 @@ class Brilliance(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Deal 16 damage. Deals additional damage for all Mantra gained this combat."
         self.damage = 16

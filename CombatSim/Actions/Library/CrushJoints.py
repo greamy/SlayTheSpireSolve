@@ -8,6 +8,7 @@ from CombatSim.Entities.Status.Vulnerable import Vulnerable
 class CrushJoints(Card):
     def __init__(self, player: Player):
         super().__init__("CrushJoints", Card.Type.ATTACK, 1, 8, 1, 0, 0, 0, False, False, player, None, id=14)
+        self.description = "Deal 8 damage. If the previous card played was a skill, apply 1(2) Vulnerable."
         self.vulnerable = 1
         self.skill_played = False
         self.skill_listener = Listener(Listener.Event.SKILL_PLAYED, self.do_skill)
@@ -31,5 +32,6 @@ class CrushJoints(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Deal 10 damage. If the previous card played was a skill, apply 2 Vulnerable."
         self.damage = 10
         self.vulnerable = 2

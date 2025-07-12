@@ -8,6 +8,7 @@ from CombatSim.Actions.Library.Smite import Smite
 class BattleHymn(Card):
     def __init__(self, player: Player):
         super().__init__("BattleHymn", Card.Type.POWER, 1, 0, 0, 0, 0, 0, False, False, player, None, id=2)
+        self.description = "At the start of each turn add a Smite into your hand."
         self.listener = Listener(Listener.Event.START_TURN, self.do_power)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
@@ -20,4 +21,5 @@ class BattleHymn(Card):
 
     def upgrade(self):
         super().upgrade()
+        self.description = "Innate. " + self.description
         self.innate = True
