@@ -1,3 +1,4 @@
+import time
 import unittest
 import pygame
 
@@ -32,6 +33,7 @@ class RenderTest(unittest.TestCase):
         renderer = Renderer(combats[0])
         num_won = 0
         default_deck = get_default_deck()
+        start = time.time()
         for combat in combats:
             addCards(combat.player, default_deck)
             combat.start()
@@ -39,14 +41,16 @@ class RenderTest(unittest.TestCase):
             renderer.combat = combat
             renderer.render_combat(frames_per_action=1, end_delay=0)
             num_won += 1 if renderer.combat.player_won else 0
-        print(f"Number of combats won: {num_won} out of {len(combats)}")
-        renderer.quit_render()
+        end = time.time()
 
+        print(f"Number of combats won: {num_won} out of {len(combats)}")
+        print(f"Time elapsed: {end - start} seconds")
+        renderer.quit_render()
 
     def test_playable_render(self):
         self.combat.start()
 
-        renderer = Renderer(self.screen, self.combat)
+        renderer = Renderer(self.combat, (1280, 720))
         renderer.render_playable_combat()
 
     def test_render_map(self):
