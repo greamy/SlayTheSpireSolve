@@ -2,7 +2,12 @@ import math
 import random
 import pygame
 
+from CombatSim.Map.EliteRoom import EliteRoom
+from CombatSim.Map.EventRoom import EventRoom
+from CombatSim.Map.MonsterRoom import MonsterRoom
+from CombatSim.Map.RestRoom import RestRoom
 from CombatSim.Map.Room import Room
+from CombatSim.Map.ShopRoom import ShopRoom
 
 
 class MapGenerator:
@@ -85,8 +90,10 @@ class MapGenerator:
                                 break
                         if not valid_room:
                             room_type = self.ROOM_TYPE_MONSTER
+                            # chosen_room = MonsterRoom(floor, room_index, [], [])
                         else:
                             room_bucket.remove(room_type)
+                        # old_room = self.map[floor][room_index]
                         self.map[floor][room_index].type = room_type
 
                     else:
@@ -236,9 +243,10 @@ class MapGenerator:
                 room = self.map[y][x]
                 x_pos, y_pos = self.calculate_position_from_idx(y, x, screen_size)
                 if room is not None:
-                    pygame.draw.rect(screen, color_map[room.type], (x_pos, y_pos, self.tile_size, self.tile_size))
-                    text = font.render(room.type, True, (0, 0, 0))
-                    screen.blit(text, (x_pos + 5, y_pos + 5))
+                    room.render_map(screen, font, x_pos, y_pos, self.counter, self.tile_size)
+                    # pygame.draw.rect(screen, color_map[room.type], (x_pos, y_pos, self.tile_size, self.tile_size))
+                    # text = font.render(room.type, True, (0, 0, 0))
+                    # screen.blit(text, (x_pos + 5, y_pos + 5))
 
                     prev_rooms = room.prev_rooms
 
