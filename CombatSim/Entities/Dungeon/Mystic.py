@@ -15,6 +15,11 @@ class Mystic(Enemy):
     def __init__(self, ascension: int, act: int):
 
         intent_set = [self.Heal(ascension), self.Attack_Debuff(ascension), self.Buff(ascension)]
+        self.listener = Listener(Listener.Event.ATTACK_PLAYED, self.on_attack)
+        self.heal_amt = 17
+        if ascension >= 16:
+            self.heal_amt = 21
+        self.will_heal = False
 
         if ascension < 7:
             super().__init__(random.randint(48, 56), intent_set, ascension, minion=False)
@@ -25,7 +30,17 @@ class Mystic(Enemy):
         super().choose_intent()
 
     def is_valid_intent(self, intent: Intent) -> bool:
+        if self.will_heal:
+            if self.intent == self.intent_set[self.HEAL]:
+                self.will_heal = False
+                return True
+            else:
+                return False
         return True
+
+    def on_attack(self, player, enemy: Enemy, enemies, debug):
+        if enemy.health < enemy.start_health - self.heal_amt:
+            self.will_heal = True
 
     class Heal(Intent):
         def __init__(self, ascension: int):
@@ -51,6 +66,8 @@ class Mystic(Enemy):
             super().__init__("Buff", 0, 0, 0, 40, char.Intent.ATTACK_BUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
+            if enemy.listener not in player.listeners:
+                player.add_listener(enemy.listener)
             for enemy in enemy_list:
                 enemy.damage_dealt_modifier += self.strength
             super().play(enemy, enemy_list, player, player_list, debug)
@@ -65,6 +82,8 @@ class Mystic(Enemy):
             super().__init__("Attack/Debuff", self.damage, 0, 0, 60, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
+            if enemy.listener not in player.listeners:
+                player.add_listener(enemy.listener)
             frail = Frail(self.frail, player)
             player.add_listener(Listener(Listener.Event.START_TURN, frail.decrement))
             super().play(enemy, enemy_list, player, player_list, debug)

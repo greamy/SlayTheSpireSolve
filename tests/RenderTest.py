@@ -1,9 +1,9 @@
 import time
 import unittest
-import pygame
 
 from Combat import Combat
 from CombatSim.Map.MapGenerator import MapGenerator
+from CombatSim.Map.RestRoom import RestRoom
 from CombatSim.Renderer import Renderer
 from CombatSim.util import addCards, createPlayer, createEnemy, get_default_deck
 
@@ -18,7 +18,8 @@ class RenderTest(unittest.TestCase):
         self.player = createPlayer()
         addCards(self.player, cards)
 
-        self.enemy = createEnemy("SlimeBoss", 20, 1)
+        self.enemy = createEnemy("JawWorm", 20, 1)
+        # self.enemy_2 = createEnemy("GreenLouse", 20, 1)
         self.combat = Combat(self.player, [self.enemy], True)
         self.renderer = Renderer(self.combat)
 
@@ -29,7 +30,7 @@ class RenderTest(unittest.TestCase):
         renderer.quit_render()
 
     def test_fast_render(self):
-        combats = [Combat(createPlayer(), [createEnemy('JawWorm', i, 1)], False) for i in range(20)]
+        combats = [Combat(createPlayer(), [createEnemy('JawWorm', i, 3)], False) for i in range(20)]
         renderer = Renderer(combats[0])
         num_won = 0
         default_deck = get_default_deck()
@@ -56,7 +57,15 @@ class RenderTest(unittest.TestCase):
     def test_render_map(self):
         map_gen = MapGenerator()
         map_gen.generate_map()
+        # paths = map_gen.generate_paths()
+        # _, map_gen.map = map_gen.populate_map_with_paths(paths)
 
         renderer = Renderer(self.combat)
         renderer.render_map(map_gen)
+
+    def test_render_rest(self):
+        rest = RestRoom(0, 0, [], [])
+
+        renderer = Renderer(self.combat)
+        renderer.render_room(rest)
 

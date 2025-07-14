@@ -31,3 +31,6 @@ class ShopRoom(Room):
         pygame.draw.rect(screen, self.color, (x, y, tile_size, tile_size))
         text = font.render(self.type, True, (0, 0, 0))
         screen.blit(text, (x + 5, y + 5))
+
+    def render_room(self, screen, screen_size, font):
+        pass

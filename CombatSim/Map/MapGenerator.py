@@ -2,6 +2,7 @@ import math
 import random
 import pygame
 
+from CombatSim.Map.ChestRoom import ChestRoom
 from CombatSim.Map.EliteRoom import EliteRoom
 from CombatSim.Map.EventRoom import EventRoom
 from CombatSim.Map.MonsterRoom import MonsterRoom
@@ -19,11 +20,16 @@ class MapGenerator:
     ROOM_TYPE_SHOP = 'S'
     ROOM_TYPE_UNSET = 'P' # Node in a path that has not been set to a room type
 
-    def __init__(self):
+    def __init__(self, seed=42):
         self.grid_x = 7
         self.grid_y = 15
         self.num_paths = 6
         self.map = None
+        self.room_mapping = None
+
+        self.seed = seed
+        random.seed(seed)
+
         self.clear_map()
 
         # Shops - 0.05 Rest - 0.12 Event - 0.22 Elite - 0.08
@@ -49,7 +55,7 @@ class MapGenerator:
 
         paths = self.generate_paths()
 
-        num_open_nodes = self.populate_map_with_paths(paths)
+        num_open_nodes, path_map = self.populate_map_with_paths(paths)
 
         room_counts = {
             self.ROOM_TYPE_SHOP: math.trunc(self.shop_chance * num_open_nodes),
@@ -57,10 +63,12 @@ class MapGenerator:
             self.ROOM_TYPE_EVENT: math.trunc(self.event_chance * num_open_nodes),
             self.ROOM_TYPE_ELITE: math.trunc(self.elite_chance * num_open_nodes)
         }
-        room_bucket = [self.ROOM_TYPE_SHOP] * room_counts[self.ROOM_TYPE_SHOP] + \
-                        [self.ROOM_TYPE_REST] * room_counts[self.ROOM_TYPE_REST] + \
-                        [self.ROOM_TYPE_EVENT] * room_counts[self.ROOM_TYPE_EVENT] + \
-                        [self.ROOM_TYPE_ELITE] * room_counts[self.ROOM_TYPE_ELITE]
+        room_bucket = []
+
+        room_bucket.extend([ShopRoom(0, 0, [], []) for _ in range(room_counts[self.ROOM_TYPE_SHOP])])
+        room_bucket.extend([EliteRoom(0, 0, [], []) for _ in range(room_counts[self.ROOM_TYPE_ELITE])])
+        room_bucket.extend([EventRoom(0, 0, [], []) for _ in range(room_counts[self.ROOM_TYPE_EVENT])])
+        room_bucket.extend([RestRoom(0, 0, [], []) for _ in range(room_counts[self.ROOM_TYPE_REST])])
 
         # add rest sites to 15th floor, chests to floor 9, and monsters to floor 1.
         pre_typed_rooms = 0
@@ -69,35 +77,36 @@ class MapGenerator:
         pre_typed_rooms += self.set_floor_to_type(paths, 0, self.ROOM_TYPE_MONSTER)
 
         num_open_nodes -= pre_typed_rooms
-
-        room_bucket = room_bucket + [self.ROOM_TYPE_MONSTER] * (num_open_nodes - sum(room_counts.values()))
+        room_bucket.extend(MonsterRoom(0, 0, [], []) for _ in range(num_open_nodes - sum(room_counts.values())))
         random.shuffle(room_bucket)
 
         for p, path in enumerate(paths):
             for floor, room_index in enumerate(path):
-                # prev_room = self.map[floor - 1][path[floor - 1]] if floor > 0 else None
-                if room_index is not None and self.map[floor][room_index].type == self.ROOM_TYPE_UNSET:
-                    prev_rooms = self.map[floor][room_index].prev_rooms
-                    if self.map[floor][room_index].type == self.ROOM_TYPE_UNSET:
+                # prev_room = path_map[floor - 1][path[floor - 1]] if floor > 0 else None
+                if room_index is not None:
+                    prev_rooms = self.room_mapping[floor][room_index]['prev_rooms']
+                    if self.map[floor][room_index] is None:
+                        # self.Room_links_obj[floor][room_idx] = prev_rooms_x_vals, next_rooms_x_vals
                         unallowed_room_types = self.get_unallowed_room_types(floor, prev_rooms, paths)
                         valid_room = False
-                        room_type = None
+                        chosen_room = None
                         for i in range(len(room_bucket)):
-                            room_type = room_bucket[i]
+                            chosen_room = room_bucket[i]
 
-                            if room_type not in unallowed_room_types:
+                            if chosen_room.type not in unallowed_room_types:
                                 valid_room = True
                                 break
                         if not valid_room:
-                            room_type = self.ROOM_TYPE_MONSTER
-                            # chosen_room = MonsterRoom(floor, room_index, [], [])
+                            chosen_room = MonsterRoom(floor, room_index, [], [])
                         else:
-                            room_bucket.remove(room_type)
-                        # old_room = self.map[floor][room_index]
-                        self.map[floor][room_index].type = room_type
+                            room_bucket.remove(chosen_room)
 
-                    else:
-                        self.map[floor][room_index].add_prev_room(prev_rooms)
+                        self.map[floor][room_index] = chosen_room
+                        chosen_room.prev_rooms = self.room_mapping[floor][room_index]['prev_rooms']
+                        chosen_room.next_rooms = self.room_mapping[floor][room_index]['next_rooms']
+                        chosen_room.floor = floor
+                        chosen_room.x = room_index
+                        # self.map[floor][room_index].type = room_type
 
     def get_unallowed_room_types(self, floor, prev_rooms: list[Room], paths: list[list]):
         # Get a list of room types that are not allowed based on the previous rooms
@@ -113,14 +122,16 @@ class MapGenerator:
             unallowed_types.add(self.ROOM_TYPE_REST)
 
         # no two shops, elites, or rest sites in a row
-        for prev_room in prev_rooms:
-            if prev_room is not None and prev_room.type in self.no_dup_room_types:
-                unallowed_types.add(prev_room.type)
+        for prev_room_idx in prev_rooms:
+            if (prev_room_idx is not None and self.map[floor][prev_room_idx] is not None
+                    and self.map[floor][prev_room_idx].type in self.no_dup_room_types):
+                unallowed_types.add(self.map[floor][prev_room_idx].type)
 
         # sibling rooms of same parent cannot be the same type
-        for prev_room in prev_rooms:
-            for next_room in prev_room.next_rooms:
-                unallowed_types.add(next_room.type)
+        for prev_room_idx in prev_rooms:
+            for next_room in self.room_mapping[floor][prev_room_idx]['next_rooms']:
+                if self.map[floor][next_room] is not None:
+                    unallowed_types.add(self.map[floor][next_room].type)
 
         return unallowed_types
 
@@ -175,32 +186,47 @@ class MapGenerator:
 
     def populate_map_with_paths(self, paths: list[list]):
         # Fill the map with unset rooms on the paths given
+        self.room_mapping = [[{"prev_rooms": set(), "next_rooms": set()} for _ in range(self.grid_x)] for _ in range(self.grid_y)]
+        local_map = [[None for _ in range(self.grid_x)] for _ in range(self.grid_y)]
         num_open_nodes = 0
         for i in range(self.num_paths):
             for j in range(self.grid_y):
-                prev_floor_room_idx = paths[i][j - 1]
-                prev_room = self.map[j - 1][prev_floor_room_idx] if j > 0 and prev_floor_room_idx is not None else None
+                prev_floor_room_idx = paths[i][j - 1] if j > 0 else None
+                next_floor_room_idx = paths[i][j + 1] if j + 1 < self.grid_y else None
                 room_idx = paths[i][j]
                 if room_idx is not None:
-                    if self.map[j][room_idx] is None:
-                        # next_room = self.map[j + 1][paths[i][j + 1]] if j < self.grid_y - 1 else None
-                        self.map[j][room_idx] = Room(self.ROOM_TYPE_UNSET, j, room_idx,
-                                                     [prev_room], [])
-                        if prev_room is not None:
-                            prev_room.add_next_room(self.map[j][room_idx])
+                    if local_map[j][room_idx] is None:
+                        local_map[j][room_idx] = "P"
                         num_open_nodes += 1
-                    else:
-                        if prev_room is not None:
-                            self.map[j][room_idx].add_prev_room(prev_room)
-                            prev_room.add_next_room(self.map[j][room_idx])
-        return num_open_nodes
+                    if prev_floor_room_idx is not None:
+                        self.room_mapping[j][room_idx]['prev_rooms'].add(prev_floor_room_idx)
+                        self.room_mapping[j - 1][prev_floor_room_idx]['next_rooms'].add(room_idx)
+                    if next_floor_room_idx is not None:
+                        self.room_mapping[j][room_idx]['next_rooms'].add(next_floor_room_idx)
+                        self.room_mapping[j + 1][next_floor_room_idx]['prev_rooms'].add(room_idx)
+
+        return num_open_nodes, local_map
 
     def set_floor_to_type(self, paths: list[list], floor: int, room_type: str):
         num_changed = 0
+
         for path in paths:
-            node = path[floor]
-            if node is not None:
-                self.map[floor][node].type = room_type
+            room_index = path[floor]
+            if room_index is not None:
+                room = None
+                prev_rooms = self.room_mapping[floor][room_index]['prev_rooms']
+                next_rooms = self.room_mapping[floor][room_index]['next_rooms']
+                if room_type == self.ROOM_TYPE_REST:
+                    room = RestRoom(floor, room_index, prev_rooms, next_rooms)
+                elif room_type == self.ROOM_TYPE_CHEST:
+                    room = ChestRoom(floor, room_index, prev_rooms, next_rooms)
+                elif room_type == self.ROOM_TYPE_MONSTER:
+                    room = MonsterRoom(floor, room_index, prev_rooms, next_rooms)
+
+                if room is None:
+                    raise ValueError("Invalid room type")
+
+                self.map[floor][room_index] = room
                 num_changed += 1
         return num_changed
 
@@ -248,26 +274,26 @@ class MapGenerator:
                     # text = font.render(room.type, True, (0, 0, 0))
                     # screen.blit(text, (x_pos + 5, y_pos + 5))
 
-                    prev_rooms = room.prev_rooms
+                    prev_room_idxs = room.prev_rooms
 
-                    for prev_room in prev_rooms:
+                    for prev_room_idx in prev_room_idxs:
                         x_pos, y_pos = self.calculate_position_from_idx(y, x, screen_size)
-                        if prev_room is None:
+                        if prev_room_idx is None:
                             continue
-                        prev_x, prev_y = self.calculate_position_from_idx(prev_room.floor, prev_room.x, screen_size)
-                        if prev_room.x == x:
+                        prev_x, prev_y = self.calculate_position_from_idx(y-1, prev_room_idx, screen_size)
+                        if prev_room_idx == x:
                             # Vertical connection - move y down to center bottom of tile and x to center
                             x_pos += self.tile_size // 2
                             y_pos += self.tile_size
 
                             prev_x += self.tile_size // 2
-                        elif prev_room.x < x:
+                        elif prev_room_idx < x:
                             # Diagonal right connection - move x to left side and y to bottom
                             y_pos += self.tile_size
                             x_pos += self.tile_size // 2
 
                             prev_x += self.tile_size
-                        elif prev_room.x > x:
+                        elif prev_room_idx > x:
                             # Diagonal left connection - move x to right side and y to bottom
                             x_pos += self.tile_size // 2
                             y_pos += self.tile_size

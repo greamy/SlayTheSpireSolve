@@ -19,6 +19,7 @@ class Renderer:
         self.end_turn_y = 300
         self.end_turn_width = 160
         self.end_turn_height = 80
+        self.room_to_render = None
 
     def render_combat(self, frames_per_action=60, end_delay=2):
         self.running = True
@@ -161,12 +162,41 @@ class Renderer:
                            regen_btn_y < pos[1] < regen_btn_y + regen_btn_height:
                             map_gen.generate_map()
 
-            self.screen.fill((0, 0, 0))
-            map_gen.render(self.screen, self.screen_size, map_font)
+                        for floor in map_gen.map:
+                            for room in floor:
+                                if room is not None:
+                                    room_x, room_y = map_gen.calculate_position_from_idx(room.floor, room.x, self.screen_size)
+                                    if room_x < pos[0] < room_x + map_gen.tile_size and room_y < pos[1] < room_y + map_gen.tile_size:
+                                        self.room_to_render = room
 
-            pygame.draw.rect(self.screen, (100, 255, 125), (regen_btn_x, regen_btn_y, 200, 50), 0, 5)
-            regen_btn_txt = self.font.render("Re-Generate Map", True, (0, 0, 0))
-            self.screen.blit(regen_btn_txt, (regen_btn_x + 10, regen_btn_y + 10))
+            self.screen.fill((0, 0, 0))
+            print(self.room_to_render)
+            if self.room_to_render is not None:
+                self.room_to_render.render_room(self.screen, self.screen_size, self.font)
+            else:
+                map_gen.render(self.screen, self.screen_size, map_font)
+
+                pygame.draw.rect(self.screen, (100, 255, 125), (regen_btn_x, regen_btn_y, 200, 50), 0, 5)
+                regen_btn_txt = self.font.render("Re-Generate Map", True, (0, 0, 0))
+                self.screen.blit(regen_btn_txt, (regen_btn_x + 10, regen_btn_y + 10))
+
+            pygame.display.flip()
+            self.clock.tick(60)
+
+    def render_room(self, room):
+        self.running = True
+        room_font = pygame.font.SysFont("Arial", 20)
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        pass
+
+            self.screen.fill((0, 0, 0))
+            room.render_room(self.screen, self.screen_size, room_font)
 
             pygame.display.flip()
             self.clock.tick(60)

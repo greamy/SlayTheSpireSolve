@@ -9,6 +9,7 @@ class Entity:
 
     def __init__(self, health, x=150, y=150, width=100, height=100):
         self.health = health
+        self.start_health = health
         self.block = 0
         self.damage_dealt_multiplier = 1.0
         self.damage_dealt_modifier = 0

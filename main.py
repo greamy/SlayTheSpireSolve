@@ -22,6 +22,15 @@ def main():
     combat = Combat(player, [enemy], True)
     combat.start()
 
+    # Open the map
+    # let the player choose the next floor
+    # player chooses up -> left = floor 2, room 3
+    # mapgen.map[2][3] = Room
+
+    # room.type == "E":
+
+
+
     renderer = Renderer(screen, combat)
     renderer.render_playable_combat()
 
