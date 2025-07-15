@@ -13,6 +13,8 @@ class ForeignInfluence(Card):
         # TODO: Implement the following:
         # Choose 1 of 3 Attacks of any color to add to your hand. (It costs 0 this turn.) {{Exhaust}}.
 
+        return False
+
     def upgrade(self):
         super().upgrade()
         self.description = "Choose 1 of 3 attacks of any color to add to your hand. It costs 0 this turn. Exhaust."

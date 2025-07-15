@@ -13,6 +13,8 @@ class Consecrate(Card):
             super().play(player, player_list, enemy, enemies, debug)
         # Deal 5(8) damage to ALL enemies.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 8 damage to ALL enemies."

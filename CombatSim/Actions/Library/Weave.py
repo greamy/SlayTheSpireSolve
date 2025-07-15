@@ -15,6 +15,8 @@ class Weave(Card):
         # Deal 4(6) damage. Whenever you {{Scry}}, return this from the discard pile to your Hand.
         super().play(player, player_list, target_enemy, enemies, debug)
 
+        return True
+
     def return_to_hand(self, player: Player, enemy: Enemy, enemies: list[Enemy], debug: bool):
         if self in player.deck.discard_pile:
             player.deck.discard_pile.remove(self)

@@ -13,6 +13,8 @@ class WheelKick(Card):
         # TODO: Implement the following:
         # Deal 15(20) damage. Draw 2 cards.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 20 damage. Draw 2 cards."

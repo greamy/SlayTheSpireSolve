@@ -14,6 +14,8 @@ class SpiritShield(Card):
         self.block = self.card_block * len(player.deck.hand)
         super().play(player, player_list, target_enemy, enemies, debug)
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Gain 4 Block for each card in your hand."

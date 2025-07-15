@@ -26,6 +26,8 @@ class Omniscience(Card):
                 player.deck.draw_pile.remove(card)
         # TODO notify exhaust listeners if needed
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Choose a card in your draw pile. Play the chosen card twice and Exhaust it. Exhaust."

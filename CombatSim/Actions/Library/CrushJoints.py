@@ -24,6 +24,8 @@ class CrushJoints(Card):
             target_enemy.add_listener(Listener(Listener.Event.START_TURN, vuln.decrement))
         self.skill_played = False
 
+        return True
+
     def do_skill(self, player, enemy, enemies, debug):
         self.skill_played = True
 

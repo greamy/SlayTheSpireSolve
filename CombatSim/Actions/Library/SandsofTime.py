@@ -16,6 +16,8 @@ class SandsofTime(Card):
         # TODO: Implement the following:
         # {{Retain}}. Deal 20(26) damage. Whenever this card is {{Retained}}, lower its cost by 1.
 
+        return True
+
     def do_retain(self, player, enemy, enemies, debug):
         if self.energy > 0 and self in player.deck.hand:
             self.energy -= 1

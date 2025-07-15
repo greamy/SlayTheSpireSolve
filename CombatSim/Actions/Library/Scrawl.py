@@ -13,6 +13,8 @@ class Scrawl(Card):
         # TODO: Implement the following:
         # Draw cards until your hand is full. {{Exhaust}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.energy = 0

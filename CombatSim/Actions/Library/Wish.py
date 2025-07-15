@@ -23,6 +23,8 @@ class Wish(Card):
         else:
             PlatedArmor(self.plated_armor, player)
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Choose one: Gain 8 Plated Armor, 4 Strength, or 30 Gold. Exhaust."

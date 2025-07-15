@@ -1,9 +1,8 @@
-import copy
 import importlib
 import os
 import unittest
 
-from Combat import Combat
+from GameSim.Map.CombatRoom import CombatRoom
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Player import Player
 
@@ -76,11 +75,9 @@ class EnemyTest(unittest.TestCase):
                         self.assertEqual(enemy.num_turns, 1)
                         enemy.listeners.remove(end_listener)
 
-                        combat = Combat(self.player, [enemy], False)
+                        combat = CombatRoom(self.player, [enemy], False)
                         num_turn, player_health, is_alive = combat.start()
                         self.assertTrue(num_turn > 0)
                         self.assertTrue(is_alive ^ enemy.is_alive())
                         #print("Player health: " + str(self.player.health))
-
-
 

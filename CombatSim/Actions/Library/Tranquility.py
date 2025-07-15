@@ -13,6 +13,8 @@ class Tranquility(Card):
         # TODO: Implement the following:
         # {{Retain}}. Enter {{Calm}}. {{Exhaust}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.energy = 0

@@ -14,6 +14,8 @@ class DeceiveReality(Card):
         player.deck.hand.append(Safety(player))
         # Gain 4(7) {{Block}}. Add a {{C|Safety}} to your hand.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Gain 7 Block. Add a Safety to your hand."

@@ -17,6 +17,8 @@ class FlurryofBlows(Card):
         # Deal 4(6) damage. On {{Stance}} change, returns from the Discard Pile into your hand.
         self.last_stance = player.stance
 
+        return True
+
     def do_card(self, player, enemy, enemies, debug):
         if self.last_stance != player.stance and len(player.deck.hand) < 10 and self in player.deck.discard_pile:
             player.deck.discard_pile.remove(self)

@@ -12,3 +12,5 @@ class Smite(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         # Retain. Deal 12 damage. {{Exhaust}}.
 
+        return True
+

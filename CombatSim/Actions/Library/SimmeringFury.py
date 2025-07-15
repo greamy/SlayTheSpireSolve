@@ -17,6 +17,8 @@ class SimmeringFury(Card):
         player.add_listener(self.listener)
         # At the start of your next turn, enter {{Wrath}} and draw 2(3) cards.
 
+        return True
+
     def do_card(self, player: Player, enemy: Enemy, enemies: list[Enemy], debug: bool):
         player.set_stance(Player.Stance.WRATH)
         player.draw_cards(self.drawing_cards, enemies, debug)

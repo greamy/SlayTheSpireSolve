@@ -16,6 +16,8 @@ class Ragnarok(Card):
             enemy = random.choice(enemies)
             super().play(player, player_list, enemy, enemies, debug)
 
+        return True
+
 
     def upgrade(self):
         super().upgrade()

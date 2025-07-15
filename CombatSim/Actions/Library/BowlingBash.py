@@ -13,6 +13,8 @@ class BowlingBash(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         # Deal 7(10) damage for each enemy in combat.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 10 damage for each enemy in combat."

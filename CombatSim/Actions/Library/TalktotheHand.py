@@ -17,6 +17,8 @@ class TalktotheHand(Card):
         target_enemy.add_listener(self.attack_listener)
         self.enemy = target_enemy
 
+        return True
+
     def gain_block(self, player, enemy, enemies, debug):
         if enemy == self.enemy:
             player.gain_block(self.block_gain, enemies, debug)

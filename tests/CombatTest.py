@@ -1,10 +1,6 @@
 import time
 import unittest
-from CombatSim.Actions.Card import Card
-from CombatSim.Entities.Player import Player
-from CombatSim.Entities.Enemy import Enemy
-from CombatSim.Actions.Intent import Intent
-from Combat import Combat
+from GameSim.Map.CombatRoom import CombatRoom
 from CombatSim.util import createPlayer, createEnemy, addCards
 
 
@@ -38,7 +34,7 @@ class CombatTest(unittest.TestCase):
         for _ in range(num_combat):
             testing_enemy = createEnemy("SlimeBoss", 20, 1)
             testing_player = createPlayer()
-            combat = Combat(testing_player, [testing_enemy], True)
+            combat = CombatRoom(testing_player, [testing_enemy], True)
             num_turn, testing_player.health, is_alive = combat.start()
             num_turns.append(num_turn)
             player_healths.append(testing_player.health)

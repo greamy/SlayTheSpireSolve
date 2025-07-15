@@ -13,6 +13,8 @@ class Eruption(Card):
         # TODO: Implement the following:
         # Deal 9 damage. Enter {{Wrath}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.energy = 1

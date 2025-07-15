@@ -13,6 +13,8 @@ class EmptyBody(Card):
         # TODO: Implement the following:
         # Gain 7(10) {{Block}}. Exit your {{Stance}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Gain 10 Block. Exit your Stance."

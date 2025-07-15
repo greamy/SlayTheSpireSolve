@@ -14,6 +14,8 @@ class JustLucky(Card):
         # {{Scry}} 1(2). Gain 2(3) {{Block}}. Deal 3(4) damage.
         player.scry(self.scry, enemies, debug)
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Scry 2. Gain 3 Block. Deal 4 damage."

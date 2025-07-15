@@ -23,6 +23,8 @@ class Sanctity(Card):
 
         # Gain 6(9) {{Block}}. If the previous card played was a Skill, draw 2 cards.
 
+        return True
+
     def do_skill(self, player, enemy, enemies, debug):
         self.skill = True
 

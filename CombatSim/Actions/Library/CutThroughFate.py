@@ -10,9 +10,11 @@ class CutThroughFate(Card):
         self.scry_amount = 2
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
-        player.scry(self.scry_amount, enemies, debug)
+        ret = player.scry(self.scry_amount, enemies, debug) # scry before we draw in the super()
         super().play(player, player_list, target_enemy, enemies, debug)
         # Deal 7(9) damage. {{Scry}} 2(3). Draw 1 card.
+
+        return ret
 
     def upgrade(self):
         super().upgrade()

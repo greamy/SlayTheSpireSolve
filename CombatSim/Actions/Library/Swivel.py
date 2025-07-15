@@ -20,6 +20,8 @@ class Swivel(Card):
         player.add_listener(self.other_listener)
         self.last_energy = player.energy
 
+        return True
+
     def refund(self, player, enemy, enemies, debug):
         player.energy += (self.last_energy - player.energy)
         player.listeners.remove(self.attack_listener)

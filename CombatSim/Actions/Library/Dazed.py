@@ -16,6 +16,8 @@ class Dazed(Card):
         # Unplayable. {{Ethereal}}
         super().play(player, player_list, target_enemy, enemies, debug)
 
+        return False
+
     def do_ethereal(self, player, enemy, enemies, debug):
         if self in player.deck.hand:
             player.deck.hand.remove(self)

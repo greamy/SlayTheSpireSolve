@@ -14,6 +14,8 @@ class CarveReality(Card):
         player.deck.hand.append(Smite(player))
         # Deal 6(10) damage. Add a {{C|Smite}} into your hand.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 6 damage. Add a Smite into your hand."

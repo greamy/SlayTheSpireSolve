@@ -13,6 +13,8 @@ class EmptyMind(Card):
         # TODO: Implement the following:
         # Exit your {{Stance}}. Draw 2(3) cards.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Exit your Stance. Draw 3 cards."

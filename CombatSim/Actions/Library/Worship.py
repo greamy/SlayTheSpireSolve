@@ -14,6 +14,8 @@ class Worship(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         player.add_mantra(self.mantra)
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Retain. " + self.description

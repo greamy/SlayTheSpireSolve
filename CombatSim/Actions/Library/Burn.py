@@ -16,6 +16,8 @@ class Burn(Card):
         # Unplayable. At the end of your turn take 2 (4) damage.
         super().play(player, player_list, target_enemy, enemies, debug)
 
+        return True
+
     def upgrade(self):
         self.description = "Unplayable. At the end of your turn take 4 damage."
         self.end_of_turn_damage = 4

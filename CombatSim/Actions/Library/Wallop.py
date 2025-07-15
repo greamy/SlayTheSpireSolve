@@ -14,6 +14,8 @@ class Wallop(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         player.gain_block(self.one_attack_damage*self.attacks - enemy_block, enemies, debug)
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 12 damage. Gain Block equal to unblocked damage dealt."

@@ -16,6 +16,8 @@ class Evaluate(Card):
         player.deck.shuffle()
         # Gain 6(10) {{Block}}. Shuffle an {{C|Insight}} into your draw pile.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Gain 10 Block. Shuffle an Insight into your draw pile."

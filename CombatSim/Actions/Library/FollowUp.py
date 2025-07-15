@@ -21,6 +21,8 @@ class FollowUp(Card):
         if self.attack_played:
             player.energy += 1
 
+        return True
+
     def do_attack(self, player, enemy, enemies, debug):
         self.attack_played = True
 

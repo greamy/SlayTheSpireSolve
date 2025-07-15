@@ -13,3 +13,5 @@ class Vault(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         player.end_turn(enemies, debug)
         player.start_turn(enemies, debug)
+
+        return True

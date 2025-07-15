@@ -15,6 +15,8 @@ class Prostrate(Card):
         player.add_mantra(self.mantra)
         # Gain 2(3) {{Mantra}}. Gain 4 {{Block}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Gain 3 Mantra. Gain 4 Block."

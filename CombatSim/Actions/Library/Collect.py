@@ -19,6 +19,8 @@ class Collect(Card):
         player.add_listener(self.listener)
         # Put an {{C|Miracle|Miracle+}} into your hand at the start of your next X(+1) turns. {{Exhaust}}.
 
+        return True
+
     def do_skill(self, player, enemy, enemies, debug):
         player.deck.hand.append(Miracle(player))
 

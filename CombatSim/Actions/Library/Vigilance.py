@@ -13,6 +13,8 @@ class Vigilance(Card):
         # TODO: Implement the following:
         # Enter {{Calm}}. Gain 8(12) {{Block}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Enter Calm. Gain 12 Block."

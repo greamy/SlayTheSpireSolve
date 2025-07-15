@@ -17,6 +17,8 @@ class WreathofFlame(Card):
         player.damage_dealt_modifier += self.temp_strength_gain
         player.add_listener(self.attack_listener)
 
+        return True
+
     def temp_strength(self, player: Player, enemy: Enemy, enemies: list[Enemy], debug: bool):
         player.damage_dealt_modifier -= self.temp_strength_gain
 

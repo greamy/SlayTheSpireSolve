@@ -23,6 +23,8 @@ class SashWhip(Card):
         self.attack = True
         # Deal 8(10) damage. If the last card played this combat was an Attack, apply 1(2) {{Weak}}.
 
+        return True
+
     def do_attack(self, player, enemy, enemies, debug):
         self.attack = True
 

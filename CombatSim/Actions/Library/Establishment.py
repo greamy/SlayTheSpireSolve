@@ -16,6 +16,8 @@ class Establishment(Card):
         # ({{Innate}}.) Whenever a card is {{Retained}}, lower its cost by 1.
         player.add_listener(self.listener)
 
+        return True
+
     def do_power(self, player, enemy, enemies, debug):
         for card in player.deck.hand:
             if card.energy > 0:

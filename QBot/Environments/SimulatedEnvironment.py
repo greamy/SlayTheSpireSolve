@@ -5,12 +5,11 @@ import random
 
 import numpy as np
 
-from Combat import Combat
+from GameSim.Map.Combat import Combat
 from CombatSim.Actions.Library.Defend import Defend
 from CombatSim.Actions.Library.Eruption import Eruption
 from CombatSim.Actions.Library.Strike import Strike
 from CombatSim.Actions.Library.Vigilance import Vigilance
-from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
 
 # TODO: Convert class to environment to train a model. Take tensorflow model as input, contains 'train' and 'test' routines

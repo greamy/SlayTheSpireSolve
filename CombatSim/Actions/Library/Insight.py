@@ -13,6 +13,8 @@ class Insight(Card):
 
         # {{Retain}} Draw 2(3) cards}. {{Exhaust}}
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Retain. Draw 3 cards. Exhaust."

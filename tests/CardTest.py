@@ -2,7 +2,6 @@ import random
 import unittest
 import copy
 
-from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Library.Alpha import Alpha
 from CombatSim.Actions.Library.BattleHymn import BattleHymn
 from CombatSim.Actions.Library.Beta import Beta
@@ -87,9 +86,8 @@ from CombatSim.Actions.Listener import Listener
 from CombatSim.Actions.Library.CutThroughFate import CutThroughFate
 from CombatSim.Actions.Library.EmptyBody import EmptyBody
 from CombatSim.Entities.Dungeon.JawWorm import JawWorm
-from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
-from CombatSim.Input.RandomPlayerController import RandomPlayerController
+from GameSim.Input.RandomPlayerController import RandomPlayerController
 
 
 class CardTest(unittest.TestCase):
@@ -558,14 +556,12 @@ class CardTest(unittest.TestCase):
         # At the start of your turn, {{Scry}} 3(4).
         card = Foresight(self.player)
         self.player.deck.hand.append(card)
-        draw_pile = [Strike(self.player), Defend(self.player), Strike(self.player)]
+        draw_pile = [Strike(self.player) for _ in range(10)]
         self.player.deck.draw_pile.extend(draw_pile)
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
         self.player.end_turn(self.enemies, self.debug)
         self.player.start_turn(self.enemies, self.debug)
-        self.assertEqual(len(self.player.deck.draw_pile), len(draw_pile) - card.scry_amount)
-
-
+        self.assertEqual(len(self.player.deck.draw_pile), len(draw_pile) - card.scry_amount - self.player.draw_amount)
 
     def test_FlurryOfBlows(self):
         # Deal 4(6) damage. On {{Stance}} change, returns from the Discard Pile into your hand.

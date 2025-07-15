@@ -17,6 +17,8 @@ class Pray(Card):
         player.deck.shuffle()
         # Gain 3(4) {{Mantra}}. Shuffle an {{C|Insight}} into your draw pile.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Gain 4 Mantra. Shuffle an Insight into your draw pile."

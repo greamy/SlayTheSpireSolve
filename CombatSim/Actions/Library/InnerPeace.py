@@ -19,6 +19,8 @@ class InnerPeace(Card):
         if player.stance != player.Stance.CALM:
             player.stance = player.Stance.CALM
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "If you are in Calm, draw 4 cards. Otherwise, enter Calm."

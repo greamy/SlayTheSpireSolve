@@ -17,6 +17,8 @@ class LikeWater(Card):
         # At the end of your turn, if you are in {{Calm}}, gain 5(7) {{Block}}.
         player.add_listener(self.listener)
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "At the end of your turn, if you are in Calm, gain 7 Block."

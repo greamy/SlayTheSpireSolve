@@ -17,6 +17,8 @@ class Devotion(Card):
         player.add_listener(self.listener)
         # At the start of your turn, gain 2(3) {{Mantra}}.
 
+        return True
+
     def do_power(self, player, enemy, enemies, debug):
         player.add_mantra(self.mantra)
 

@@ -9,8 +9,7 @@ from spirecomm.spire.character import PlayerClass
 from spirecomm.spire.game import Game
 import spirecomm.spire.character as char
 
-from Combat import Combat
-from CombatSim.Entities.Enemy import Enemy
+from GameSim.Map.Combat import Combat
 from CombatSim.Entities.Player import Player
 
 from QBot.Environments.Environment import Environment

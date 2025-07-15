@@ -12,6 +12,8 @@ class EmptyFist(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         # Deal 9(14) damage. Exit your {{Stance}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 14 damage. Exit your Stance."

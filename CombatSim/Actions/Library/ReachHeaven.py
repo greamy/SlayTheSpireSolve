@@ -16,6 +16,8 @@ class ReachHeaven(Card):
         player.deck.shuffle()
         # Deal 10(15) damage. Shuffle a {{C|Through Violence}} into your draw pile.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 15 damage. Shuffle a Through Violence into your draw pile."

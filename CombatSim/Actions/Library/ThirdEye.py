@@ -12,7 +12,9 @@ class ThirdEye(Card):
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
         # Gain 7(9) {{Block}}. {{Scry}} 3(5).
-        player.scry(self.scry, enemies, debug)
+        ret = player.scry(self.scry, enemies, debug)
+
+        return ret
 
     def upgrade(self):
         super().upgrade()

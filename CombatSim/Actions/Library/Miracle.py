@@ -13,6 +13,8 @@ class Miracle(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         # Retain. Gain 1(2) energy. {{Exhaust}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Retain. Gain 2 energy. Exhaust."

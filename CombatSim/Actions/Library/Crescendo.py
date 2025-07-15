@@ -12,6 +12,8 @@ class Crescendo(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         # {{Retain}}. Enter {{Wrath}}. {{Exhaust}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.energy = 0

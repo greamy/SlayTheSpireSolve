@@ -17,6 +17,8 @@ class ConjureBlade(Card):
         player.deck.shuffle()
         player.energy = 0
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Shuffle an Expunger with X+1 into your draw pile. Exhaust."

@@ -16,6 +16,8 @@ class WindmillStrike(Card):
         # {{Retain}}. Deal 7(10) damage. Whenever this card is {{Retained}}, increase its damage by 4(5).
         super().play(player, player_list, target_enemy, enemies, debug)
 
+        return True
+
     def do_retain(self, player: Player, enemy: Enemy, enemies: list[Enemy], debug: bool):
         if self in player.deck.hand:
             self.damage += self.damage_increase

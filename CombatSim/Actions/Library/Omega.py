@@ -16,6 +16,8 @@ class Omega(Card):
         # At the end of your turn, deal 50(60) damage to ALL enemies.
         player.add_listener(self.listener)
 
+        return True
+
     def do_power(self, player, enemy, enemies, debug):
         for enemy in enemies:
             enemy.take_damage(self.damage)

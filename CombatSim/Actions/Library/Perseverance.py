@@ -16,6 +16,8 @@ class Perseverance(Card):
         # TODO: Implement the following:
         # {{Retain}}. Gain 5(7) {{Block}}. Whenever this card is {{Retain|Retained}}, increase its {{Block}} by 2(3).
 
+        return True
+
     def do_skill(self, player, enemy, enemies, debug):
         self.block += self.block_hand_gained
 

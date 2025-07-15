@@ -19,6 +19,8 @@ class Rushdown(Card):
         self.last_stance = player.stance
         # Whenever you enter {{Wrath}}, draw 2 cards.
 
+        return True
+
     def do_card(self, player, enemy, enemies, debug):
         if player.stance != self.last_stance and player.stance == Player.Stance.WRATH:
             player.draw_cards(self.drawing_cards, enemies, debug)

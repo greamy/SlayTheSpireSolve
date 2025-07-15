@@ -14,6 +14,7 @@ class Alpha(Card):
         # ({{Innate}}.) Shuffle a {{C|Beta}} into your draw pile. {{Exhaust}}.
         player.deck.draw_pile.append(Beta(player))
         player.deck.shuffle()
+        return True
 
     def upgrade(self):
         super().upgrade()

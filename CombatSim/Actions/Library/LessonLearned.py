@@ -15,6 +15,8 @@ class LessonLearned(Card):
         if not target_enemy.minion and not target_enemy.is_alive():
             random.choice(player.deck.get_deck([self])).upgrade()
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 13 damage. If Fatal, Upgrade a random card in your deck. Exhaust."

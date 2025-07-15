@@ -14,6 +14,8 @@ class Tantrum(Card):
         player.deck.draw_pile.append(self)
         player.deck.shuffle()
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 3 damage 4 times. Enter Wrath. Shuffle this card into your draw pile."

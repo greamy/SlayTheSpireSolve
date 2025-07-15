@@ -21,6 +21,7 @@ class Indignation(Card):
 
 
         # If you are in {{Wrath}}, apply 3(5) {{Vulnerable}} to ALL enemies, otherwise enter {{Wrath}}.
+        return True
 
     def upgrade(self):
         super().upgrade()

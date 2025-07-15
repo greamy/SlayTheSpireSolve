@@ -18,6 +18,8 @@ class PressurePoints(Card):
 
         # Apply 8(11) Mark. ALL enemies lose HP equal to their Mark.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Apply 11 Mark. ALL enemies lose HP equal to their Mark."

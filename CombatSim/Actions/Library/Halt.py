@@ -17,6 +17,8 @@ class Halt(Card):
 
         # Gain 3(4) {{Block}}. {{Wrath}}: Gain 9(14) additional {{Block}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Gain 4 Block. Wrath: Gain 14 additional Block."

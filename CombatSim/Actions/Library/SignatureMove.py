@@ -15,6 +15,8 @@ class SignatureMove(Card):
         # Can only be played if this is the only attack in your hand. Deal 30(40) damage.
         super().play(player, player_list, target_enemy, enemies, debug)
 
+        return True
+
     def do_listen(self, player, enemy, enemies, debug):
         for card in player.deck.hand:
             if card != self and card.card_type == Card.Type.ATTACK:

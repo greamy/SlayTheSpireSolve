@@ -21,6 +21,8 @@ class DevaForm(Card):
         # {{Ethereal}}. At the start of your turn, gain {{Energy}} and increase this gain by 1. (not {{Ethereal}}.)
         player.add_listener(self.energy_listener)
 
+        return True
+
     def do_power(self, player, enemy, enemies, debug):
         player.energy += self.extra_energy
         self.extra_energy += 1

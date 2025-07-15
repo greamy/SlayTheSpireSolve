@@ -18,6 +18,8 @@ class MentalFortress(Card):
         player.add_listener(self.listener)
         # Whenever you switch {{Stance|Stances}}, gain 4(6) {{Block}}.
 
+        return True
+
     def do_power(self, player, enemy, enemies, debug):
         if self.last_stance != player.stance:
             player.block += self.stance_block

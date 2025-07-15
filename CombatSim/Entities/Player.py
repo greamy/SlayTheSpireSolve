@@ -9,12 +9,12 @@ from CombatSim.Actions.Listener import Listener
 import numpy as np
 import pygame
 
-from CombatSim.Input.Controller import PlayerController
+from GameSim.Input.Controller import PlayerController
 from CombatSim.Items.Relics.Relic import Relic
 
 
 class Player(Entity):
-    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], controller: PlayerController,library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
+    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], controller: PlayerController, library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
         super().__init__(health)
         self.max_health = health
         self.energy = energy
@@ -31,6 +31,7 @@ class Player(Entity):
         self.implemented_cards = self.get_implemented_cards(library_path)
         self.deck = self.Deck(self.create_deck(cards))
         self.card_played = None
+        self.card_choice = None
 
         self.controller = controller
 
@@ -95,17 +96,31 @@ class Player(Entity):
 
             # card_choice = random.choice(playable_cards)
             _, card_choice = self.controller.get_card_to_play(self, enemies, playable_cards, debug)
+            if card_choice is None:
+                return False
+            elif card_choice is False:
+                return True
             # targeted_enemy = random.choice(enemies)
             _, targeted_enemy = self.controller.get_target(self, enemies, card_choice, debug)
+            if targeted_enemy is None:
+                return False
+            elif targeted_enemy is False:
+                return True
             success = self.play_card(card_choice, targeted_enemy, enemies, debug)
-            if not success:
+            if success is None:
+                return False
+            elif not success:
                 playable_cards.remove(card_choice)
                 continue
+
+            self.controller.reset()
+
             for enemy in enemies:
                 if not enemy.is_alive():
                     enemies.remove(enemy)
             if len(enemies) == 0:
                 return True
+
         return False
 
     def check_turn_done(self):
@@ -172,7 +187,7 @@ class Player(Entity):
             return False
         self.energy -= card.energy
         self.deck.hand.remove(card)
-        card.play(self, [self], enemy, enemies, debug)
+        ret = card.play(self, [self], enemy, enemies, debug)
 
         if card.is_attack():
             self.notify_listeners(Listener.Event.ATTACK_PLAYED, self, enemies, debug)
@@ -223,19 +238,23 @@ class Player(Entity):
         return self.mantra % 10
 
     def scry(self, amount, enemies, debug):
-        # TODO: Make better Scry AI
-        index = 0
         cards = self.deck.draw_pile[0:amount]
         # to_scry = self.bot.scry(cards, enemies, None)
 
-        for i, card in enumerate(cards):
-            do_scry = self.controller.get_scry(self, enemies, card, debug)
-            if do_scry:
-                self.discard(self.deck.draw_pile.pop(index), enemies, debug)
-            else:
-                index += 1
+        # for i, card in enumerate(cards):
+        #     do_scry = self.controller.get_scry(self, enemies, card, debug)
+        #     if do_scry:
+        #         self.discard(self.deck.draw_pile.pop(index), enemies, debug)
+        #     else:
+        #         index += 1
+        index_discarded = self.controller.get_scry(self, enemies, cards, debug)
+        print(index_discarded)
+        if index_discarded is None:
+            return None
+        for i in index_discarded:
+            self.discard(self.deck.draw_pile.pop(i), enemies, debug)
         self.notify_listeners(Listener.Event.SCRY_OCCURRED, self, enemies, debug)
-        return amount - index
+        return len(index_discarded)
 
     def gain_gold(self, amount, enemies, debug):
         self.gold += amount

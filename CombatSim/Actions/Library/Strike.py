@@ -13,6 +13,8 @@ class Strike(Card):
         # TODO: Implement the following:
         # Deal 6(9) damage.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 9 damage."

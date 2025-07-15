@@ -16,6 +16,8 @@ class Study(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         player.add_listener(self.listener)
 
+        return True
+
     def do_power(self, player, enemy, enemies, debug):
         player.deck.draw_pile.append(Insight(player))
         player.deck.shuffle()

@@ -1,14 +1,7 @@
 import copy
-import importlib
 import random
-import time
 
 from spirecomm.communication.action import *
-from spirecomm.spire.game import Game
-import spirecomm.spire.character as char
-
-from Combat import Combat
-from CombatSim.Entities.Player import Player
 
 
 class SpireBot:

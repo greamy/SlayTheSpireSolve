@@ -13,6 +13,8 @@ class ThroughViolence(Card):
         # TODO: Implement the following:
         # {{Retain}} Deal 20(30) damage. {{Exhaust}}
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Retain. Deal 30 damage. Exhaust."

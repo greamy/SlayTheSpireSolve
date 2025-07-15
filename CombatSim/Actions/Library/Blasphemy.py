@@ -15,6 +15,8 @@ class Blasphemy(Card):
         # (Retain.) Enter Divinity, Die next turn. {{Exhaust}}.
         player.add_listener(self.listener)
 
+        return True
+
     def do_power(self, player, enemy, enemies, debug):
         player.take_damage(999_999)
 

@@ -17,8 +17,14 @@ class Foresight(Card):
         # At the start of your turn, {{Scry}} 3(4).
         player.add_listener(self.listener)
 
+        return True
+
     def scry(self, player: Player, target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         self.scry_amount = player.scry(self.to_scry, enemies, debug)
+        if self.scry_amount is None:
+            return None
+        else:
+            return True
 
     def upgrade(self):
         super().upgrade()

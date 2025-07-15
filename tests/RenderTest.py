@@ -1,17 +1,16 @@
 import time
 import unittest
 
-from Combat import Combat
-from CombatSim.Map.MapGenerator import MapGenerator
-from CombatSim.Map.RestRoom import RestRoom
-from CombatSim.Renderer import Renderer
+from GameSim.Map.Combat import Combat
+from GameSim.Map.MapGenerator import MapGenerator
+from GameSim.Map.RestRoom import RestRoom
+from GameSim.Render.Renderer import Renderer
 from CombatSim.util import addCards, createPlayer, createEnemy, get_default_deck
 
 
 class RenderTest(unittest.TestCase):
 
     def setUp(self):
-
         self.debug = False
 
         cards = get_default_deck()

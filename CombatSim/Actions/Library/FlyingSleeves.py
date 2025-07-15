@@ -12,6 +12,8 @@ class FlyingSleeves(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         # {{Retain}}. Deal 4(6) damage twice.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Retain. Deal 6 damage twice."

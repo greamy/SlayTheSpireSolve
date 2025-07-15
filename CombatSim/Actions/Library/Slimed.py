@@ -11,3 +11,5 @@ class Slimed(Card):
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # {{Exhaust}}
         super().play(player, player_list, target_enemy, enemies, debug)
+
+        return True

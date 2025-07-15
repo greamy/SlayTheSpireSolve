@@ -28,6 +28,8 @@ class Meditate(Card):
             player.notify_listeners(Listener.Event.HAND_CHANGED, player, enemies, debug)
         player.turn_over = True
 
+        return True
+
     def do_retain(self, player, enemy, enemies, debug):
         for card in player.deck.hand:
             card.temp_retain = False

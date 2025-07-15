@@ -13,6 +13,8 @@ class Protect(Card):
         # TODO: Implement the following:
         # {{Retain}}. Gain 12(16) {{Block}}.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Retain. Gain 16 Block."

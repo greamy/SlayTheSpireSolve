@@ -14,6 +14,8 @@ class FearNoEvil(Card):
         if target_enemy.intent.damage > 0:
             player.set_stance(Player.Stance.CALM)
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 11 damage. If the enemy intends to Attack, enter Calm."

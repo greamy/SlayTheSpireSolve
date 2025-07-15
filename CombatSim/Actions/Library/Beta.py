@@ -15,6 +15,8 @@ class Beta(Card):
         player.deck.draw_pile.append(Omega(player))
         player.deck.shuffle()
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.energy = 1

@@ -13,6 +13,8 @@ class Brilliance(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         # Deal 12(16) damage. Deals additional damage for all {{Mantra}} gained this combat.
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Deal 16 damage. Deals additional damage for all Mantra gained this combat."

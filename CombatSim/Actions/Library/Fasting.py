@@ -18,6 +18,8 @@ class Fasting(Card):
         player.damage_dealt_modifier += self.strength
         player.block_modifier += self.dexterity
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "Gain 4 Strength. Gain 4 Dexterity. Gain 1 less Energy at the start of each turn."

@@ -14,6 +14,8 @@ class MasterReality(Card):
         player.add_listener(self.listener)
         # Whenever a card is created during combat, {{Upgrade}} it.
 
+        return True
+
     def do_power(self, player, enemy, enemies, debug):
         # TODO: Implement logic to determine the newly created card, and call upgrade()
         pass

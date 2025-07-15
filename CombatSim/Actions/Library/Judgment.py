@@ -15,6 +15,8 @@ class Judgment(Card):
         if target_enemy.health <= self.death:
             target_enemy.health = 0
 
+        return True
+
     def upgrade(self):
         super().upgrade()
         self.description = "If the enemy has 40 or less HP, set their HP to 0."

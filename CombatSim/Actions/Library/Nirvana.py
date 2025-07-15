@@ -16,6 +16,8 @@ class Nirvana(Card):
         # Whenever you {{Scry}}, gain 3(4) {{Block}}.
         player.add_listener(self.listener)
 
+        return True
+
     def do_power(self, player, enemy, enemies, debug):
         player.block += self.scry_block
 

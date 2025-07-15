@@ -1,7 +1,7 @@
 import importlib
 
 from CombatSim.Entities.Player import Player
-from CombatSim.Input.RandomPlayerController import RandomPlayerController
+from GameSim.Input.RandomPlayerController import RandomPlayerController
 
 
 def addCards(player, name_list: list[str]):
@@ -14,15 +14,15 @@ def addCards(player, name_list: list[str]):
     player.deck = Player.Deck(cards)
 
 
-def createPlayer(lib_path='../CombatSim/Actions/Library', health=70, energy=3, gold=50, potions=None, relics=None, cards=None):
+def createPlayer(lib_path='../CombatSim/Actions/Library', controller=RandomPlayerController(),
+                 health=70, energy=3, gold=50, potions=None, relics=None, cards=None):
     if relics is None:
         relics = []
     if potions is None:
         potions = []
     if cards is None:
         cards = []
-    return Player(health, energy, gold, potions, relics, cards, RandomPlayerController(),
-                  lib_path)
+    return Player(health, energy, gold, potions, relics, cards, controller, lib_path)
 
 
 def createEnemy(name: str, ascension: int, act: int):
