@@ -31,5 +31,7 @@ class Game:
         for i in range(15):
             room = self.renderer.render_act_map(self.map_gen, self.cur_floor, self.cur_idx)
             self.renderer.render_room(room)
+            if not self.player.is_alive():
+                return False
             self.cur_floor += 1
             self.cur_idx = room.x

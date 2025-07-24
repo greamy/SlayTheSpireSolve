@@ -234,10 +234,18 @@ class MapGenerator:
                 num_changed += 1
         return num_changed
 
-    def calculate_position_from_idx(self, floor_idx, room_idx, screen_size):
+    def calculate_position_from_idx(self, floor_idx, room_idx, screen_size=(1280, 720)):
         return (self.x_align + room_idx * self.tile_size + room_idx * self.tile_spacing * 2,
                 (screen_size[1] - self.tile_size - self.tile_spacing) - (
                             floor_idx * self.tile_size + floor_idx * self.tile_spacing))
+
+    def get_avail_floors(self, floor, room_idx):
+        if room_idx is None:
+            avail_floors = self.map[floor]
+            avail_floors = [floor.x for floor in avail_floors if floor is not None]
+        else:
+            avail_floors = self.map[floor - 1][room_idx].next_rooms
+        return list(avail_floors)
 
     def render(self, screen, screen_size, font, cur_floor, room_idx):
         color_map = {
@@ -261,12 +269,7 @@ class MapGenerator:
             elif self.counter < 0:
                 self.counter = 0
 
-        if room_idx is None:
-            avail_floors = self.map[cur_floor]
-            avail_floors = [floor.x for floor in avail_floors if floor is not None]
-        else:
-            avail_floors = self.map[cur_floor][room_idx].next_rooms
-        print(avail_floors)
+        avail_floors = self.get_avail_floors(cur_floor, room_idx)
         for y in range(self.grid_y):
             for x in range(self.grid_x):
                 room = self.map[y][x]
@@ -275,9 +278,6 @@ class MapGenerator:
 
                     room.render_map(screen, font, x_pos, y_pos, self.counter, self.tile_size,
                                     (room.floor == cur_floor and room.x in avail_floors))
-                    # pygame.draw.rect(screen, color_map[room.type], (x_pos, y_pos, self.tile_size, self.tile_size))
-                    # text = font.render(room.type, True, (0, 0, 0))
-                    # screen.blit(text, (x_pos + 5, y_pos + 5))
 
                     prev_room_idxs = room.prev_rooms
 
@@ -322,19 +322,20 @@ class MapGenerator:
         for i, item in enumerate(legend_items):
             screen.blit(item, (legend_x, legend_y + i * 20))
 
+        choice = self.player.controller.get_map_choice(self.player, self, cur_floor, room_idx)
+        if choice is not None:
+            return self.map[cur_floor][choice]
+        return None
+
     def handle_event(self, event, screen_size, cur_floor, room_idx):
-        if room_idx is None:
-            avail_floors = self.map[cur_floor]
-            avail_floors = [floor.x for floor in avail_floors if floor is not None]
-        else:
-            avail_floors = self.map[cur_floor][room_idx].next_rooms
+        avail_floors = self.get_avail_floors(cur_floor, room_idx)
         if event.button == 1:
             pos = pygame.mouse.get_pos()
 
-            for idx in avail_floors:
-                room = self.map[cur_floor][idx]
-                room_x, room_y = self.calculate_position_from_idx(room.floor, room.x, screen_size)
-                if room_x < pos[0] < room_x + self.tile_size and room_y < pos[
-                    1] < room_y + self.tile_size:
-                    return room
-        return None
+            self.player.controller.handle_map_event(pos, self.player, self, cur_floor, avail_floors)
+            # for idx in avail_floors:
+            #     room = self.map[cur_floor][idx]
+            #     room_x, room_y = self.calculate_position_from_idx(room.floor, room.x, screen_size)
+            #     if room_x < pos[0] < room_x + self.tile_size and room_y < pos[
+            #         1] < room_y + self.tile_size:
+            #         return room

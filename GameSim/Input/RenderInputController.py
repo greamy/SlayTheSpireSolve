@@ -14,6 +14,7 @@ class RenderInputPlayerController(PlayerController):
         self.to_discard = set()
         self.card_selected = None
         self.enemy_selected = None
+        self.room_selected = None
 
     def reset(self):
         self.card_selected = None
@@ -27,6 +28,14 @@ class RenderInputPlayerController(PlayerController):
         for i, card in enumerate(player.deck.hand):
             if card.x < pos[0] < card.x + card.width and card.y < pos[1] < card.y + card.height:
                 self.card_selected = i
+
+    def handle_map_event(self, pos, player, map_gen, cur_floor, avail_floors):
+        for idx in avail_floors:
+            room = map_gen.map[cur_floor][idx]
+            room_x, room_y = map_gen.calculate_position_from_idx(room.floor, room.x)
+            if room_x < pos[0] < room_x + map_gen.tile_size and room_y < pos[
+                1] < room_y + map_gen.tile_size:
+                self.room_selected = room
 
     def get_target(self, player, enemies, playable, debug):
         i = None
@@ -88,3 +97,9 @@ class RenderInputPlayerController(PlayerController):
             card = player.deck.hand[self.card_selected]
             i = self.card_selected
         return i, card
+
+    def get_map_choice(self, player, map_gen, floor, room_idx):
+        room = None
+        if self.room_selected is not None:
+            room = self.room_selected
+        return room

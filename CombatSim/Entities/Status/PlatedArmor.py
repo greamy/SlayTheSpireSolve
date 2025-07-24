@@ -23,3 +23,7 @@ class PlatedArmor(Status):
 
     def remove(self):
         self.entity.listeners.remove(self.block_listener)
+
+    def remove_listener(self):
+        self.entity.remove_listener(self.block_listener)
+        super().remove_listener()

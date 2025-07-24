@@ -1,7 +1,8 @@
 import time
 import unittest
 
-from GameSim.Map.Combat import Combat
+from GameSim.Input.RenderInputController import RenderInputPlayerController
+from GameSim.Map.CombatRoom import CombatRoom
 from GameSim.Map.MapGenerator import MapGenerator
 from GameSim.Map.RestRoom import RestRoom
 from GameSim.Render.Renderer import Renderer
@@ -13,24 +14,28 @@ class RenderTest(unittest.TestCase):
     def setUp(self):
         self.debug = False
 
+        self.act = 1
+        self.ascension = 0
+
+        self.screen_size = (1280, 720)
+        self.renderer = Renderer(self.screen_size)
+
         cards = get_default_deck()
-        self.player = createPlayer()
+        self.player = createPlayer(controller=RenderInputPlayerController(self.renderer.screen))
         addCards(self.player, cards)
 
         self.enemy = createEnemy("JawWorm", 20, 1)
         # self.enemy_2 = createEnemy("GreenLouse", 20, 1)
-        self.combat = Combat(self.player, [self.enemy], True)
-        self.renderer = Renderer(self.combat)
+        self.combat = CombatRoom(self.player, 'M', 0, 0, [], [], 0, 0)
+
 
     def test_render(self):
         self.combat.start()
-        renderer = Renderer(self.combat)
-        renderer.render_combat()
-        renderer.quit_render()
+        self.renderer.render_combat(self.combat)
+        self.renderer.quit_render()
 
     def test_fast_render(self):
-        combats = [Combat(createPlayer(), [createEnemy('JawWorm', i, 3)], False) for i in range(20)]
-        renderer = Renderer(combats[0])
+        combats = [CombatRoom(createPlayer(), 'M', 0, 0, [], [], 0, 0) for i in range(20)]
         num_won = 0
         default_deck = get_default_deck()
         start = time.time()
@@ -38,33 +43,29 @@ class RenderTest(unittest.TestCase):
             addCards(combat.player, default_deck)
             combat.start()
 
-            renderer.combat = combat
-            renderer.render_combat(frames_per_action=1, end_delay=0)
-            num_won += 1 if renderer.combat.player_won else 0
+            self.renderer.render_combat(combat, frames_per_action=1, end_delay=0)
+            num_won += 1 if combat.player_won else 0
         end = time.time()
 
         print(f"Number of combats won: {num_won} out of {len(combats)}")
         print(f"Time elapsed: {end - start} seconds")
-        renderer.quit_render()
+        self.renderer.quit_render()
 
     def test_playable_render(self):
         self.combat.start()
 
-        renderer = Renderer(self.combat, (1280, 720))
-        renderer.render_playable_combat()
+        self.renderer.render_room(self.combat)
 
     def test_render_map(self):
-        map_gen = MapGenerator()
+        map_gen = MapGenerator(self.player, self.act, self.ascension)
         map_gen.generate_map()
         # paths = map_gen.generate_paths()
         # _, map_gen.map = map_gen.populate_map_with_paths(paths)
 
-        renderer = Renderer(self.combat)
-        renderer.render_map(map_gen)
+        self.renderer.render_act_map(map_gen, 0, None)
 
     def test_render_rest(self):
         rest = RestRoom(0, 0, [], [])
 
-        renderer = Renderer(self.combat)
-        renderer.render_room(rest)
+        self.renderer.render_room(rest)
 

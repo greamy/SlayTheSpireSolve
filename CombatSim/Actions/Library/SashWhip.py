@@ -36,3 +36,8 @@ class SashWhip(Card):
         self.description = "Deal 10 damage. If the last card played this combat was an Attack, apply 2 Weak."
         self.damage = 10
         self.weak = 2
+
+    def remove_listeners(self, player: Player):
+        player.remove_listener(self.attack_listener)
+        player.remove_listener(self.other_listener)
+        super().remove_listeners(player)

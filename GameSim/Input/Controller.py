@@ -16,5 +16,8 @@ class PlayerController:
     def get_card_to_play(self, player, enemies, playable_cards, debug):
         pass
 
-    def handle_event(self, pos, player, enemies):
+    def handle_event(self, pos, player, clickables):
+        pass
+
+    def handle_map_event(self, pos, player, map_gen, cur_floor, avail_floors):
         pass

@@ -661,11 +661,25 @@ class CardTest(unittest.TestCase):
         self.enemy.health = 10
         self.player.energy = 3
 
-        card = LessonLearned(self.player)
+        strike = Strike(self.player)
+        self.enemy = JawWorm(self.ascension, self.act)
+        self.enemy.health = 1
+        self.player.deck.hand.clear()
         self.player.deck.hand.append(card)
+        self.player.deck.hand.append(strike)
         self.player.play_card(card, self.enemy, self.enemies, self.debug)
-        self.assertFalse(self.enemy.is_alive())
-        self.assertTrue(card.upgraded)
+        self.enemy = JawWorm(self.ascension, self.act)
+        self.player.play_card(strike, self.enemy, self.enemies, self.debug)
+        self.assertTrue(self.enemy.start_health - strike.damage, self.enemy.start_health - 6)
+        self.player.end_combat()
+        if strike.upgraded:
+            self.assertEqual(strike.damage, 9)
+        elif card.upgraded:
+            self.assertEqual(card.damage, 13)
+        else:
+            print("You didn't upgrade a card, dumbass")
+            self.assertEqual(False, True)
+
 
     def test_LikeWater(self):
         card = LikeWater(self.player)

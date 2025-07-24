@@ -27,4 +27,3 @@ class Devotion(Card):
         self.description = "At the start of your turn, gain 3 Mantra."
         self.mantra = 3
 
-

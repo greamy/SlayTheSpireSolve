@@ -34,3 +34,8 @@ class FollowUp(Card):
         super().upgrade()
         self.description = "Deal 11 damage. If the previous card played was an Attack, gain 1 Energy."
         self.damage = 11
+
+    def remove_listeners(self, player: Player):
+        player.remove_listener(self.attack_listener)
+        player.remove_listener(self.not_Attack_listener)
+        super().remove_listeners(player)

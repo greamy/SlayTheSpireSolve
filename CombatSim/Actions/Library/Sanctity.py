@@ -36,3 +36,8 @@ class Sanctity(Card):
         super().upgrade()
         self.description = "Gain 9 Block. If the previous card played was a Skill, draw 2 cards."
         self.block = 9
+
+    def remove_listeners(self, player: Player):
+        player.remove_listener(self.skill_listener)
+        player.remove_listener(self.not_skill_listener)
+        super().remove_listeners(player)

@@ -26,6 +26,8 @@ class Card(Playable):
         self.description = ""
         self.id = id
 
+        self.listener = None
+
         # Check for Master Reality listener - Upgrade if master reality has been played
         for listener in player.listeners:
             if Listener.Event.CARD_CREATED in listener.event_types:
@@ -68,6 +70,10 @@ class Card(Playable):
 
         cost = font.render(str(self.energy), True, (0, 255, 0))
         screen.blit(cost, (self.x+(self.width - 20), self.y+10))
+
+    def remove_listeners(self, player: Player):
+        if self.listener is not None and self.listener in player.listeners:
+            player.remove_listener(self.listener)
 
     def __str__(self):
         return self.name

@@ -57,6 +57,8 @@ class Player(Entity):
         self.relics.remove(relic)
         relic.on_drop()
 
+    # def choose_next_floor(self, avail_floors):
+
     def create_deck(self, cards: list[str]) -> list:
         deck = []
         for card in cards:
@@ -78,7 +80,12 @@ class Player(Entity):
         self.notify_listeners(Listener.Event.START_COMBAT, self, enemies, debug)
 
     def end_combat(self):
+        self.deck.end_combat()
+        self.notify_listeners(Listener.Event.END_COMBAT, self, [None], False)
+        for card in self.deck.draw_pile:
+            card.remove_listeners(self)
         self.mantra = 0
+        self.stance = self.Stance.NONE
 
     def start_turn(self, enemies, debug):
         super().start_turn(enemies, debug)
@@ -357,6 +364,9 @@ class Player(Entity):
 
             if debug:
                 print("**************** TURN OVER ****************")
+
+        def end_combat(self):
+            self.reshuffle()
 
         def get_deck(self, extra_cards=None):
             if extra_cards is None:

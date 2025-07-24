@@ -6,6 +6,7 @@ class Status:
     def __init__(self, duration, entity):
         self.duration = duration
         self.entity = entity
+        self.listener = None
 
     def decrement(self, player, enemy, enemies, debug):
         self.duration -= 1
@@ -18,3 +19,9 @@ class Status:
 
     def remove(self):
         pass
+
+    def remove_listener(self):
+        if self.listener is not None:
+            self.entity.remove_listener(self.listener)
+            # self.listener = None
+

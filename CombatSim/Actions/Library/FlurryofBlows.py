@@ -31,3 +31,7 @@ class FlurryofBlows(Card):
         super().upgrade()
         self.description = "Deal 6 damage. On Stance change, returns from the Discard Pile into your hand."
         self.damage = 6
+
+    def remove_listeners(self, player: Player):
+        player.remove_listener(self.card_listener)
+        super().remove_listeners(player)

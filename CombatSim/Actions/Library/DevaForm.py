@@ -36,3 +36,8 @@ class DevaForm(Card):
         super().upgrade()
         self.description = "At the start of your turn, gain Energy and increase this gain by 1.)"
         self.ethereal = False
+
+    def remove_listeners(self, player: Player):
+        player.remove_listener(self.energy_listener)
+        player.remove_listener(self.ethereal_listener)
+        super().remove_listeners(player)

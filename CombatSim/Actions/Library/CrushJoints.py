@@ -37,3 +37,8 @@ class CrushJoints(Card):
         self.description = "Deal 10 damage. If the previous card played was a skill, apply 2 Vulnerable."
         self.damage = 10
         self.vulnerable = 2
+
+    def remove_listeners(self, player: Player):
+        player.remove_listener(self.skill_listener)
+        player.remove_listener(self.not_skill_listener)
+        super().remove_listeners(player)

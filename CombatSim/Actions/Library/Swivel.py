@@ -34,3 +34,8 @@ class Swivel(Card):
         super().upgrade()
         self.description = "Gain 11 Block. The next Attack you play costs 0."
         self.block = 11
+
+    def remove_listeners(self, player: Player):
+        player.remove_listener(self.attack_listener)
+        player.remove_listener(self.other_listener)
+        super().remove_listeners(player)

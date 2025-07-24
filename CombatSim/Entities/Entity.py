@@ -58,6 +58,9 @@ class Entity:
     def add_listener(self, listener):
         self.listeners.append(listener)
 
+    def remove_listener(self, listener):
+        self.listeners.remove(listener)
+
     def notify_listeners(self, event_type, player, enemies, debug):
         if debug:
             pass

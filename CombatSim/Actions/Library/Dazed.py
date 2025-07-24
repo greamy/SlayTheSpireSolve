@@ -22,3 +22,7 @@ class Dazed(Card):
         if self in player.deck.hand:
             player.deck.hand.remove(self)
             player.deck.exhaust_pile.append(self)
+
+    def remove_listeners(self, player: Player):
+        player.remove_listener(self.ethereal_listener)
+        super().remove_listeners(player)

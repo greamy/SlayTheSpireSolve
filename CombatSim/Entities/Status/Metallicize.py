@@ -21,3 +21,7 @@ class Metallicize(Status):
         if not self.removed:
             self.entity.listeners.remove(self.block_listener)
             self.removed = True
+
+    def remove_listeners(self):
+        self.entity.remove_listener(self.block_listener)
+        # super().remove_listeners()

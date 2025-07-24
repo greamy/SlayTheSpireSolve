@@ -39,12 +39,14 @@ class CombatRoom(Room):
         # return self.run()
 
     def create_enemies(self, act, ascension) -> list[Enemy]:
-        return [JawWorm(ascension, act)]
+        worm = JawWorm(ascension, act)
+        return [worm]
 
     def get_total_enemy_health(self):
         return sum([enemy.health for enemy in self.enemies])
 
     def do_next_turn(self):
+        start_player = False
         if self.current_turn == self.PLAYER_TURN:
             turn_over = self.player.do_next_action(self.enemies, self.debug)
             if turn_over:
@@ -55,15 +57,18 @@ class CombatRoom(Room):
                 enemy.start_turn([self.player], self.debug)
                 enemy.do_turn(self.player, self.debug)
             self.current_turn = self.PLAYER_TURN
-            self.player.start_turn(self.enemies, self.debug)
+            start_player = True
 
         if self.player.health > 0 and self.get_total_enemy_health() > 0:
+            if start_player:
+                self.player.start_turn(self.enemies, self.debug)
             return True
         else:
             if self.player.health > 0:
-                self.player_won = True
+                self.player_won = False
             else:
                 self.player_won = False
+            self.player.end_combat()
             return False
 
 
@@ -139,17 +144,6 @@ class CombatRoom(Room):
             return None, reward
 
     def render_room(self, screen, screen_size, main_font):
-                    # # check if any card was clicked
-                    # for card in self.player.deck.hand:
-                    #     if card.x < pos[0] < card.x + card.width and card.y < pos[1] < card.y + card.height:
-                    #         # play the card
-                    #         enemy = random.choice(self.enemies)
-                    #         enemy = self.player.controller.get_target(self.player, self.enemies, playable)
-                    #         success = self.player.play_card(card, enemy, self.enemies, self.debug)
-                    #         if not success:
-                    #             print("Card play failed")
-                    #             self.fail_msg = main_font.render("Card play failed", True, (255, 0, 0))
-
         pos = pygame.mouse.get_pos()
         # check if any card was hovered
         help_box_x = 50
@@ -204,13 +198,6 @@ class CombatRoom(Room):
             for i, line in enumerate(description_lines):
                 text = main_font.render(line, True, (255, 100, 50))
                 screen.blit(text, (help_box_x + 5, help_box_y + 30 + (i * 20)))
-
-        # if self.fail_msg is not None:
-        #     screen.blit(self.fail_msg, (300, 300))
-        #     self.fail_msg_counter += 1
-        #     if self.fail_msg_counter == 60:
-        #         self.fail_msg = None
-        #         self.fail_msg_counter = 0
 
         pygame.draw.rect(screen, (100, 175, 100),
                          (self.end_turn_x, self.end_turn_y, self.end_turn_width, self.end_turn_height), 0, 5)

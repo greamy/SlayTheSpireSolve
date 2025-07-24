@@ -34,3 +34,7 @@ class WaveoftheHand(Card):
         super().upgrade()
         self.description = "Whenever you gain Block this turn, apply 2 Weak to ALL enemies."
         self.weak = 2
+
+    def remove_listeners(self, player: Player):
+        player.remove_listener(self.end_listener)
+        super().remove_listeners(player)

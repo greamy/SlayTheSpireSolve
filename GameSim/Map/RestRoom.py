@@ -10,6 +10,7 @@ class RestRoom(Room):
 
         # render attributes
         self.color = (20, 255, 20) # Green
+        self.counter = 1
 
     def render_map(self, screen, font, x, y, counter, tile_size, available):
         super().render_map(screen, font, x, y, counter, tile_size, available)
@@ -17,3 +18,9 @@ class RestRoom(Room):
     def render_room(self, screen, screen_size, font):
         img = pygame.image.load("../images/Rooms/campfire.png")
         img = pygame.transform.scale(img, screen_size, screen)
+        self.counter += 1
+        if self.counter % 120 == 0:
+            return True
+        else:
+            self.counter = 1
+            return False

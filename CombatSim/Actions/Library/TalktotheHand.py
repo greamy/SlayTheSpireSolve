@@ -29,3 +29,5 @@ class TalktotheHand(Card):
         self.damage = 7
         self.block_gain = 3
 
+    def remove_listeners(self, player: Player):
+        pass
