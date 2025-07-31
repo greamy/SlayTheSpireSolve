@@ -19,10 +19,10 @@ class CombatRoom(Room):
         self.current_turn = self.PLAYER_TURN
         self.player_won = None
 
-        self.enemies = self.create_enemies(act, ascension)
+        self.enemies = None
         self.debug = False
         self.start_card = None
-        self.state = CombatState(self.player, self.enemies)
+        # self.state = CombatState(self.player, self.enemies)
 
         # render attributes
         self.end_turn_x = 525
@@ -34,6 +34,7 @@ class CombatRoom(Room):
         self.fail_msg_counter = 0
 
     def start(self):
+        self.enemies = self.create_enemies(self.act, self.ascension)
         self.player.begin_combat(self.enemies, self.debug)
         self.player.start_turn(self.enemies, self.debug)
         # return self.run()
