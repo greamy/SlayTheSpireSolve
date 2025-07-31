@@ -1,14 +1,26 @@
-import pygame
+import importlib
+import random
 
+import pygame
+import copy
+
+from CombatSim.Entities.Dungeon.GremlinNob import GremlinNob
+from CombatSim.Entities.Enemy import Enemy
+from GameSim.Map.CombatRoom import CombatRoom
 from GameSim.Map.Room import Room
 
 
-class EliteRoom(Room):
+class EliteRoom(CombatRoom):
+
+    ELITES = {
+        # 1: ["GremlinNob", "Lagavulin", "Sentry"],
+        1: ["GremlinNob", "Lagavulin"],
+        2: ["GremlinLeader", "BookofStabbing", "Slavers"],
+        3: ["GiantHead", "Repomancer", "Nemesis"],
+    }
 
     def __init__(self, player, floor: int, x: int, prev_rooms: list, next_rooms: list, act, ascension):
         super().__init__(player, "E", floor, x, prev_rooms, next_rooms, act, ascension)
-        # TODO: Choose elite monster somehow... or trust external class (combat class perhaps) to choose one for us.
-        self.monster = None
 
         # render attributes:
         self.color = (255, 0, 0)
@@ -17,5 +29,21 @@ class EliteRoom(Room):
         self.color = (255, min(counter, 200), 0)
         super().render_map(screen, font, x, y, counter, tile_size, available)
 
-    def render_room(self, screen, screen_size, font):
-        pass
+    def create_enemies(self, act, ascension) -> list[Enemy]:
+        last_elite = self.player.last_elite
+        list_of_act_elites = self.ELITES[act]
+        if last_elite is not None:
+            # choose from remaining elites
+            list_of_act_elites = [elite for elite in list_of_act_elites if elite != last_elite]
+
+        elite_name = random.choice(list_of_act_elites)
+        module = importlib.import_module("CombatSim.Entities.Dungeon." + elite_name)
+        class_ = getattr(module, elite_name)
+        return [class_(ascension, act)]
+
+    def start(self):
+        super().start()
+        self.player.last_elite = self.enemies[0].__class__.__name__
+
+    # def render_room(self, screen, screen_size, font):
+    #     pass

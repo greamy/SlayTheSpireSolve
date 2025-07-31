@@ -32,6 +32,7 @@ class Player(Entity):
         self.deck = self.Deck(self.create_deck(cards))
         self.card_played = None
         self.card_choice = None
+        self.last_elite = None
 
         self.controller = controller
 
@@ -85,7 +86,7 @@ class Player(Entity):
         for card in self.deck.draw_pile:
             card.remove_listeners(self)
         self.mantra = 0
-        self.stance = self.Stance.NONE
+        self.set_stance(self.Stance.NONE)
 
     def start_turn(self, enemies, debug):
         super().start_turn(enemies, debug)
@@ -194,7 +195,12 @@ class Player(Entity):
             return False
         self.energy -= card.energy
         self.deck.hand.remove(card)
+        start_h = enemy.health
+        print("Current multipliers are " + str(self.damage_dealt_multiplier) + "x damage dealt and " + str(self.damage_dealt_modifier) + "+ damage modifier.")
+        print("Current stance is " + str(self.stance))
         ret = card.play(self, [self], enemy, enemies, debug)
+        print("Played " + card.name + " for " + str(start_h - enemy.health) + " damage.")
+        print("Card damage is " + str(card.damage * card.attacks))
 
         if card.is_attack():
             self.notify_listeners(Listener.Event.ATTACK_PLAYED, self, enemies, debug)
@@ -337,8 +343,6 @@ class Player(Entity):
         def reshuffle(self):
             self.draw_pile.extend(self.discard_pile)
             self.discard_pile.clear()
-            self.draw_pile.extend(self.hand)
-            self.hand.clear()
             self.draw_pile.extend(self.exhaust_pile)
             self.exhaust_pile.clear()
             self.draw_pile.extend(self.used_powers)
@@ -366,6 +370,8 @@ class Player(Entity):
                 print("**************** TURN OVER ****************")
 
         def end_combat(self):
+            self.draw_pile.extend(self.hand)
+            self.hand.clear()
             self.reshuffle()
 
         def get_deck(self, extra_cards=None):

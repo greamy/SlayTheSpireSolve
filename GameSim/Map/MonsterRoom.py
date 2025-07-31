@@ -1,8 +1,9 @@
 import pygame
 
+from CombatSim.Entities.Dungeon.AcidSlimeSmall import AcidSlimeSmall
+from CombatSim.Entities.Enemy import Enemy
 from GameSim.Map.CombatRoom import CombatRoom
 from CombatSim.Entities.Dungeon.JawWorm import JawWorm
-from GameSim.Map.Room import Room
 
 
 class MonsterRoom(CombatRoom):
@@ -14,6 +15,9 @@ class MonsterRoom(CombatRoom):
         # self.combat = None
         # render attributes
         self.color = (175, 125, 0) # Brown
+
+    def create_enemies(self, act, ascension) -> list[Enemy]:
+        return [AcidSlimeSmall(ascension, act)]
 
     def render_map(self, screen, font, x, y, counter, tile_size, available):
         super().render_map(screen, font, x, y, counter, tile_size, available)

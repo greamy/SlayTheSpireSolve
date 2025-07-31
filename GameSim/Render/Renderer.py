@@ -1,8 +1,5 @@
-import random
 import time
 import pygame
-
-from GameSim.Map.MapGenerator import MapGenerator
 
 
 class Renderer:
@@ -66,47 +63,6 @@ class Renderer:
 
             pygame.display.flip()
             self.clock.tick(60)
-
-    # def render_map(self, map_gen):
-    #     self.running = True
-    #     room_choice = None
-    #     map_font = pygame.font.SysFont("Arial", 20)
-    #     regen_btn_x = 750
-    #     regen_btn_y = 25
-    #     regen_btn_width = 200
-    #     regen_btn_height = 50
-    #     while self.running:
-    #         for event in pygame.event.get():
-    #             if event.type == pygame.QUIT:
-    #                 self.running = False
-    #
-    #             if event.type == pygame.MOUSEBUTTONDOWN:
-    #                 if event.button == 1:
-    #                     pos = pygame.mouse.get_pos()
-    #                     if regen_btn_x < pos[0] < regen_btn_x + regen_btn_width and \
-    #                        regen_btn_y < pos[1] < regen_btn_y + regen_btn_height:
-    #                         map_gen.generate_map()
-    #
-    #                     for floor in map_gen.map:
-    #                         for room in floor:
-    #                             if room is not None:
-    #                                 room_x, room_y = map_gen.calculate_position_from_idx(room.floor, room.x, self.screen_size)
-    #                                 if room_x < pos[0] < room_x + map_gen.tile_size and room_y < pos[1] < room_y + map_gen.tile_size:
-    #                                     room_choice = room
-    #
-    #         self.screen.fill((0, 0, 0))
-    #
-    #         if room_choice is not None:
-    #             return room_choice
-    #
-    #         map_gen.render(self.screen, self.screen_size, map_font, 0, 0)
-    #
-    #         pygame.draw.rect(self.screen, (100, 255, 125), (regen_btn_x, regen_btn_y, 200, 50), 0, 5)
-    #         regen_btn_txt = self.font.render("Re-Generate Map", True, (0, 0, 0))
-    #         self.screen.blit(regen_btn_txt, (regen_btn_x + 10, regen_btn_y + 10))
-    #
-    #         pygame.display.flip()
-    #         self.clock.tick(60)
 
     def render_room(self, room):
         self.running = True

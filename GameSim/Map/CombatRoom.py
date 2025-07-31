@@ -38,9 +38,14 @@ class CombatRoom(Room):
         self.player.start_turn(self.enemies, self.debug)
         # return self.run()
 
+    # def create_enemies(self, act, ascension) -> list[Enemy]:
+    #     worm = JawWorm(ascension, act)
+    #     return [worm]
     def create_enemies(self, act, ascension) -> list[Enemy]:
-        worm = JawWorm(ascension, act)
-        return [worm]
+        pass
+
+    def end_combat(self):
+        pass
 
     def get_total_enemy_health(self):
         return sum([enemy.health for enemy in self.enemies])
@@ -69,6 +74,7 @@ class CombatRoom(Room):
             else:
                 self.player_won = False
             self.player.end_combat()
+            self.end_combat()
             return False
 
 

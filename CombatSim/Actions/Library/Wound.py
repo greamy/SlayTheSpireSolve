@@ -1,19 +1,17 @@
+from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Actions.Card import Card
 
 
-class Eruption(Card):
+class Wound(Card):
     def __init__(self, player: Player):
-        super().__init__("Eruption", Card.Type.ATTACK, 2, 9, 1, 0, 0, 0, False, False, player, Player.Stance.WRATH, id=27)
-        self.description = "Deal 9 damage. Enter Wrath."
-        
+        super().__init__("Wound", Card.Type.STATUS, 0, 0, 0, 0, 0, 0, False, False, player, None, id=89)
+        self.description = "Unplayable."
+        self.playable = False
+
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        # Unplayable. {{Ethereal}}
         super().play(player, player_list, target_enemy, enemies, debug)
-        # Deal 9 damage. Enter {{Wrath}}.
 
-        return True
-
-    def upgrade(self):
-        super().upgrade()
-        self.energy = 1
+        return False

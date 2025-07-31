@@ -244,7 +244,8 @@ class MapGenerator:
             avail_floors = self.map[floor]
             avail_floors = [floor.x for floor in avail_floors if floor is not None]
         else:
-            avail_floors = self.map[floor - 1][room_idx].next_rooms
+            floor = self.map[floor - 1][room_idx]
+            avail_floors = floor.next_rooms
         return list(avail_floors)
 
     def render(self, screen, screen_size, font, cur_floor, room_idx):
@@ -324,7 +325,8 @@ class MapGenerator:
 
         choice = self.player.controller.get_map_choice(self.player, self, cur_floor, room_idx)
         if choice is not None:
-            return self.map[cur_floor][choice]
+            self.player.controller.reset()
+            return choice
         return None
 
     def handle_event(self, event, screen_size, cur_floor, room_idx):

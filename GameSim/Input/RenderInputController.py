@@ -19,6 +19,7 @@ class RenderInputPlayerController(PlayerController):
     def reset(self):
         self.card_selected = None
         self.enemy_selected = None
+        self.room_selected = None
 
     def handle_event(self, pos, player, enemies):
         for i, enemy in enumerate(enemies):
