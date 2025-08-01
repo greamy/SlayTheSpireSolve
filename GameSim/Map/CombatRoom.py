@@ -1,13 +1,7 @@
-import random
-
-import numpy as np
 import pygame
 
-from CombatSim.Entities.Dungeon.JawWorm import JawWorm
-from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Enemy import Enemy
 from GameSim.Map.Room import Room
-from QBot.Environments.States.CombatState import CombatState
 
 
 class CombatRoom(Room):
@@ -39,9 +33,6 @@ class CombatRoom(Room):
         self.player.start_turn(self.enemies, self.debug)
         # return self.run()
 
-    # def create_enemies(self, act, ascension) -> list[Enemy]:
-    #     worm = JawWorm(ascension, act)
-    #     return [worm]
     def create_enemies(self, act, ascension) -> list[Enemy]:
         pass
 
