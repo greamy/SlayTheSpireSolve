@@ -323,6 +323,11 @@ class MapGenerator:
         for i, item in enumerate(legend_items):
             screen.blit(item, (legend_x, legend_y + i * 20))
 
+        health_x = 1000
+        health_y = 10
+        health_text = font.render("Health: " + str(self.player.health) + "/" + str(self.player.max_health), True, "red")
+        screen.blit(health_text, (health_x, health_y))
+
         choice = self.player.controller.get_map_choice(self.player, self, cur_floor, room_idx)
         if choice is not None:
             self.player.controller.reset()

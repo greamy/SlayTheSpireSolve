@@ -14,6 +14,8 @@ from CombatSim.Items.Relics.Relic import Relic
 
 
 class Player(Entity):
+    REST_FACTOR = 0.3
+
     def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], controller: PlayerController, library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
         super().__init__(health)
         self.max_health = health
@@ -49,6 +51,9 @@ class Player(Entity):
                 module = importlib.import_module(module_path + card_name)
                 my_cards[card_name] = module
         return my_cards
+
+    def do_rest(self):
+        self.health = int(min(self.health + (self.max_health * self.REST_FACTOR), self.max_health))
 
     def add_relic(self, relic: Relic):
         self.relics.append(relic)

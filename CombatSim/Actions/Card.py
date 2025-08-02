@@ -62,14 +62,19 @@ class Card(Playable):
     def is_attack(self):
         return self.card_type == self.Type.ATTACK
 
-    def render(self, screen, font, pos):
+    def render(self, screen, font, pos, y=None):
+        if y is None:
+            y = self.y
         self.x = self.start_x + (pos * self.dist)
-        pygame.draw.rect(screen, 'white', pygame.Rect(self.x, self.y, self.width, self.height), 10, 2)
+        color = "white"
+        if self.upgraded:
+            color = 'green'
+        pygame.draw.rect(screen, color, pygame.Rect(self.x, y, self.width, self.height), 10, 2)
         text = font.render(self.name, True, (255, 255, 255))
-        screen.blit(text, (self.x+10, self.y+10))
+        screen.blit(text, (self.x+10, y+10))
 
         cost = font.render(str(self.energy), True, (0, 255, 0))
-        screen.blit(cost, (self.x+(self.width - 20), self.y+10))
+        screen.blit(cost, (self.x+(self.width - 20), y+10))
 
     def remove_listeners(self, player: Player):
         if self.listener is not None and self.listener in player.listeners:
