@@ -14,7 +14,11 @@ class PlayerController:
         pass
 
     def get_card_to_play(self, player, enemies, playable_cards, debug):
-        pass
+        self.counter += 1
+        if self.delay != 0 and self.counter % (self.delay * self.framerate) != 0:
+            return None, None
+        self.counter = 0
+        return None, True
 
     def handle_event(self, pos, player, clickables):
         pass

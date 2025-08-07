@@ -1,19 +1,36 @@
 import time
+from enum import Enum
+
 import pygame
 
 
 class Renderer:
+    class RenderType(Enum):
+        NONE = 0
+        PYGAME = 1
 
-    def __init__(self, screen_size=(1280, 720)):
-        pygame.init()
-        self.screen = pygame.display.set_mode(screen_size)
-        self.clock = pygame.time.Clock()
+    def __init__(self, screen_size=(1280, 720), render_type=RenderType.PYGAME):
+        self.render_type = render_type
+
+        if self.do_render():
+            pygame.init()
+            self.screen = pygame.display.set_mode(screen_size)
+            self.clock = pygame.time.Clock()
+            self.font = pygame.font.SysFont("monospace", 20)
+        else:
+            self.screen = None
+            self.clock = None
+            self.font = None
+
+
         self.running = True
-        self.font = pygame.font.SysFont("monospace", 20)
         self.debug = False
         self.screen_size = screen_size
 
         self.room_to_render = None
+
+    def do_render(self):
+        return self.render_type == self.RenderType.PYGAME
 
     def render_combat(self, combat, frames_per_action=60, end_delay=2):
         self.running = True
@@ -66,21 +83,27 @@ class Renderer:
 
     def render_room(self, room):
         self.running = True
-        room_font = pygame.font.SysFont("Arial", 20)
-        room.start()
+
+        room_font = None
+        if self.do_render():
+            room_font = pygame.font.SysFont("Arial", 20)
+
+        # room.start()
         while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.quit_render()
-                    break
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    room.handle_event(event)
+            if self.do_render():
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.quit_render()
+                        break
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        room.handle_event(event)
 
-            self.screen.fill((0, 0, 0))
-            self.running = room.render_room(self.screen, self.screen_size, room_font)
+                self.screen.fill((0, 0, 0))
+            self.running = room.render_room(self.screen, self.screen_size, room_font, self.render_type)
 
-            pygame.display.flip()
-            self.clock.tick(60)
+            if self.do_render():
+                pygame.display.flip()
+                self.clock.tick(60)
 
     def quit_render(self):
         pygame.quit()

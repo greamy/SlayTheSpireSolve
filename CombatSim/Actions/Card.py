@@ -25,6 +25,7 @@ class Card(Playable):
         self.playable = True
         self.description = ""
         self.id = id
+        self.mantra = 0
 
         self.listener = None
 

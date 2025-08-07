@@ -20,10 +20,10 @@ class Taskmaster(Enemy):
             super().__init__(random.randint(57, 64), intent_set, ascension, minion=False)
 
     def choose_intent(self):
-        pass
+        super().choose_intent()
 
     def is_valid_intent(self, intent: Intent) -> bool:
-        pass
+        return True
 
     class ScouringWhip(Intent):
         def __init__(self, ascension: int):
@@ -41,5 +41,5 @@ class Taskmaster(Enemy):
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             enemy.damage_dealt_modifier += self.strength
-            player.deck.discard_pile.append(Wound(player) for _ in range(self.wounds_added))
+            player.deck.discard_pile.extend([Wound(player) for _ in range(self.wounds_added)])
             super().play(enemy, enemy_list, player, player_list, debug)

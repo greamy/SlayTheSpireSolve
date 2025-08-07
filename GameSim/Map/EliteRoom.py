@@ -13,10 +13,16 @@ from GameSim.Map.Room import Room
 class EliteRoom(CombatRoom):
 
     ELITES = {
-        # 1: ["GremlinNob", "Lagavulin", "Sentry"],
-        1: ["GremlinNob", "Lagavulin"],
-        2: ["GremlinLeader", "BookofStabbing", "Slavers"],
+        1: ["GremlinNob", "Lagavulin", "Sentry"],
+        # 1: ["GremlinNob", "Lagavulin"],
+        # 2: ["GremlinLeader", "BookofStabbing", "Slavers"],
+        2: [ "Taskmaster"],
         3: ["GiantHead", "Repomancer", "Nemesis"],
+    }
+
+    MULTI_COMBATS = {
+        "Sentry": ["Sentry", "Sentry", "Sentry"],
+        "Taskmaster": ["BlueSlaver", "Taskmaster", "RedSlaver"]
     }
 
     def __init__(self, player, floor: int, x: int, prev_rooms: list, next_rooms: list, act, ascension):
@@ -37,6 +43,13 @@ class EliteRoom(CombatRoom):
             list_of_act_elites = [elite for elite in list_of_act_elites if elite != last_elite]
 
         elite_name = random.choice(list_of_act_elites)
+        if elite_name in self.MULTI_COMBATS.keys():
+            enemies = []
+            for name in self.MULTI_COMBATS[elite_name]:
+                module = importlib.import_module("CombatSim.Entities.Dungeon." + name)
+                class_ = getattr(module, name)
+                enemies.append(class_(ascension, act))
+            return enemies
         module = importlib.import_module("CombatSim.Entities.Dungeon." + elite_name)
         class_ = getattr(module, elite_name)
         return [class_(ascension, act)]

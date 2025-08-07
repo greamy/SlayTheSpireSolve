@@ -248,7 +248,7 @@ class MapGenerator:
             avail_floors = floor.next_rooms
         return list(avail_floors)
 
-    def render(self, screen, screen_size, font, cur_floor, room_idx):
+    def render(self, screen, screen_size, font, cur_floor, room_idx, render_type):
         color_map = {
             self.ROOM_TYPE_CHEST: (255, 215 + (self.counter // 7), self.counter),  # Gold
             self.ROOM_TYPE_ELITE: (255, min(self.counter, 200), 0),    # Red

@@ -15,5 +15,5 @@ class EventRoom(Room):
     def render_map(self, screen, font, x, y, counter, tile_size, available):
         super().render_map(screen, font, x, y, counter, tile_size, available)
 
-    def render_room(self, screen, screen_size, font):
+    def render_room(self, screen, screen_size, font, render_type):
         pass

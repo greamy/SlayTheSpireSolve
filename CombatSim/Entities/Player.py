@@ -36,6 +36,8 @@ class Player(Entity):
         self.card_choice = None
         self.last_elite = None
 
+        self.final_stance = None
+
         self.controller = controller
 
         # self.bot = QBot()
@@ -93,6 +95,12 @@ class Player(Entity):
         self.mantra = 0
         self.set_stance(self.Stance.NONE)
 
+    def take_damage(self, amount):
+        if amount > self.block + self.health:
+            self.final_stance = self.stance
+        super().take_damage(amount)
+
+
     def start_turn(self, enemies, debug):
         super().start_turn(enemies, debug)
         self.energy = self.max_energy
@@ -125,6 +133,8 @@ class Player(Entity):
             elif not success:
                 playable_cards.remove(card_choice)
                 continue
+
+            self.card_choice = card_choice
 
             self.controller.reset()
 
@@ -200,12 +210,7 @@ class Player(Entity):
             return False
         self.energy -= card.energy
         self.deck.hand.remove(card)
-        start_h = enemy.health
-        print("Current multipliers are " + str(self.damage_dealt_multiplier) + "x damage dealt and " + str(self.damage_dealt_modifier) + "+ damage modifier.")
-        print("Current stance is " + str(self.stance))
         ret = card.play(self, [self], enemy, enemies, debug)
-        print("Played " + card.name + " for " + str(start_h - enemy.health) + " damage.")
-        print("Card damage is " + str(card.damage * card.attacks))
 
         if card.is_attack():
             self.notify_listeners(Listener.Event.ATTACK_PLAYED, self, enemies, debug)
@@ -270,7 +275,7 @@ class Player(Entity):
         if index_discarded is None:
             return None
         for i in index_discarded:
-            self.discard(self.deck.draw_pile.pop(i), enemies, debug)
+            self.discard(self.deck.draw_pile.pop(0), enemies, debug)
         self.notify_listeners(Listener.Event.SCRY_OCCURRED, self, enemies, debug)
         return len(index_discarded)
 

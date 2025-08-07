@@ -15,5 +15,5 @@ class ChestRoom(Room):
         self.color = (255, 215 + (counter // 7), counter)
         super().render_map(screen, font, x, y, counter, tile_size, available)
 
-    def render_room(self, screen, screen_size, font):
+    def render_room(self, screen, screen_size, font, render_type):
         pass

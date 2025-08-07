@@ -1,3 +1,6 @@
+import importlib
+import os
+
 from CombatSim.Actions.Intent import Intent
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Entity import Entity
@@ -20,6 +23,18 @@ class Enemy(Entity):
         self.minion = minion
         self.mark = 0
         self.ascension = ascension
+
+    @staticmethod
+    def get_implemented_enemies(dungeon_path: str) -> dict:
+        my_enemies = {}
+        enemy_name_list = os.listdir(os.path.join(os.curdir, dungeon_path))
+        module_path = dungeon_path.replace("../", "").replace("/", ".")
+        for enemy_name in enemy_name_list:
+            if enemy_name.endswith(".py"):
+                enemy_name = enemy_name[:-3]
+                module = importlib.import_module(module_path + enemy_name)
+                my_enemies[enemy_name] = module
+        return my_enemies
 
     def start_turn(self, opponents, debug):
         super().start_turn(opponents, debug)

@@ -16,6 +16,7 @@ class MonsterRoom(CombatRoom):
         # render attributes
         self.color = (175, 125, 0) # Brown
 
+
     def create_enemies(self, act, ascension) -> list[Enemy]:
         return [AcidSlimeSmall(ascension, act)]
 

@@ -46,7 +46,7 @@ class RestRoom(Room):
     def render_map(self, screen, font, x, y, counter, tile_size, available):
         super().render_map(screen, font, x, y, counter, tile_size, available)
 
-    def render_room(self, screen, screen_size, font):
+    def render_room(self, screen, screen_size, font, render_type):
         img = pygame.image.load("../images/Rooms/campfire.png")
         img = pygame.transform.scale(img, screen_size, screen)
         if self.action is None:

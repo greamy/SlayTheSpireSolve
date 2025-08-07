@@ -33,11 +33,9 @@ class RandomPlayerController(PlayerController):
         return to_discard
 
     def get_card_to_play(self, player, enemies, playable_cards, debug):
-        self.counter += 1
-        if self.counter % (self.delay * self.framerate) != 0:
+        _, ret = super().get_card_to_play(player, enemies, playable_cards, debug)
+        if ret is None:
             return None, None
-        self.counter = 0
-        
         if len(player.deck.hand) == 0:
             return None, None
 
@@ -57,6 +55,6 @@ class RandomPlayerController(PlayerController):
         
         self.counter = 0
         avail_rooms = map_gen.get_avail_floors(floor, room_idx)
-        return random.choice(avail_rooms)
+        return map_gen.map[floor][random.choice(avail_rooms)]
         
 

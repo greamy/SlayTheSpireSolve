@@ -64,7 +64,7 @@ class Room:
         text = font.render(self.type, True, (0, 0, 0))
         screen.blit(text, (x + 5, y + 5))
 
-    def render_room(self, screen, screen_size, font):
+    def render_room(self, screen, screen_size, font, render_type):
         pass
 
     def start(self):

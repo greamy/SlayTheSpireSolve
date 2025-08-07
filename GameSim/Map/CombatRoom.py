@@ -2,6 +2,7 @@ import pygame
 
 from CombatSim.Entities.Enemy import Enemy
 from GameSim.Map.Room import Room
+from GameSim.Render.Renderer import Renderer
 
 
 class CombatRoom(Room):
@@ -141,67 +142,69 @@ class CombatRoom(Room):
         else:
             return None, reward
 
-    def render_room(self, screen, screen_size, main_font):
-        pos = pygame.mouse.get_pos()
-        # check if any card was hovered
-        help_box_x = 50
-        help_box_y = 260
-        help_box_width = 325
-        help_box_height = 175
-        card_hovered = None
-        for card in self.player.deck.hand:
-            if card.x < pos[0] < card.x + card.width and card.y < pos[1] < card.y + card.height:
-                # show info about the card
-                card_hovered = card
+    def render_room(self, screen, screen_size, main_font, render_type):
+        if render_type == Renderer.RenderType.PYGAME:
+            pos = pygame.mouse.get_pos()
+            # check if any card was hovered
+            help_box_x = 50
+            help_box_y = 260
+            help_box_width = 325
+            help_box_height = 175
+            card_hovered = None
+            for card in self.player.deck.hand:
+                if card.x < pos[0] < card.x + card.width and card.y < pos[1] < card.y + card.height:
+                    # show info about the card
+                    card_hovered = card
 
-        screen.fill((0, 0, 0))  # SCREEN CLEARING IS HAPPENING HERE!!! BE CAREFUL
+            screen.fill((0, 0, 0))  # SCREEN CLEARING IS HAPPENING HERE!!! BE CAREFUL
 
-        title_font = pygame.font.SysFont("monospace", 40)
-        self.player.render(screen, main_font)
-        for enemy in self.enemies:
-            enemy.render(screen, main_font)
+            title_font = pygame.font.SysFont("monospace", 40)
+            self.player.render(screen, main_font)
 
-        if self.player_won is None:
-            if self.current_turn == self.PLAYER_TURN:
-                text = title_font.render("PLAYER TURN", True, (100, 100, 255))
-            else:
-                text = title_font.render("ENEMY TURN", True, (255, 100, 100))
-            screen.blit(text, (screen.get_width() / 2 - text.get_width() / 2, 10))
-        else:  # if game is over
-            if self.player_won:
-                text = title_font.render("WINNER WINNER CHICKEN DINNER", True, (255, 255, 255))
+            for enemy in self.enemies:
+                enemy.render(screen, main_font)
+
+            if self.player_won is None:
+                if self.current_turn == self.PLAYER_TURN:
+                    text = title_font.render("PLAYER TURN", True, (100, 100, 255))
+                else:
+                    text = title_font.render("ENEMY TURN", True, (255, 100, 100))
                 screen.blit(text, (screen.get_width() / 2 - text.get_width() / 2, 10))
-            else:
-                text = title_font.render("no chicken :(", True, (255, 255, 255))
-                screen.blit(text, (screen.get_width() / 2 - text.get_width() / 2, 10))
+            else:  # if game is over
+                if self.player_won:
+                    text = title_font.render("WINNER WINNER CHICKEN DINNER", True, (255, 255, 255))
+                    screen.blit(text, (screen.get_width() / 2 - text.get_width() / 2, 10))
+                else:
+                    text = title_font.render("no chicken :(", True, (255, 255, 255))
+                    screen.blit(text, (screen.get_width() / 2 - text.get_width() / 2, 10))
 
-        if card_hovered is not None:
-            pygame.draw.rect(screen, (255, 255, 255),
-                             (help_box_x, help_box_y, help_box_width, help_box_height),
-                             0, 2)
-            name = main_font.render(card_hovered.name, True, (0, 0, 0))
-            screen.blit(name, (help_box_x + 5, help_box_y + 10))
-            cost = main_font.render("Energy: " + str(card_hovered.energy), True, (0, 255, 0))
-            screen.blit(cost, (help_box_x + help_box_width - 125, help_box_y + 10))
+            if card_hovered is not None:
+                pygame.draw.rect(screen, (255, 255, 255),
+                                 (help_box_x, help_box_y, help_box_width, help_box_height),
+                                 0, 2)
+                name = main_font.render(card_hovered.name, True, (0, 0, 0))
+                screen.blit(name, (help_box_x + 5, help_box_y + 10))
+                cost = main_font.render("Energy: " + str(card_hovered.energy), True, (0, 255, 0))
+                screen.blit(cost, (help_box_x + help_box_width - 125, help_box_y + 10))
 
-            # separate description into 20 characters per line
-            description_lines = []
-            description_text = card_hovered.description
-            while len(description_text) > 25:
-                line = description_text[:25]
-                description_lines.append(line)
-                description_text = description_text[25:]
-            description_lines.append(description_text)
+                # separate description into 20 characters per line
+                description_lines = []
+                description_text = card_hovered.description
+                while len(description_text) > 25:
+                    line = description_text[:25]
+                    description_lines.append(line)
+                    description_text = description_text[25:]
+                description_lines.append(description_text)
 
-            for i, line in enumerate(description_lines):
-                text = main_font.render(line, True, (255, 100, 50))
-                screen.blit(text, (help_box_x + 5, help_box_y + 30 + (i * 20)))
+                for i, line in enumerate(description_lines):
+                    text = main_font.render(line, True, (255, 100, 50))
+                    screen.blit(text, (help_box_x + 5, help_box_y + 30 + (i * 20)))
 
-        pygame.draw.rect(screen, (100, 175, 100),
-                         (self.end_turn_x, self.end_turn_y, self.end_turn_width, self.end_turn_height), 0, 5)
-        title_font = pygame.font.SysFont("monospace", 30)
-        end_turn_text = title_font.render("End Turn", True, (0, 0, 0))
-        screen.blit(end_turn_text, (self.end_turn_x + 5, self.end_turn_y + 5))
+            pygame.draw.rect(screen, (100, 175, 100),
+                             (self.end_turn_x, self.end_turn_y, self.end_turn_width, self.end_turn_height), 0, 5)
+            title_font = pygame.font.SysFont("monospace", 30)
+            end_turn_text = title_font.render("End Turn", True, (0, 0, 0))
+            screen.blit(end_turn_text, (self.end_turn_x + 5, self.end_turn_y + 5))
 
         combat_running = self.do_next_turn()
         return combat_running
