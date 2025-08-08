@@ -671,7 +671,7 @@ class CardTest(unittest.TestCase):
         self.enemy = JawWorm(self.ascension, self.act)
         self.player.play_card(strike, self.enemy, self.enemies, self.debug)
         self.assertTrue(self.enemy.start_health - strike.damage, self.enemy.start_health - 6)
-        self.player.end_combat()
+        self.player.end_combat(self.debug)
         if strike.upgraded:
             self.assertEqual(strike.damage, 9)
         elif card.upgraded:

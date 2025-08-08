@@ -325,7 +325,7 @@ class MapGenerator:
 
         health_x = 1000
         health_y = 10
-        health_text = font.render("Health: " + str(self.player.health) + "/" + str(self.player.max_health), True, "red")
+        health_text = font.render("Health: " + str(self.player.health) + "/" + str(self.player.start_health), True, "red")
         screen.blit(health_text, (health_x, health_y))
 
         choice = self.player.controller.get_map_choice(self.player, self, cur_floor, room_idx)

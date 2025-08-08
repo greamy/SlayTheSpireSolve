@@ -18,7 +18,6 @@ class Player(Entity):
 
     def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], controller: PlayerController, library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
         super().__init__(health)
-        self.max_health = health
         self.energy = energy
         self.gold = gold
         self.potions = potions
@@ -55,7 +54,7 @@ class Player(Entity):
         return my_cards
 
     def do_rest(self):
-        self.health = int(min(self.health + (self.max_health * self.REST_FACTOR), self.max_health))
+        self.health = int(min(self.health + (self.start_health * self.REST_FACTOR), self.start_health))
 
     def add_relic(self, relic: Relic):
         self.relics.append(relic)
@@ -86,10 +85,12 @@ class Player(Entity):
                 num_innate += 1
 
         self.notify_listeners(Listener.Event.START_COMBAT, self, enemies, debug)
+        self.controller.begin_combat(self, enemies, debug)
 
-    def end_combat(self):
+    def end_combat(self, enemies, debug):
+        self.controller.end_combat(self, enemies, debug)
         self.deck.end_combat()
-        self.notify_listeners(Listener.Event.END_COMBAT, self, [None], False)
+        self.notify_listeners(Listener.Event.END_COMBAT, self, enemies, debug)
         for card in self.deck.draw_pile:
             card.remove_listeners(self)
         self.mantra = 0
@@ -388,27 +389,6 @@ class Player(Entity):
             if extra_cards is None:
                 extra_cards = list()
             return self.hand + self.draw_pile + self.discard_pile + self.exhaust_pile + self.used_powers + extra_cards
-
-        def get_state(self):
-
-            hand_state = np.array([card.id for card in self.hand[:self.MAX_HAND_SIZE]])
-            hand_state = np.pad(hand_state, (0, max(0, self.MAX_HAND_SIZE - len(hand_state))), constant_values=-1)
-
-            discard_state = np.array([card.id for card in self.discard_pile[:self.MAX_CARDS_ENCODING]])
-            discard_state = np.pad(discard_state, (0, max(0, self.MAX_CARDS_ENCODING - len(discard_state))), constant_values=-1)
-
-            draw_state = np.array([card.id for card in self.draw_pile[:self.MAX_CARDS_ENCODING]])
-            draw_state = np.pad(draw_state, (0, max(0, self.MAX_CARDS_ENCODING - len(draw_state))), constant_values=-1)
-
-            exhaust_state = np.array([card.id for card in self.exhaust_pile[:self.MAX_CARDS_ENCODING]])
-            exhaust_state = np.pad(exhaust_state, (0, max(0, self.MAX_CARDS_ENCODING - len(exhaust_state))), constant_values=-1)
-
-            powers_state = np.array([card.id for card in self.used_powers[:self.MAX_CARDS_ENCODING]])
-            powers_state = np.pad(powers_state, (0, max(0, self.MAX_CARDS_ENCODING - len(powers_state))), constant_values=-1)
-
-            state = np.concatenate((hand_state, discard_state, draw_state, exhaust_state, powers_state))
-            return state
-
 
         def __str__(self):
             return ("Draw Pile:" + str([str(card) for card in self.draw_pile]) +

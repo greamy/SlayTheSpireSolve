@@ -66,7 +66,7 @@ class CombatRoom(Room):
                 self.player_won = False
             else:
                 self.player_won = False
-            self.player.end_combat()
+            self.player.end_combat(self.enemies, self.debug)
             self.end_combat()
             return False
 
@@ -90,7 +90,7 @@ class CombatRoom(Room):
 
             num_turns += 1
 
-        self.player.end_combat()
+        self.player.end_combat(self.debug)
         if self.debug:
             if self.player.health <= 0:
                 print("YOU LOSE")

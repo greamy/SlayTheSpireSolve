@@ -80,7 +80,7 @@ class SimpleBotPlayerController(PlayerController):
                     energy_left = player.energy - card.energy
                     enemy_dmg = sum([enemy.intent.get_damage(enemy, player) for enemy in enemies])
                     other_stance_card = sum([1 if c.stance is not None and c.stance != Player.Stance.WRATH and c.energy <= energy_left else 0 for c in playable_cards + player.deck.draw_pile[:5]]) > 0
-                    if other_stance_card and enemy_dmg <= player.health and enemy_dmg <= player.max_health * 0.4:
+                    if other_stance_card and enemy_dmg <= player.health and enemy_dmg <= player.start_health * 0.4:
                         return i, card
 
         # Rule: Play any attack card that is lethal for an enemy.

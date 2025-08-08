@@ -25,3 +25,9 @@ class PlayerController:
 
     def handle_map_event(self, pos, player, map_gen, cur_floor, avail_floors):
         pass
+
+    def end_combat(self, player, enemies, debug):
+        pass
+
+    def begin_combat(self, player, enemies, debug):
+        pass

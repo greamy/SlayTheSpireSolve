@@ -67,7 +67,8 @@ class Entity:
             # print("Triggering listeners!")
         for listener in self.listeners:
             if event_type in listener.event_types:
-                listener.notify(player, random.choice(enemies), enemies, debug)
+                enemy = random.choice(enemies) if len(enemies) > 0 else None
+                listener.notify(player, enemy, enemies, debug)
 
     def render(self, screen, font, text_size=20):
         health_text = font.render("HEALTH:" + str(self.health), True, "green")
