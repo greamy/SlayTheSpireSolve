@@ -118,7 +118,7 @@ class GameTest(unittest.TestCase):
     def test_simple_vs_random(self):
         simple_controller = SimpleBotPlayerController(delay=0)
         random_controller = RandomPlayerController(delay=0)
-        combat_type = "elite"
+        combat_type = "monster"
         number_of_combats = 1000
         history = self.run_many_games(simple_controller, combat_type, number_of_combats)
         random_hist = self.run_many_games(random_controller, combat_type, number_of_combats)
