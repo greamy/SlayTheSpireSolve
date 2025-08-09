@@ -32,6 +32,7 @@ class CombatRoom(Room):
         self.enemies = self.create_enemies(self.act, self.ascension)
         self.player.begin_combat(self.enemies, self.debug)
         self.player.start_turn(self.enemies, self.debug)
+        self.player.controller.begin_combat(self.player, self.enemies, self.debug)
         # return self.run()
 
     def create_enemies(self, act, ascension) -> list[Enemy]:

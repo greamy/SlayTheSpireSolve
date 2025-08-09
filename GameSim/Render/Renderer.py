@@ -72,7 +72,7 @@ class Renderer:
 
             self.screen.fill((0, 0, 0))
 
-            room_choice = map_gen.render(self.screen, self.screen_size, map_font, cur_floor, cur_idx)
+            room_choice = map_gen.render(self.screen, self.screen_size, map_font, cur_floor, cur_idx, self.render_type)
 
             if room_choice is not None:
                 self.running = False

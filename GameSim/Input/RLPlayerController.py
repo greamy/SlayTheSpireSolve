@@ -1,6 +1,9 @@
+import random
+
 import numpy as np
 
 from CombatSim.Actions.Card import Card
+from CombatSim.Actions.Library.Strike import Strike
 from CombatSim.Entities.Enemy import Enemy
 from GameSim.Input.Controller import PlayerController
 from GameSim.Input.PPO import PPOAgent
@@ -22,30 +25,71 @@ class RLPlayerController(PlayerController):
         self.prev_obs = None
         self.action_choice = None
         self.log_prob = None
+        self.value = None
 
-        self.agent = PPOAgent([(self.max_num_cards, self.max_num_enemies), 3], 100,
-                              512, learning_enabled=self.train)
+        self.agent = PPOAgent([(self.max_num_cards, self.max_num_enemies), 3], 11, 13,
+                              embedding_dim=256, learning_enabled=self.train)
+
+    def get_enum_value(self, stance):
+        stance_val = -1  # Default value for no stance
+        if stance is not None:
+            stance_val = stance.value
+        return stance_val
 
     def get_card_vector(self, card: Card) -> np.array:
         # if card is None:
         #     return np.zeros(11)
-        return np.array([card.card_type, card.energy, card.damage, card.attacks,
-                         card.block, card.stance, card.upgraded, card.draw, card.exhaust, card.innate, card.playable])
+
+        return np.array([
+            card.card_type.value,
+            card.energy,
+            card.damage,
+            card.attacks,
+            card.block,
+            self.get_enum_value(card.stance),  # Use the numerical value
+            int(card.upgraded),  # Cast boolean to int (0 or 1)
+            card.draw,
+            int(card.exhaust),
+            int(card.innate),
+            int(card.playable)
+        ], dtype=np.float32)
 
     def get_player_vector(self, player):
         # TODO: Include player status list
-        return np.array([player.start_health, player.health, player.block, player.block_modifier, player.block_multiplier,
-                         player.damage_dealt_modifier, player.damage_dealt_multiplier, player.damage_taken_multiplier,
-                         player.stance, player.energy, player.mantra])
+        return np.array([
+            player.start_health,
+            player.health,
+            player.block,
+            player.block_modifier,
+            player.block_multiplier,
+            player.damage_dealt_modifier,
+            player.damage_dealt_multiplier,
+            player.damage_taken_multiplier,
+            self.get_enum_value(player.stance),
+            player.energy,
+            player.mantra
+        ])
 
     def get_enemy_vector(self, enemy: Enemy):
         # if enemy is None:
         #     return np.zeros(13)
-        return np.array([enemy.start_health, enemy.health, enemy.block, enemy.block_modifier, enemy.block_multiplier,
-                         enemy.damage_dealt_modifier, enemy.damage_dealt_multiplier, enemy.damage_taken_multiplier, enemy.minion,
-                         enemy.intent.intent_type, enemy.intent.damage, enemy.intent.attacks, enemy.intent.block])
+        return np.array([
+            enemy.start_health,
+            enemy.health,
+            enemy.block,
+            enemy.block_modifier,
+            enemy.block_multiplier,
+            enemy.damage_dealt_modifier,
+            enemy.damage_dealt_multiplier,
+            enemy.damage_taken_multiplier,
+            int(enemy.minion),
+            self.get_enum_value(enemy.intent.intent_type),
+            enemy.intent.damage,
+            enemy.intent.attacks,
+            enemy.intent.block
+        ])
 
-    def get_combat_action_mask(self, player, enemies, playable, debug):
+    def get_battle_action_mask(self, player, enemies, playable):
         """
         Returns a numpy array of True/False values representing the valid actions.
         Args:
@@ -55,9 +99,21 @@ class RLPlayerController(PlayerController):
            debug: Debug flag for print statements.
         Returns:
           np.array: Array of True/False values representing the valid actions.
-         """
-        mask = np.array([np.pad([True for enemy in enemies], (0, self.max_num_enemies - len(enemies)))] for card in playable)
+        """
+        mask = np.zeros((self.max_num_cards, self.max_num_enemies), dtype=bool)
+        num_playable_cards = len(playable)
+        num_enemies = len(enemies)
+        if num_playable_cards > 0 and num_enemies > 0:
+            mask[:num_playable_cards, :num_enemies] = True
+
+        # 3. Flatten the 2D mask into a 1D vector of size 50.
+        return mask.flatten()
+
+    def get_card_build_action_mask(self, card_choices):
+        mask = np.zeros(3, dtype=bool)
+        mask[:len(card_choices)] = True
         return mask
+
     def get_battle_state(self, player, enemies, playable, debug) -> dict:
         """
         Get state dict that agent can use from CombatSim objects.
@@ -79,13 +135,13 @@ class RLPlayerController(PlayerController):
         state_dict = {
             "deck": deck,
             "player": self.get_player_vector(player),
-            "action_mask": np.array([]),
+            "action_mask": self.get_battle_action_mask(player, enemies, playable),
             "hand": hand,
             "enemies": np.array([self.get_enemy_vector(enemy) for enemy in enemies])
         }
         return state_dict
 
-    def choose_card(self, player, card_choices, debug):
+    def get_choose_card_state(self, player, card_choices, debug):
         deck_cards = player.deck.get_deck()
         deck = np.array([self.get_card_vector(card) for card in deck_cards])
         card_vectors = np.array([self.get_card_vector(c) for c in card_choices])
@@ -93,38 +149,60 @@ class RLPlayerController(PlayerController):
         state_dict = {
             "deck": deck,
             "player": self.get_player_vector(player),
+            "action_mask": self.get_card_build_action_mask(card_choices),
             "card_choices": card_vectors
         }
         return state_dict
 
     def get_target(self, player, enemies, playable, debug):
-        return self.action_choice % self.max_num_enemies
+        return self.action_choice % self.max_num_enemies, enemies[self.action_choice % self.max_num_enemies]
 
     def get_scry(self, player, enemies, cards, debug):
-        pass
+        if not self.wait_for_counter():
+            return None, None
+        to_discard = set()
+
+        for i in range(random.randint(0, len(cards))):
+            choice = random.randint(0, len(cards) - 1)
+            to_discard.add(choice)
+        to_discard = list(to_discard)
+        return to_discard
 
     def get_card_to_play(self, player, enemies, playable_cards, debug):
+        if not self.wait_for_counter():
+            return None, None
         state = self.get_battle_state(player, enemies, playable_cards, debug)
-        self.action_choice, self.log_prob = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
-                                                       log_prob=self.log_prob, reward=0, done=False, new_state=state)
+        self.action_choice, self.log_prob, self.value = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
+                                                       log_prob=self.log_prob, reward=0, done=False, new_state=state, value=self.value)
+        self.action_choice = self.action_choice.item()
 
         self.prev_obs = state
 
-        card_index = self.action_choice // self.max_num_enemies
+        card_index = (self.action_choice // self.max_num_enemies)-1
         return card_index, playable_cards[card_index]
 
-    def start_combat(self, player, enemies, debug):
-        state = self.get_battle_state(player, enemies, player.get_playable_cards(player.deck.hand), debug)
-        self.action_choice, self.log_prob = self.agent.choose_action(state)
+    def begin_combat(self, player, enemies, debug):
+        playable = player.get_playable_cards()
+        state = self.get_battle_state(player, enemies, playable, debug)
+        self.action_choice, self.log_prob, self.value = self.agent.choose_action(
+            state,
+            PPOAgent.GameStage.BATTLE,
+            self.get_battle_action_mask(player, enemies, playable)
+        )
 
         self.prev_obs = state
 
     def end_combat(self, player, enemies, debug):
-        state = self.get_battle_state(player, enemies, player.get_playable_cards(player.deck.hand), debug)
+        state = self.get_battle_state(player, enemies, player.get_playable_cards(), debug)
         reward = 0
         if player.health > 0:
             reward = 1
-        self.agent.step(self.prev_obs, self.action_choice, self.log_prob, reward, True, state)
+        self.agent.step(self.prev_obs, self.action_choice, self.log_prob, reward, True, state, self.value)
 
         self.prev_obs = state
 
+    def get_map_choice(self, player, map_gen, floor, room_idx):
+        if not self.wait_for_counter():
+            return None
+        avail_rooms = map_gen.get_avail_floors(floor, room_idx)
+        return map_gen.map[floor][random.choice(avail_rooms)]

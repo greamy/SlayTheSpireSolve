@@ -85,7 +85,6 @@ class Player(Entity):
                 num_innate += 1
 
         self.notify_listeners(Listener.Event.START_COMBAT, self, enemies, debug)
-        self.controller.begin_combat(self, enemies, debug)
 
     def end_combat(self, enemies, debug):
         self.controller.end_combat(self, enemies, debug)
@@ -100,7 +99,6 @@ class Player(Entity):
         if amount > self.block + self.health:
             self.final_stance = self.stance
         super().take_damage(amount)
-
 
     def start_turn(self, enemies, debug):
         super().start_turn(enemies, debug)
@@ -272,7 +270,6 @@ class Player(Entity):
         #     else:
         #         index += 1
         index_discarded = self.controller.get_scry(self, enemies, cards, debug)
-        print(index_discarded)
         if index_discarded is None:
             return None
         for i in index_discarded:

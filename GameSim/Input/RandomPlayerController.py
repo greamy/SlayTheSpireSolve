@@ -13,16 +13,14 @@ class RandomPlayerController(PlayerController):
         self.framerate = 60
 
     def get_target(self, player, enemies, playable, debug):
-        # self.counter += 1
-        # if self.counter % (self.delay * self.framerate) != 0:
-        #     return None, None
 
         self.counter = 0
         index = random.randint(0, len(enemies) - 1)
         return index, enemies[index]
 
     def get_scry(self, player, enemies, cards, debug):
-        time.sleep(self.delay)
+        if not self.wait_for_counter():
+            return None, None
         # list of length cards of boolean values
         to_discard = set()
 
@@ -33,8 +31,7 @@ class RandomPlayerController(PlayerController):
         return to_discard
 
     def get_card_to_play(self, player, enemies, playable_cards, debug):
-        _, ret = super().get_card_to_play(player, enemies, playable_cards, debug)
-        if ret is None:
+        if not self.wait_for_counter():
             return None, None
         if len(player.deck.hand) == 0:
             return None, None
@@ -49,11 +46,8 @@ class RandomPlayerController(PlayerController):
         return i, card
 
     def get_map_choice(self, player, map_gen, floor, room_idx):
-        self.counter += 1
-        if self.counter % (self.framerate * self.delay) != 0:
+        if not self.wait_for_counter():
             return None
-        
-        self.counter = 0
         avail_rooms = map_gen.get_avail_floors(floor, room_idx)
         return map_gen.map[floor][random.choice(avail_rooms)]
         
