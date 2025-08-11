@@ -11,7 +11,7 @@ from GameSim.Input.PPO import PPOAgent
 
 class RLPlayerController(PlayerController):
 
-    def __init__(self, delay=0, train=True):
+    def __init__(self, filepath, delay=0, train=True):
         super().__init__()
         self.delay = delay
         self.counter = 0
@@ -27,8 +27,11 @@ class RLPlayerController(PlayerController):
         self.log_prob = None
         self.value = None
 
+        self.final_healths = []
+        self.health = 0
+
         self.agent = PPOAgent([(self.max_num_cards, self.max_num_enemies), 3], 11, 13,
-                              embedding_dim=256, learning_enabled=self.train)
+                              embedding_dim=256, learning_enabled=self.train, filepath=filepath)
 
     def get_enum_value(self, stance):
         stance_val = -1  # Default value for no stance
@@ -40,7 +43,7 @@ class RLPlayerController(PlayerController):
         # if card is None:
         #     return np.zeros(11)
 
-        return np.array([
+        return np.array([ #
             card.card_type.value,
             card.energy,
             card.damage,
@@ -171,6 +174,8 @@ class RLPlayerController(PlayerController):
     def get_card_to_play(self, player, enemies, playable_cards, debug):
         if not self.wait_for_counter():
             return None, None
+        if player.health != self.health:
+            self.final_healths.append(self.health)
         state = self.get_battle_state(player, enemies, playable_cards, debug)
         self.action_choice, self.log_prob, self.value = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
                                                        log_prob=self.log_prob, reward=0, done=False, new_state=state, value=self.value)
@@ -179,6 +184,7 @@ class RLPlayerController(PlayerController):
         self.prev_obs = state
 
         card_index = (self.action_choice // self.max_num_enemies)-1
+        self.health = player.health
         return card_index, playable_cards[card_index]
 
     def begin_combat(self, player, enemies, debug):

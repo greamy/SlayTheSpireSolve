@@ -6,6 +6,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 
+from CombatSim.util import visualize_bot_history, visualize_embeddings
+
 
 class ActorCritic(nn.Module):
     """
@@ -52,6 +54,7 @@ class ActorCritic(nn.Module):
         else:
             raise ValueError(f"Unknown stage: {stage}")
 
+
         return action_logits, state_value.squeeze(-1)  # Squeeze to remove trailing dim
 
     def sample_action(self, embedded_state, stage, action_mask):
@@ -68,7 +71,8 @@ class ActorCritic(nn.Module):
 
         # Create categorical distribution
         dist = torch.distributions.Categorical(logits=masked_logits)
-
+        # print("action distribution:")
+        # print(dist.probs)
         # Sample action
         action = dist.sample()
 
@@ -120,8 +124,8 @@ class PPOAgent:
         BATTLE = 0
         CARD_BUILD = 1
 
-    def __init__(self, num_actions, card_feature_length, enemy_feature_length, embedding_dim=512, learning_enabled=True, lr=0.0005,
-                 gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.02, entropy_decay=0.99, learn_epochs=5):
+    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=512, learning_enabled=True, lr=0.0001,
+                 gamma=0.99, epsilon=0.1, value_coef=0.5, entropy_coef=0.0, entropy_decay=0.99, learn_epochs=5):
         # Hyperparameters
         self.gamma = gamma
         self.epsilon = epsilon
@@ -130,6 +134,8 @@ class PPOAgent:
         self.entropy_decay = entropy_decay
         self.learn_epochs = learn_epochs
         self.learning_enabled = learning_enabled
+
+        self.filepath = filepath
 
         # Device configuration
         # self.device = torch.device(
@@ -176,6 +182,9 @@ class PPOAgent:
         self.max_memory = 1_000_000
 
         self.learn_step_counter = 0
+
+        self.losses = []
+        self.rewards = []
 
     def remember(self, state, stage, action, reward, done, log_prob, value):
         """Store experience for multiple agents"""
@@ -348,7 +357,6 @@ class PPOAgent:
         return advantages
 
     def _learn(self):
-        print("learning!")
         # 1. Retrieve all data from memory for this learning phase
         states_arr = np.array(self.memory['states'])
         actions_arr = np.array(self.memory['actions'])
@@ -441,9 +449,27 @@ class PPOAgent:
 
         self.learn_step_counter += 1
 
-        if self.learn_step_counter % 5 == 0:
+        if self.learn_step_counter % 50 == 0:
             avg_loss = (sum(losses) / len(losses)).item()
+            avg_reward = (sum(rewards_arr) / len(rewards_arr))
             print("Average Loss at Episode " + str(self.learn_step_counter) + ": " + str(avg_loss))
+            print("Average Reward at Episode " + str(self.learn_step_counter) + ": " + str(avg_reward))
+            print(f"Current paramters: entropy_coef={self.entropy_coef} ")
+            self.losses.append(avg_loss)
+            self.rewards.append(avg_reward)
+
+            if self.learn_step_counter % 250 == 0:
+                self.graph_history(self.learn_step_counter)
+
+    def graph_history(self, episode):
+        visualize_bot_history(self.losses, self.rewards, self.filepath + f"rew_loss_{episode}.png")
+
+    def graph_embeddings(self, card_names, card_vectors):
+        self.card_embedding.eval()
+        card_vectors = torch.tensor(card_vectors).to(self.device)
+        embeddings = self.card_embedding(card_vectors).detach().numpy()
+        visualize_embeddings(card_names, embeddings)
+        self.card_embedding.train()
 
     def _compute_log_prob(self, states, stages, actions):
         """Compute log probabilities and entropy for an agent"""
@@ -550,5 +576,5 @@ class PPOAgent:
         """Load all model weights"""
         checkpoint = torch.load(filepath)
 
-        self.actor_critic.load_state_dict(checkpoint['actor'])
+        self.actor_critic.load_state_dict(checkpoint['actor_critic'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])

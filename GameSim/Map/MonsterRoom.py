@@ -18,7 +18,7 @@ class MonsterRoom(CombatRoom):
 
 
     def create_enemies(self, act, ascension) -> list[Enemy]:
-        return [AcidSlimeSmall(ascension, act)]
+        return [JawWorm(ascension, act)]
 
     def render_map(self, screen, font, x, y, counter, tile_size, available):
         super().render_map(screen, font, x, y, counter, tile_size, available)
