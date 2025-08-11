@@ -1,4 +1,7 @@
 import matplotlib
+
+from GameSim.Render.Renderer import Renderer
+
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
@@ -7,13 +10,13 @@ from CombatSim.util import run_many_games
 
 
 def main():
-    episodes = 100_000
+    episodes = 10_000
     rl_controller = RLPlayerController(delay=0, train=True, filepath="artifacts/images/model_results/first_fight/")
-    rl_controller.agent.load_models(f"artifacts/models/first_fight/ppo_agent_{episodes}")
+    rl_controller.agent.load_models(f"artifacts/models/first_fight/ppo_agent_{10_000}.pt")
     run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
-                   "monster", episodes)
+                   Renderer.RenderType.NONE, "monster", episodes)
 
-    rl_controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_{episodes}")
+    rl_controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_{episodes}.pt")
 
     plt.plot(rl_controller.final_healths, color='tab:blue', marker='x', linestyle='-', label='Average Reward')
     plt.xlabel('Learning Period', fontsize=12)

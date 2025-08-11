@@ -29,6 +29,7 @@ class RLPlayerController(PlayerController):
 
         self.final_healths = []
         self.health = 0
+        self.enemy_health = 0
 
         self.agent = PPOAgent([(self.max_num_cards, self.max_num_enemies), 3], 11, 13,
                               embedding_dim=256, learning_enabled=self.train, filepath=filepath)
@@ -158,7 +159,7 @@ class RLPlayerController(PlayerController):
         return state_dict
 
     def get_target(self, player, enemies, playable, debug):
-        return self.action_choice % self.max_num_enemies, enemies[self.action_choice % self.max_num_enemies]
+        return self.action_choice % len(enemies), enemies[self.action_choice % len(enemies)]
 
     def get_scry(self, player, enemies, cards, debug):
         if not self.wait_for_counter():
@@ -174,26 +175,30 @@ class RLPlayerController(PlayerController):
     def get_card_to_play(self, player, enemies, playable_cards, debug):
         if not self.wait_for_counter():
             return None, None
-        if player.health != self.health:
-            self.final_healths.append(self.health)
+        health_lost = self.health - player.health
+        damage_done = self.enemy_health - sum([enemy.health for enemy in enemies])
+
+        reward = -0.01 # small negative each card play to encourage efficient play
+        reward += -0.1 * health_lost # larger negative for taking damage
+        reward += .05 * damage_done # positive reward for doing damage
+
         state = self.get_battle_state(player, enemies, playable_cards, debug)
         self.action_choice, self.log_prob, self.value = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
-                                                       log_prob=self.log_prob, reward=0, done=False, new_state=state, value=self.value)
+                                                       log_prob=self.log_prob, reward=reward, done=False, new_state=state, value=self.value)
         self.action_choice = self.action_choice.item()
 
         self.prev_obs = state
 
-        card_index = (self.action_choice // self.max_num_enemies)-1
+        card_index = (self.action_choice // len(enemies))
         self.health = player.health
+        self.enemy_health = sum([enemy.health for enemy in enemies])
         return card_index, playable_cards[card_index]
 
     def begin_combat(self, player, enemies, debug):
         playable = player.get_playable_cards()
         state = self.get_battle_state(player, enemies, playable, debug)
         self.action_choice, self.log_prob, self.value = self.agent.choose_action(
-            state,
-            PPOAgent.GameStage.BATTLE,
-            self.get_battle_action_mask(player, enemies, playable)
+            self.agent._convert_state_to_tensors(state)
         )
 
         self.prev_obs = state

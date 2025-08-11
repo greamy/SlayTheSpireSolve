@@ -5,6 +5,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.manifold import TSNE
 
+from CombatSim.Actions.Library.Defend import Defend
+from CombatSim.Actions.Library.Strike import Strike
 from CombatSim.Entities.Dungeon.AcidSlimeSmall import AcidSlimeSmall
 from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
@@ -227,10 +229,11 @@ def visualize_embeddings(card_names, embeddings, perplexity=5, random_state=42):
     ax.set_ylabel('t-SNE Dimension 2', fontsize=12)
     plt.grid(True)
     plt.savefig("artifacts/images/model_results/first_fight/embed_vis.png")
+    plt.clf()
 
 
-def run_many_games(controller, dungeon_path, library_path, combat_type="monster", num_combats=5000):
-    renderer = Renderer(render_type=Renderer.RenderType.NONE) # this is one of the favoorite things ive implemented
+def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.RenderType.NONE, combat_type="monster", num_combats=5000):
+    renderer = Renderer(render_type=render_type)
 
     possible_enemies = Enemy.get_implemented_enemies(dungeon_path)
     # print(possible_enemies)
@@ -258,6 +261,7 @@ def run_many_games(controller, dungeon_path, library_path, combat_type="monster"
             try:
                 enemy_ = getattr(possible_enemies[enemy_choice], enemy_choice)
                 room.enemies = [enemy_(ascension=20, act=1)]
+                room.enemies[0].health = 1
                 enemies.append(enemy_choice)
             except AttributeError:
                 room.enemies = [AcidSlimeSmall(20, 1)]
@@ -269,6 +273,9 @@ def run_many_games(controller, dungeon_path, library_path, combat_type="monster"
         if combat_type == "monster":
             room.player.begin_combat(room.enemies, False)
             room.player.start_turn(room.enemies, False)
+            room.player.deck.hand.clear()
+            cards = [Defend(room.player), Defend(room.player), Defend(room.player), Defend(room.player), Strike(room.player)]
+            room.player.deck.hand.extend(cards)
             room.player.controller.begin_combat(room.player, room.enemies, False)
             enemy_choice = enemies[i]
         else:
@@ -292,7 +299,8 @@ def run_many_games(controller, dungeon_path, library_path, combat_type="monster"
                 enemy_combats[enemy_choice] = [0, 1]
 
         if i % 2500 == 0: # every 100 episodes we output embedding visualizations
-            print(f"Episode {i} complete")
+            print(f"Episode {i+1} complete")
+            print(f"Win rate: {num_wins / (i+1)}")
             room.player.deck.reshuffle()
             deck = room.player.deck.get_deck()
             card_names = [c.name for c in deck]
@@ -300,7 +308,7 @@ def run_many_games(controller, dungeon_path, library_path, combat_type="monster"
 
             controller.agent.graph_embeddings(card_names, card_vectors)
 
-            controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_retrain_{i}")
+            controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent.pt")
 
     print(f"Win rate: {num_wins / num_combats}")
     for key in sorted(enemy_combats.keys()):
