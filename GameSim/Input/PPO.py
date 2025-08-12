@@ -238,7 +238,7 @@ class PPOAgent:
         CARD_BUILD = 1
 
     def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=512, learning_enabled=True, lr=0.0001,
-                 gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.01, entropy_decay=0.99, learn_epochs=5):
+                 gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
         # Hyperparameters
         self.gamma = gamma
         self.epsilon = epsilon
@@ -269,8 +269,8 @@ class PPOAgent:
 
         # Initialize actors and critics for each agent
         #
-        self.state_dim = self.card_embed_dim + self.card_embed_dim
-        self.state_dim += self.enemy_embed_dim + 11 # 11 Player features
+        self.state_dim = self.card_embed_dim + 11 # 11 Player features
+        # self.state_dim += self.enemy_embed_dim + 11
         self.actor_critic = ActorCritic(self.state_dim, self.card_embed_dim, self.enemy_embed_dim, self.max_card_choices).to(self.device)
 
         self.old_network = ActorCritic(self.state_dim, self.card_embed_dim, self.enemy_embed_dim, self.max_card_choices).to(self.device)
@@ -393,7 +393,7 @@ class PPOAgent:
                 hand_embed = torch.mean(hand_embeddings, dim=0)
 
         # 3. Concatenate the single deck embedding vector with the other state features.
-        return (torch.cat((deck_embed, player, hand_embed, enemies_embed)), stage,
+        return (torch.cat((deck_embed, player)), stage,
                 hand_embeddings, enemies_embeddings, choices_embed)
 
     def choose_action(self, state_tensors):

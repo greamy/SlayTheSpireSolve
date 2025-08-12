@@ -178,9 +178,9 @@ class RLPlayerController(PlayerController):
         health_lost = self.health - player.health
         damage_done = self.enemy_health - sum([enemy.health for enemy in enemies])
 
-        reward = -0.01 # small negative each card play to encourage efficient play
-        reward += -0.1 * health_lost # larger negative for taking damage
-        reward += .05 * damage_done # positive reward for doing damage
+        reward = -0.1 # small negative each card play to encourage efficient play
+        # reward += -0.1 * health_lost # larger negative for taking damage
+        # reward += .05 * damage_done # positive reward for doing damage
 
         state = self.get_battle_state(player, enemies, playable_cards, debug)
         self.action_choice, self.log_prob, self.value = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
@@ -191,6 +191,7 @@ class RLPlayerController(PlayerController):
         card_index = (self.action_choice // len(enemies))
         self.health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
+        print(playable_cards[card_index])
         return card_index, playable_cards[card_index]
 
     def begin_combat(self, player, enemies, debug):
