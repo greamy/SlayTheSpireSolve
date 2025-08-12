@@ -85,8 +85,7 @@ class ActorCritic(nn.Module):
     It takes an aggregated state summary for context, and then combines that
     context with individual card and enemy features to score each possible action.
     """
-    def __init__(self, state_summary_dim, card_embed_dim, enemy_feature_dim,
-                 total_cb_actions):
+    def __init__(self, state_summary_dim, card_embed_dim, enemy_feature_dim, total_cb_actions):
         super().__init__()
         self.card_embed_dim = card_embed_dim
         self.enemy_feature_dim = enemy_feature_dim
@@ -178,13 +177,13 @@ class ActorCritic(nn.Module):
 
         return action_logits, state_value
 
-    def sample_action(self, stage, state_summary, action_mask, hand_card_embeddings=None,
-                      enemy_features=None, card_choices_embeddings=None):
-        action_logits, value = self.forward(stage, state_summary, hand_card_embeddings, enemy_features, card_choices_embeddings)
-        masked_logits = action_logits.clone()  # Use clone to avoid in-place modification issues
-        masked_logits[~action_mask] = -1e9
 
-        dist = torch.distributions.Categorical(logits=masked_logits)
+    def sample_action(self, stage, state_summary, hand_card_embeddings=None,
+                      enemy_features=None, card_choices_embeddings=None):
+
+        action_logits, value = self.forward(stage, state_summary, hand_card_embeddings, enemy_features, card_choices_embeddings)
+
+        dist = torch.distributions.Categorical(logits=action_logits)
         # print("action distribution:")
         # print(dist.probs)
         # Sample action
@@ -193,7 +192,7 @@ class ActorCritic(nn.Module):
         # Compute log probability of the sampled action
         log_prob = dist.log_prob(action).unsqueeze(-1)
 
-        return action, log_prob, value
+        return action.item(), log_prob, value
 
 
 class CardEncoder(nn.Module):
@@ -269,7 +268,8 @@ class PPOAgent:
         self.max_card_choices = num_actions[1]
 
         # Initialize actors and critics for each agent
-        self.state_dim = self.card_embed_dim + (self.card_embed_dim) + (self.card_embed_dim * self.max_card_choices)
+        #
+        self.state_dim = self.card_embed_dim + self.card_embed_dim
         self.state_dim += self.enemy_embed_dim + 11 # 11 Player features
         self.actor_critic = ActorCritic(self.state_dim, self.card_embed_dim, self.enemy_embed_dim, self.max_card_choices).to(self.device)
 
@@ -287,7 +287,6 @@ class PPOAgent:
             'hand_embeds': [],
             'enemy_features': [],
             'choice_embeds': [],
-            'action_masks': [],
             'actions': [],
             'rewards': [],
             'dones': [],
@@ -304,14 +303,13 @@ class PPOAgent:
         self.losses = []
         self.rewards = []
 
-    def remember(self, stage, state, hand_embed, enemy_features, choice_embed, action_mask, action, reward, done, log_prob, value):
+    def remember(self, stage, state, hand_embed, enemy_features, choice_embed, action, reward, done, log_prob, value):
         """Store experience for multiple agents"""
 
         self.memory['states'].append(state.detach().cpu().numpy())
         self.memory['hand_embeds'].append(hand_embed.detach().cpu().numpy())
-        self.memory['choice_embeds'].append(choice_embed.detach.cpu.numpy())
+        self.memory['choice_embeds'].append(choice_embed.detach().cpu().numpy())
         self.memory['enemy_features'].append(enemy_features)
-        self.memory['action_masks'].append(action_mask)
 
         # For simple objects, store them directly
         self.memory['stages'].append(stage.value)
@@ -382,11 +380,10 @@ class PPOAgent:
             num_cards_in_hand = hand_card_features.shape[0]
 
             if enemies_embeddings.shape[0] == 0:
-                enemies_embed = torch.zeros(self.max_enemies * self.enemy_embed_dim, device=self.device)
+                enemies_embed = torch.zeros(self.enemy_embed_dim, device=self.device)
                 enemies_embeddings = None
             else:
-                enemies_embed = torch.mean(enemies_embeddings)
-
+                enemies_embed = torch.mean(enemies_embeddings, dim=0)
             if num_cards_in_hand == 0:
                 # If hand is empty, create a zero tensor for the full hand embedding size
                 hand_embed = torch.zeros(self.max_cards * self.card_embed_dim, device=self.device)
@@ -396,18 +393,26 @@ class PPOAgent:
                 hand_embed = torch.mean(hand_embeddings, dim=0)
 
         # 3. Concatenate the single deck embedding vector with the other state features.
-        return (torch.cat((deck_embed, player, hand_embed, enemies_embed)), state['action_mask'], stage,
+        return (torch.cat((deck_embed, player, hand_embed, enemies_embed)), stage,
                 hand_embeddings, enemies_embeddings, choices_embed)
 
     def choose_action(self, state_tensors):
         """Choose actions for agent"""
         # if isinstance(state, dict):
         # state = self._convert_state_to_tensors(state)
-        state, action_mask, stage, hand_embedding, enemy_embedding, card_choices = self.embed_state(state_tensors)
+        state, stage, hand_embedding, enemy_embedding, card_choices = self.embed_state(state_tensors)
+
+        state = state.unsqueeze(0)
+        if hand_embedding is not None:
+            hand_embedding = hand_embedding.unsqueeze(0)
+        if enemy_embedding is not None:
+            enemy_embedding = enemy_embedding.unsqueeze(0)
+        if card_choices is not None:
+            choice_embeds = card_choices.unsqueeze(0)
 
         self.actor_critic.eval()
         with torch.no_grad():
-            agent_action, agent_log_prob, value = self.actor_critic.sample_action(state, stage, action_mask, hand_embedding, enemy_embedding)
+            agent_action, agent_log_prob, value = self.actor_critic.sample_action(stage, state, hand_embedding, enemy_embedding)
 
         self.actor_critic.train()
 
@@ -466,7 +471,7 @@ class PPOAgent:
     def _learn(self):
         # 1. Retrieve all data from memory for this learning phase
         states_arr = np.array(self.memory['states'])
-        hands_arr = np.array(self.memory['hand_embeds'])
+        # hands_arr = np.array(self.memory['hand_embeds'])
         enemies_arr = np.array(self.memory['enemy_features'])
         card_choice_arr = np.array(self.memory['choice_embeds'])
         actions_arr = np.array(self.memory['actions'])
@@ -505,7 +510,20 @@ class PPOAgent:
                 batch_indices = indices[start_batch:end_batch]
 
                 states = torch.tensor(states_arr[batch_indices]).to(self.device)
-                hands = torch.tensor(hands_arr[batch_indices]).to(self.device)
+                max_cards_in_batch = 0
+                for i in batch_indices:
+                    if self.memory['hand_embeds'][i] is not None:
+                        max_cards_in_batch = max(max_cards_in_batch, self.memory['hand_embeds'][i].shape[0])
+
+                # 2. Create the padded batch tensor
+                hand_batch = torch.zeros(self.batch_size, max_cards_in_batch, self.card_embed_dim)
+                for i, mem_idx in enumerate(batch_indices):
+                    hand_embed = self.memory['hand_embeds'][mem_idx]
+                    if hand_embed is not None:
+                        num_cards = hand_embed.shape[0]
+                        hand_batch[i, :num_cards, :] = torch.from_numpy(hand_embed)
+
+                hands = hand_batch.to(self.device)
                 enemies = torch.tensor(enemies_arr[batch_indices]).to(self.device)
                 card_choices = torch.tensor(card_choice_arr[batch_indices]).to(self.device)
                 actions = torch.tensor(actions_arr[batch_indices], dtype=torch.long).to(self.device)
@@ -528,7 +546,12 @@ class PPOAgent:
                 policy_loss = -torch.min(surr1, surr2).mean()
 
                 # Value Loss
-                value_loss = F.mse_loss(values, value_targets)
+                # Policy - based -> predicting a policy directly
+                #   PPO -> uses a value network to predict value of states (not state-action pairs). Uses these value predictions to learn better policies.
+                #       Our PPO netowrk -> both the actor and the critic returns 'values'. State, action -> Actor, State -> Critic
+                # value based -> predicting values of State action pairs and taking actions based on those values
+
+                value_loss = F.mse_loss(values.squeeze(), value_targets)
 
                 # Entropy loss
                 entropy_loss = -new_entropy.mean()
@@ -551,6 +574,7 @@ class PPOAgent:
                 #     torch.nn.utils.clip_grad_norm_(self.actors[agent_idx].parameters(), max_norm=0.5)
 
                 self.optimizer.step()
+                self.learn_step_counter += 1
 
         self.old_network.load_state_dict(self.actor_critic.state_dict())
 
@@ -559,8 +583,6 @@ class PPOAgent:
         # Clear memory after learning
         for key in self.memory:
             self.memory[key].clear()
-
-        self.learn_step_counter += 1
 
         if self.learn_step_counter % 50 == 0:
             avg_loss = (sum(losses) / len(losses)).item()
@@ -686,20 +708,25 @@ class PPOAgent:
         new_state_tensor = self._convert_state_to_tensors(new_state)
         prev_state_tensor = self._convert_state_to_tensors(prev_state)
 
-        embedded_prev_state, prev_action_mask, prev_stage, hand_embeds, enemy_feat, card_choices = self.embed_state(prev_state_tensor)
+        embedded_prev_state, prev_stage, hand_embeds, enemy_feat, card_choices = self.embed_state(prev_state_tensor)
         # embedded_new_state, action_mask, stage = self.embed_state(new_state_tensor)
         # Store experiences
         if self.learning_enabled:
-            self.remember(prev_stage, embedded_prev_state, hand_embeds, enemy_feat, card_choices, prev_action_mask, action_taken, reward, done, log_prob, value)
+            self.remember(prev_stage, embedded_prev_state, hand_embeds, enemy_feat, card_choices, action_taken, reward, done, log_prob, value)
 
         # Sample actions
-        action, new_log_prob, value = self.choose_action(new_state_tensor)
+        if not done:
+            action, new_log_prob, value = self.choose_action(new_state_tensor)
+        else:
+            action = None
+            new_log_prob = None
+            value = None
 
         # Learn if enough experiences are collected
         if self.learning_enabled and len(self.memory['states']) >= self.learn_size:
             self._learn()
 
-        return action, log_prob, value
+        return action, new_log_prob, value
 
     def save_models(self, filepath):
         """Save all model weights"""

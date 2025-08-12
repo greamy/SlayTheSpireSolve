@@ -185,7 +185,6 @@ class RLPlayerController(PlayerController):
         state = self.get_battle_state(player, enemies, playable_cards, debug)
         self.action_choice, self.log_prob, self.value = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
                                                        log_prob=self.log_prob, reward=reward, done=False, new_state=state, value=self.value)
-        self.action_choice = self.action_choice.item()
 
         self.prev_obs = state
 
@@ -205,9 +204,10 @@ class RLPlayerController(PlayerController):
 
     def end_combat(self, player, enemies, debug):
         state = self.get_battle_state(player, enemies, player.get_playable_cards(), debug)
-        reward = 0
         if player.health > 0:
             reward = 1
+        else:
+            reward = -1
         self.agent.step(self.prev_obs, self.action_choice, self.log_prob, reward, True, state, self.value)
 
         self.prev_obs = state
