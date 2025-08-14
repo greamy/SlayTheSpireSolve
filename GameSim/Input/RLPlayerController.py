@@ -1,6 +1,8 @@
 import random
 
 import numpy as np
+from transformers import AutoTokenizer, AutoModel
+import torch
 
 from CombatSim.Actions.Card import Card
 from CombatSim.Actions.Library.Strike import Strike
@@ -20,6 +22,8 @@ class RLPlayerController(PlayerController):
         self.max_num_enemies = 5
         self.max_num_cards = 10
 
+        self.card_cache = []
+
         self.train = train
 
         self.prev_obs = None
@@ -31,8 +35,11 @@ class RLPlayerController(PlayerController):
         self.health = 0
         self.enemy_health = 0
 
-        self.agent = PPOAgent([(self.max_num_cards, self.max_num_enemies), 3], 11, 13,
-                              embedding_dim=256, learning_enabled=self.train, filepath=filepath)
+        self.tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+        self.text_model = AutoModel.from_pretrained("distilbert-base-uncased")
+
+        self.agent = PPOAgent([(self.max_num_cards, self.max_num_enemies), 3], 779, 13,
+                              learning_enabled=self.train, filepath=filepath)
 
     def get_enum_value(self, stance):
         stance_val = -1  # Default value for no stance
@@ -44,7 +51,7 @@ class RLPlayerController(PlayerController):
         # if card is None:
         #     return np.zeros(11)
 
-        return np.array([ #
+        manual_vector = np.array([ #
             card.card_type.value,
             card.energy,
             card.damage,
@@ -57,6 +64,20 @@ class RLPlayerController(PlayerController):
             int(card.innate),
             int(card.playable)
         ], dtype=np.float32)
+
+        if card not in self.card_cache:
+            inputs = self.tokenizer(card.description, return_tensors="pt", padding=True, truncation=True)
+            with torch.no_grad():
+                outputs = self.text_model(**inputs)
+            # Use the [CLS] token's embedding (the first token)
+            text_embedding = outputs.last_hidden_state[0, 0, :].cpu().numpy()
+
+            card.set_text_embedding(text_embedding)
+            self.card_cache.append(card)
+
+        # 3. Concatenate them into a single, richer vector
+        embedding = np.concatenate((manual_vector, card.text_embedding))
+        return embedding
 
     def get_player_vector(self, player):
         # TODO: Include player status list
@@ -159,7 +180,7 @@ class RLPlayerController(PlayerController):
         return state_dict
 
     def get_target(self, player, enemies, playable, debug):
-        return self.action_choice % len(enemies), enemies[self.action_choice % len(enemies)]
+        return self.action_choice % self.max_num_enemies, enemies[self.action_choice % self.max_num_enemies]
 
     def get_scry(self, player, enemies, cards, debug):
         if not self.wait_for_counter():
@@ -179,8 +200,8 @@ class RLPlayerController(PlayerController):
         damage_done = self.enemy_health - sum([enemy.health for enemy in enemies])
 
         reward = -0.1 # small negative each card play to encourage efficient play
-        # reward += -0.1 * health_lost # larger negative for taking damage
-        # reward += .05 * damage_done # positive reward for doing damage
+        reward += -0.2 * health_lost # larger negative for taking damage
+        reward += 0.1 * damage_done # positive reward for doing damage
 
         state = self.get_battle_state(player, enemies, playable_cards, debug)
         self.action_choice, self.log_prob, self.value = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
@@ -188,10 +209,10 @@ class RLPlayerController(PlayerController):
 
         self.prev_obs = state
 
-        card_index = (self.action_choice // len(enemies))
+        card_index = (self.action_choice // self.max_num_enemies)
         self.health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
-        print(playable_cards[card_index])
+        # print(playable_cards[card_index])
         return card_index, playable_cards[card_index]
 
     def begin_combat(self, player, enemies, debug):
@@ -212,6 +233,7 @@ class RLPlayerController(PlayerController):
         self.agent.step(self.prev_obs, self.action_choice, self.log_prob, reward, True, state, self.value)
 
         self.prev_obs = state
+        self.card_cache = []
 
     def get_map_choice(self, player, map_gen, floor, room_idx):
         if not self.wait_for_counter():

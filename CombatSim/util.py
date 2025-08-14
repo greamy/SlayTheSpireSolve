@@ -14,6 +14,7 @@ from CombatSim.Items.Relics.DisplayCase.PureWater import PureWater
 from GameSim.Input.RandomPlayerController import RandomPlayerController
 from GameSim.Map.EliteRoom import EliteRoom
 from GameSim.Map.MonsterRoom import MonsterRoom
+from GameSim.Map.NewCombatRoom import NewCombatRoom
 from GameSim.Render.Renderer import Renderer
 
 
@@ -261,7 +262,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
             try:
                 enemy_ = getattr(possible_enemies[enemy_choice], enemy_choice)
                 room.enemies = [enemy_(ascension=20, act=1)]
-                room.enemies[0].health = 1
+                # room.enemies[0].health = 1
                 enemies.append(enemy_choice)
             except AttributeError:
                 room.enemies = [AcidSlimeSmall(20, 1)]
@@ -273,14 +274,17 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
         if combat_type == "monster":
             room.player.begin_combat(room.enemies, False)
             room.player.start_turn(room.enemies, False)
-            room.player.deck.hand.clear()
-            cards = [Defend(room.player), Defend(room.player), Defend(room.player), Defend(room.player), Strike(room.player)]
-            room.player.deck.hand.extend(cards)
+            # room.player.deck.hand.clear()
+            # cards = [Defend(room.player), Defend(room.player), Defend(room.player), Defend(room.player), Strike(room.player)]
+            # room.player.deck.hand.extend(cards)
             room.player.controller.begin_combat(room.player, room.enemies, False)
             enemy_choice = enemies[i]
         else:
             room.start()
             enemy_choice = room.player.last_elite
+
+        new_combat_room = NewCombatRoom(room.player, 0, 0, [], [], 1, 20)
+        renderer.render_room(new_combat_room)
 
         # print(f"*********************** Fighting {enemy_choice}! {i}/{num_combats} ************************")
         renderer.render_room(room)
@@ -299,7 +303,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
                 enemy_combats[enemy_choice] = [0, 1]
 
         if i % 500 == 0: # every 100 episodes we output embedding visualizations
-            print(f"Episode {i+1} complete")
+            print(f"Combat {i+1} complete")
             print(f"Win rate: {num_wins / (i+1)}")
             room.player.deck.reshuffle()
             deck = room.player.deck.get_deck()

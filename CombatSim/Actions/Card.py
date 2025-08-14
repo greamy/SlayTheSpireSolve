@@ -42,6 +42,8 @@ class Card(Playable):
         self.width = 125
         self.height = 150
 
+        self.text_embedding = None
+
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
         if debug:
@@ -62,6 +64,9 @@ class Card(Playable):
 
     def is_attack(self):
         return self.card_type == self.Type.ATTACK
+
+    def set_text_embedding(self, embedding):
+        self.text_embedding = embedding
 
     def render(self, screen, font, pos, y=None):
         if y is None:
