@@ -267,7 +267,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
             except AttributeError:
                 room.enemies = [AcidSlimeSmall(20, 1)]
                 enemies.append("AcidSlimeSmall")
-    num_wins = 0
+    wins = []
     enemy_combats = {}
 
     for i, room in enumerate(rooms):
@@ -290,13 +290,14 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
         renderer.render_room(room)
 
         if room.player.is_alive():
-            num_wins += 1
+            wins.append(True)
             if enemy_choice in enemy_combats.keys():
                 enemy_combats[enemy_choice][0] += 1
                 enemy_combats[enemy_choice][1] += 1
             else:
                 enemy_combats[enemy_choice] = [1, 1]
         else:
+            wins.append(False)
             if enemy_choice in enemy_combats.keys():
                 enemy_combats[enemy_choice][1] += 1
             else:
@@ -304,7 +305,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
 
         if i % 500 == 0: # every 100 episodes we output embedding visualizations
             print(f"Combat {i+1} complete")
-            print(f"Win rate: {num_wins / (i+1)}")
+            print(f"Win rate: {sum(wins[i-500:]) / 500}")
             room.player.deck.reshuffle()
             deck = room.player.deck.get_deck()
             card_names = [c.name for c in deck]
@@ -314,7 +315,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
 
             controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent.pt")
 
-    print(f"Win rate: {num_wins / num_combats}")
+    print(f"Win rate: {sum(wins) / num_combats}")
     for key in sorted(enemy_combats.keys()):
         print(f"{key}: {enemy_combats[key]}")
     return enemy_combats

@@ -104,6 +104,7 @@ class Player(Entity):
         super().start_turn(enemies, debug)
         self.energy = self.max_energy
         self.draw_cards(self.draw_amount, enemies, debug)
+        self.controller.start_turn(self, enemies)
         self.notify_listeners(Listener.Event.START_TURN, self, enemies, debug)
 
     def do_next_action(self, enemies, debug):

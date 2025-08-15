@@ -49,6 +49,7 @@ class CombatRoom(Room):
         if self.current_turn == self.PLAYER_TURN:
             turn_over = self.player.do_next_action(self.enemies, self.debug)
             if turn_over:
+                self.player.end_turn(self.enemies, self.debug)
                 self.current_turn = self.ENEMY_TURN
 
         elif self.current_turn == self.ENEMY_TURN:

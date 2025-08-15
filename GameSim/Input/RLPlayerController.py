@@ -21,6 +21,7 @@ class RLPlayerController(PlayerController):
 
         self.max_num_enemies = 5
         self.max_num_cards = 10
+        self.card_vector_length = 779
 
         self.card_cache = []
 
@@ -30,7 +31,9 @@ class RLPlayerController(PlayerController):
         self.action_choice = None
         self.log_prob = None
         self.value = None
+        self.reward = 0
 
+        self.turn_stable_hand = []
         self.final_healths = []
         self.health = 0
         self.enemy_health = 0
@@ -38,7 +41,10 @@ class RLPlayerController(PlayerController):
         self.tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
         self.text_model = AutoModel.from_pretrained("distilbert-base-uncased")
 
-        self.agent = PPOAgent([(self.max_num_cards, self.max_num_enemies), 3], 779, 13,
+        self.action_space = {"BT": [self.max_num_cards, self.max_num_enemies, 1], "CB": 3}
+        self.num_bt_actions = (self.max_num_cards * self.max_num_enemies) + 1
+
+        self.agent = PPOAgent(self.action_space, self.card_vector_length, 13,
                               learning_enabled=self.train, filepath=filepath)
 
     def get_enum_value(self, stance):
@@ -48,8 +54,9 @@ class RLPlayerController(PlayerController):
         return stance_val
 
     def get_card_vector(self, card: Card) -> np.array:
-        # if card is None:
-        #     return np.zeros(11)
+        if card is None:
+            # Return a zero vector with the combined length of the manual vector and the text embedding.
+            return np.zeros(self.card_vector_length, dtype=np.float32)
 
         manual_vector = np.array([ #
             card.card_type.value,
@@ -126,13 +133,22 @@ class RLPlayerController(PlayerController):
           np.array: Array of True/False values representing the valid actions.
         """
         mask = np.zeros((self.max_num_cards, self.max_num_enemies), dtype=bool)
-        num_playable_cards = len(playable)
+        playable_set = set(playable)
         num_enemies = len(enemies)
-        if num_playable_cards > 0 and num_enemies > 0:
-            mask[:num_playable_cards, :num_enemies] = True
 
-        # 3. Flatten the 2D mask into a 1D vector of size 50.
-        return mask.flatten()
+        if num_enemies == 0:
+            card_mask = mask.flatten()
+            return np.append(card_mask, True)
+
+        for i, (card, is_still_in_hand) in enumerate(self.turn_stable_hand):
+            # A slot is playable if the card is still in our hand AND is in the game's current list of playable cards.
+            if is_still_in_hand and card in playable_set:
+                mask[i, :num_enemies] = True
+
+        card_mask = mask.flatten()
+        full_mask = np.append(card_mask, True)
+
+        return full_mask
 
     def get_card_build_action_mask(self, card_choices):
         mask = np.zeros(3, dtype=bool)
@@ -155,7 +171,7 @@ class RLPlayerController(PlayerController):
 
         deck_cards = player.deck.get_deck()
         deck = np.array([self.get_card_vector(card) for card in deck_cards])
-        hand = np.array([self.get_card_vector(card) for card in playable])
+        hand = np.array([self.get_card_vector(card) if in_hand else self.get_card_vector(None) for card, in_hand in self.turn_stable_hand])
 
         state_dict = {
             "deck": deck,
@@ -196,26 +212,58 @@ class RLPlayerController(PlayerController):
     def get_card_to_play(self, player, enemies, playable_cards, debug):
         if not self.wait_for_counter():
             return None, None
-        health_lost = self.health - player.health
-        damage_done = self.enemy_health - sum([enemy.health for enemy in enemies])
+        if len(self.turn_stable_hand) == 0:
+            self.start_turn(player, enemies)
 
-        reward = -0.1 # small negative each card play to encourage efficient play
-        reward += -0.2 * health_lost # larger negative for taking damage
-        reward += 0.1 * damage_done # positive reward for doing damage
+        # print(self.reward)
+        # self.reward -= 0.01 # small negative each card play to encourage efficient play
 
         state = self.get_battle_state(player, enemies, playable_cards, debug)
         self.action_choice, self.log_prob, self.value = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
-                                                       log_prob=self.log_prob, reward=reward, done=False, new_state=state, value=self.value)
+                                                       log_prob=self.log_prob, reward=self.reward, done=False, new_state=state, value=self.value)
 
         self.prev_obs = state
+        self.reward = 0
+
+        if self.action_choice == self.num_bt_actions-1:
+            self.turn_stable_hand = []
+            return False, False
 
         card_index = (self.action_choice // self.max_num_enemies)
+        card, is_still_in_hand = self.turn_stable_hand[card_index]
+        # print(playable_cards[card_index])
+
+        if is_still_in_hand and card in playable_cards:
+            # IMPORTANT: Mark this card as "played" in our stable snapshot
+            # so the agent knows it can't be played again this turn.
+            self.turn_stable_hand[card_index][1] = False
+
+            # The game engine will handle removing the card from the real player.hand
+            return card_index, card
+        else:
+            raise Exception("Invalid output from PPOAgent. Invalid action: " + card_index +  ": " + str(self.turn_stable_hand))
+
+    def start_turn(self, player, enemies):
+        """
+        Called at the start of a player's turn to create a stable snapshot of the hand.
+        """
+        # We store a list of tuples: (card_object, is_still_in_hand_bool)
+        self.turn_stable_hand = [[card, True] for card in player.deck.hand]
+
+        self.reward = 0
+        health_lost = self.health - player.health
+        damage_done = self.enemy_health - sum([enemy.health for enemy in enemies])
+        self.reward += health_lost * -0.5
+        self.reward += damage_done * 0.1
+
         self.health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
-        # print(playable_cards[card_index])
-        return card_index, playable_cards[card_index]
 
     def begin_combat(self, player, enemies, debug):
+        self.health = player.health
+        self.enemy_health = sum([enemy.health for enemy in enemies])
+
+        self.start_turn(player, enemies)
         playable = player.get_playable_cards()
         state = self.get_battle_state(player, enemies, playable, debug)
         self.action_choice, self.log_prob, self.value = self.agent.choose_action(
@@ -227,9 +275,9 @@ class RLPlayerController(PlayerController):
     def end_combat(self, player, enemies, debug):
         state = self.get_battle_state(player, enemies, player.get_playable_cards(), debug)
         if player.health > 0:
-            reward = 1
+            reward = 5
         else:
-            reward = -1
+            reward = -5
         self.agent.step(self.prev_obs, self.action_choice, self.log_prob, reward, True, state, self.value)
 
         self.prev_obs = state

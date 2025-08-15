@@ -19,7 +19,9 @@ class ActorCritic(nn.Module):
 
         # Shared base network
         self.base_network = nn.Sequential(
-            nn.Linear(embedded_state_dim, 256),
+            nn.Linear(embedded_state_dim, 512),
+            nn.ReLU(),
+            nn.Linear(512, 256),
             nn.ReLU(),
             nn.Linear(256, 128),
             nn.ReLU()
@@ -211,11 +213,11 @@ class CardEncoder(nn.Module):
         # A sequence of layers forming a Multi-Layer Perceptron (MLP).
         # We use Linear layers with a non-linear activation (ReLU) in between.
         self.network = nn.Sequential(
-            nn.Linear(feature_vector_dim, 256),
+            nn.Linear(feature_vector_dim, 512),
             nn.ReLU(),
-            nn.Linear(256, 128),
+            nn.Linear(512, 256),
             nn.ReLU(),
-            nn.Linear(128, embedding_dim)  # The final layer outputs the embedding.
+            nn.Linear(256, embedding_dim)  # The final layer outputs the embedding.
         )
 
     def forward(self, card_features_batch: torch.Tensor) -> torch.Tensor:
@@ -237,8 +239,10 @@ class PPOAgent:
         BATTLE = 0
         CARD_BUILD = 1
 
-    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.001,
-                 gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
+    # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
+    #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
+    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256,
+                 learning_enabled=True, lr=0.0001, gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.995, learn_epochs=5):
         # Hyperparameters
         self.gamma = gamma
         self.epsilon = epsilon
@@ -264,14 +268,14 @@ class PPOAgent:
 
         self.enemy_embed_dim = enemy_feature_length
 
-        self.max_cards, self.max_enemies = num_actions[0]
-        self.max_card_choices = num_actions[1]
+        self.max_cards, self.max_enemies, self.other_actions = num_actions["BT"]
+        self.max_card_choices = num_actions["CB"]
 
         # Initialize actors and critics for each agent
         self.state_dim = self.card_embed_dim + (self.card_embed_dim * self.max_cards)
         self.state_dim += self.max_enemies * self.enemy_embed_dim + 11  # 11 Player features
-        self.actor_critic = ActorCritic(self.state_dim, self.max_cards * self.max_enemies, self.max_card_choices)
-        self.old_network = ActorCritic(self.state_dim, self.max_cards * self.max_enemies, self.max_card_choices)
+        self.actor_critic = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices)
+        self.old_network = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices)
         # self.actor_critic = ActorCritic(self.state_dim, self.card_embed_dim, self.enemy_embed_dim, self.max_card_choices).to(self.device)
         #
         # self.old_network = ActorCritic(self.state_dim, self.card_embed_dim, self.enemy_embed_dim, self.max_card_choices).to(self.device)
@@ -285,7 +289,7 @@ class PPOAgent:
         self.lr_scheduler = optim.lr_scheduler.LinearLR(
             self.optimizer,
             start_factor=1.0,
-            end_factor=0.1,
+            end_factor=0.05,
             total_iters=1000
         )
 
@@ -304,9 +308,9 @@ class PPOAgent:
             'stages': [],
             # 'action_masks': []
         }
-        self.batch_size = 128
-        self.learn_size = 1024
-        self.max_memory = 10_000
+        self.batch_size = 512
+        self.learn_size = 4096
+        self.max_memory = 20000
 
         self.learn_step_counter = 0
 
@@ -564,17 +568,18 @@ class PPOAgent:
                 new_log_prob, new_entropy, values = self._compute_log_prob(stages, states, actions)
 
                 # Compute PPO loss
+                # ratios = torch.exp(new_log_prob - old_log_probs)
+                # surr1 = ratios * advantages
+                # surr2 = torch.clamp(ratios, 1 - self.epsilon, 1 + self.epsilon) * advantages
+                # policy_loss = -torch.min(surr1, surr2).mean()
+
+                # Compute SPO loss
                 ratios = torch.exp(new_log_prob - old_log_probs)
-                surr1 = ratios * advantages
-                surr2 = torch.clamp(ratios, 1 - self.epsilon, 1 + self.epsilon) * advantages
-                policy_loss = -torch.min(surr1, surr2).mean()
+                objective = ratios * advantages
+                penalty = (torch.abs(advantages) / (2 * self.epsilon)) * ((ratios - 1)**2)
+                policy_loss = -torch.mean(objective - penalty)
 
                 # Value Loss
-                # Policy - based -> predicting a policy directly
-                #   PPO -> uses a value network to predict value of states (not state-action pairs). Uses these value predictions to learn better policies.
-                #       Our PPO netowrk -> both the actor and the critic returns 'values'. State, action -> Actor, State -> Critic
-                # value based -> predicting values of State action pairs and taking actions based on those values
-
                 value_loss = F.mse_loss(values.squeeze(), value_targets)
 
                 # Entropy loss
@@ -609,7 +614,7 @@ class PPOAgent:
         for key in self.memory:
             self.memory[key].clear()
 
-        if self.learn_step_counter % 25 == 0:
+        if self.learn_step_counter % 10 == 0:
             avg_loss = (sum(losses) / len(losses)).item()
             avg_reward = (sum(rewards_arr) / len(rewards_arr))
             print("Average Loss at Episode " + str(self.learn_step_counter) + ": " + str(avg_loss))
@@ -618,7 +623,7 @@ class PPOAgent:
             self.losses.append(avg_loss)
             self.rewards.append(avg_reward)
 
-            if self.learn_step_counter % 100 == 0:
+            if self.learn_step_counter % 50 == 0:
                 self.graph_history()
 
     def graph_history(self):
