@@ -213,11 +213,11 @@ class CardEncoder(nn.Module):
         # A sequence of layers forming a Multi-Layer Perceptron (MLP).
         # We use Linear layers with a non-linear activation (ReLU) in between.
         self.network = nn.Sequential(
-            nn.Linear(feature_vector_dim, 512),
+            nn.Linear(feature_vector_dim, 256),
             nn.ReLU(),
-            nn.Linear(512, 256),
+            nn.Linear(256, 128),
             nn.ReLU(),
-            nn.Linear(256, embedding_dim)  # The final layer outputs the embedding.
+            nn.Linear(128, embedding_dim)  # The final layer outputs the embedding.
         )
 
     def forward(self, card_features_batch: torch.Tensor) -> torch.Tensor:
@@ -242,7 +242,7 @@ class PPOAgent:
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
     def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256,
-                 learning_enabled=True, lr=0.0001, gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.995, learn_epochs=5):
+                 learning_enabled=True, lr=0.0001, gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
         # Hyperparameters
         self.gamma = gamma
         self.epsilon = epsilon
@@ -251,6 +251,7 @@ class PPOAgent:
         self.entropy_decay = entropy_decay
         self.learn_epochs = learn_epochs
         self.learning_enabled = learning_enabled
+        self.lr = lr
 
         self.filepath = filepath
 
@@ -316,6 +317,9 @@ class PPOAgent:
 
         self.losses = []
         self.rewards = []
+
+    def reset_hidden_state(self):
+        pass
 
     def remember(self, stage, state, action, reward, done, log_prob, value):
         """Store experience for multiple agents"""
@@ -508,13 +512,6 @@ class PPOAgent:
         values_arr = np.array(self.memory['values'])
         stages_arr = np.array(self.memory['stages'])
 
-        # Compute advantages using GAE
-        # advantages = torch.tensor(x
-        #     self._compute_gae(rewards, values.detach().cpu().numpy(),
-        #                       dones.detach().cpu().numpy()),
-        #     dtype=torch.float32
-        # ).to(self.device)
-
         # 2. Calculate advantages ONCE using the full set of trajectories
         advantages_arr = self._compute_gae(rewards_arr, values_arr, dones_arr)
         # advantages_arr = self._compute_vanilla_pg_advantage(rewards_arr, values_arr, dones_arr)
@@ -561,7 +558,6 @@ class PPOAgent:
                 value_targets = value_targets_all[batch_indices]
 
                 """Update network weights using PPO"""
-
 
                 # Recompute log probabilities
                 # new_logits, new_values = self.actor_critic(states)

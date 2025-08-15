@@ -18,7 +18,7 @@ def main():
     run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
                    Renderer.RenderType.NONE, "monster", episodes)
 
-    # rl_controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_{episodes}.pt")
+    rl_controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_{episodes}.pt")
 
     plt.plot(rl_controller.final_healths, color='tab:blue', marker='x', linestyle='-', label='Average Reward')
     plt.xlabel('Learning Period', fontsize=12)

@@ -8,6 +8,7 @@ from CombatSim.Actions.Card import Card
 from CombatSim.Actions.Library.Strike import Strike
 from CombatSim.Entities.Enemy import Enemy
 from GameSim.Input.Controller import PlayerController
+from GameSim.Input.LSTM_PPO import LSTMPPOAgent
 from GameSim.Input.PPO import PPOAgent
 
 
@@ -44,8 +45,10 @@ class RLPlayerController(PlayerController):
         self.action_space = {"BT": [self.max_num_cards, self.max_num_enemies, 1], "CB": 3}
         self.num_bt_actions = (self.max_num_cards * self.max_num_enemies) + 1
 
-        self.agent = PPOAgent(self.action_space, self.card_vector_length, 13,
-                              learning_enabled=self.train, filepath=filepath)
+        # self.agent = PPOAgent(self.action_space, self.card_vector_length, 13,
+                              # learning_enabled=self.train, filepath=filepath)
+        self.agent = LSTMPPOAgent(self.action_space, self.card_vector_length, 13,
+                                  learning_enabled=self.train, filepath=filepath)
 
     def get_enum_value(self, stance):
         stance_val = -1  # Default value for no stance
@@ -250,11 +253,11 @@ class RLPlayerController(PlayerController):
         # We store a list of tuples: (card_object, is_still_in_hand_bool)
         self.turn_stable_hand = [[card, True] for card in player.deck.hand]
 
-        self.reward = 0
+        self.reward = -0.1
         health_lost = self.health - player.health
         damage_done = self.enemy_health - sum([enemy.health for enemy in enemies])
         self.reward += health_lost * -0.5
-        self.reward += damage_done * 0.1
+        self.reward += damage_done * 0.25
 
         self.health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
@@ -262,6 +265,8 @@ class RLPlayerController(PlayerController):
     def begin_combat(self, player, enemies, debug):
         self.health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
+
+        self.agent.reset_hidden_state()
 
         self.start_turn(player, enemies)
         playable = player.get_playable_cards()

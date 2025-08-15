@@ -66,7 +66,7 @@ class JawWorm(Enemy):
 
     class Chomp(Intent):
         def __init__(self, ascension: int):
-            if ascension < 2:
+            if ascension > 2:
                 self.damage = 12
             else:
                 self.damage = 11
