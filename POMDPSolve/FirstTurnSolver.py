@@ -13,43 +13,43 @@ class FirstTurnSolver:
         # value: list, [num_in_deck, reward(s)]]
         all_expected = []
         for hand in self.possible_hands[-1]:
-            counts = {}
-            for card in hand:
-                if card in counts:
-                    counts[card] += 1
-                else:
-                    counts[card] = 1
-            probs = {}
+            all_expected.append(self.solve_hand(hand, 3, 0, ""))
+        return (sum(all_expected) / len(all_expected))
 
-            for card, count in counts.items(): # all key, value pairs in the dictionary
-                probs[card] = count / self.num_draw
-            # ohh shoot defends have a list of rewards
-            all_expected.append(sum([prob * self.cards[card][1] for card, prob in probs.items()]))
+    def solve_hand(self, hand, energy, block, stance):
+        if energy == 0:
+            return -6 + min(6, 9.5 * block) # cant gain from more than 12 block
+        playable_cards = [card for card in hand if not (energy < 2 and card in ["Eruption", "Vigilance"])]
+        if len(playable_cards) == 0:
+            return -6 + min(6, 9.5 * block) # cant gain from more than 12 block
+        counts = {}
+        for card in playable_cards:
+            if card in counts:
+                counts[card] += 1
+            else:
+                counts[card] = 1
+        probs = {}
 
-        # its a list of all possible hand combinations from length 0 - 5 in indexes 0 - 5
-        # index -1 is last element, so all 5 card hands
-        for hand in self.possible_hands[-2]:
-            if "Eruption" not in hand:
-                # TODO: we may have played eruption if its not currently in our hand...
-               pass
-            counts = {}
-            for card in hand:
-                if card in counts:
-                    counts[card] += 1
-                else:
-                    counts[card] = 1
-            probs = {}
+        for card, count in counts.items(): # all key, value pairs in the dictionary
+            if stance == "W" and card == "Strike":
+                card += "W"
 
-            for card, count in counts.items():  # all key, value pairs in the dictionary
-                probs[card] = count / self.num_draw
-            # TODO: ohh shoot defends have a list of rewards
-            all_expected.append(sum([prob * self.cards[card][1] for card, prob in probs.items()]))
+            probs[card] = count / self.num_draw
+        # ohh shoot defends have a list of rewards
+        future_expected = 0
+        for card in hand:
+            cost = 1
+            stance = ""
+            if card == "Vigilance":
+                stance = "C"
+                cost = 2
+            if card == "Eruption":
+                stance = "E"
+                cost = 2
 
-        # 0.66 is the expectation after 2 actions I guess
-        # its still per action
-
-        # 18 hands with different probabilities...
-        return sum(all_expected) / len(all_expected)
+            future_expected += self.solve_hand([c for c in hand if c != card], self.cards[card][2] + block, energy - cost, stance)
+        future_expected /= len(hand)
+        return sum([prob * self.cards[card][1] for card, prob in probs.items()]) + future_expected
 
     class HandGenerator:
         def __init__(self, cards, max_draw):
@@ -76,7 +76,7 @@ class FirstTurnSolver:
             # We start the recursive generation with an empty hand and from the first card type
             self._generate_hands_recursive([], 0)
 
-            new_hands = [[hand for hand in self.all_hands if len(hand) ==  aj] for j in range(5)]
+            new_hands = [[hand for hand in self.all_hands if len(hand) ==  j] for j in range(5)]
             self.all_hands = new_hands
 
             print(self.all_hands)

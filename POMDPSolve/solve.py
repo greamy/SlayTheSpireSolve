@@ -4,10 +4,10 @@ from POMDPSolve.FirstTurnSolver import FirstTurnSolver
 def main():
 
     cards = {
-        "Strike": [4, 0.6],
-        "Defend": [4, 2.5],
-        "Eruption": [1, 0.9],
-        "Vigilance": [1, 4.0]
+        "Strike": [4, 0.6, 0],
+        "Defend": [4, 0, 5],
+        "Eruption": [1, 0.9, 0],
+        "Vigilance": [1, 0, 8]
     }
     hand_solver = FirstTurnSolver(cards, 5)
     expectation = hand_solver.solve()
