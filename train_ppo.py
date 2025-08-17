@@ -11,12 +11,13 @@ from CombatSim.util import run_many_games
 
 
 def main():
-    episodes = 25_000
-    rl_controller = RLPlayerController(delay=0, train=True, filepath="artifacts/images/model_results/first_fight/")
+    episodes = 50_000
+    rl_controller = RLPlayerController(delay=2, train=False, filepath="artifacts/images/model_results/first_fight/")
     # rl_controller = RandomPlayerController(delay=0)
-    # rl_controller.agent.load_models(f"artifacts/models/first_fight/ppo_agent.pt")
+    rl_controller.agent.load_models(f"artifacts/models/first_fight/ppo_agent_{episodes}.pt")
+    # rl_controller.agent.load_models(f"artifacts/models/first_fight/best_lstm_first_fight.pt")
     run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
-                   Renderer.RenderType.NONE, "monster", episodes)
+                   Renderer.RenderType.PYGAME, "monster", episodes)
 
     rl_controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_{episodes}.pt")
 

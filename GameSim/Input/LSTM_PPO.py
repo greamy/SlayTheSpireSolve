@@ -99,6 +99,7 @@ class ActorCriticLSTM(nn.Module):
         # --- Sample Action ---
         action_dist = Categorical(logits=masked_logits)
         action = action_dist.sample()
+        print(action_dist.probs)
 
         log_prob = action_dist.log_prob(action).unsqueeze(-1)
 
@@ -198,7 +199,7 @@ class LSTMPPOAgent(PPOAgent):
         return action_choice, log_prob, value
 
     def _learn(self):
-        self.device = "mps"
+        # self.device = "mps"
         # --- Retrieve all data from memory ---
         states_arr = np.array(self.memory['states'])
         actions_arr = np.array(self.memory['actions'])
@@ -223,18 +224,6 @@ class LSTMPPOAgent(PPOAgent):
                 episode_indices.append(range(current_episode_start, i + 1))
                 current_episode_start = i + 1
 
-        # # --- CORRECTED BATCHING FOR LSTMS ---
-        # num_sequences = self.learn_size // self.sequence_length
-        #
-        # # Reshape data into sequences
-        # # Note: This assumes learn_size is a multiple of sequence_length
-        # states_seq = states_arr.reshape(num_sequences, self.sequence_length, -1)
-        # actions_seq = actions_arr.reshape(num_sequences, self.sequence_length)
-        # # ... and so on for all other data arrays
-        # old_log_probs_seq = old_log_probs_arr.reshape(num_sequences, self.sequence_length)
-        # advantages_seq = advantages_all.reshape(num_sequences, self.sequence_length)
-        # value_targets_seq = value_targets_all.reshape(num_sequences, self.sequence_length)
-        # stages_seq = stages_arr.reshape(num_sequences, self.sequence_length)
         #
         # # We only need the initial hidden state for each sequence
         # h_initial = hidden_states_arr.reshape(num_sequences, self.sequence_length, 1, 1, -1)[:, 0, :, :, :]
@@ -245,57 +234,61 @@ class LSTMPPOAgent(PPOAgent):
             # Shuffle the sequences, NOT the individual steps
             random.shuffle(episode_indices)
 
-            # for episode in episode_indices:
-            #     episode_len = len(episode)
-            #     if episode_len == 0:
-            #         continue
+            for episode in episode_indices:
+                episode_len = len(episode)
+                if episode_len == 0:
+                    continue
+
+                # Get the mini-batch of sequences
+                batch_states = torch.tensor(states_arr[episode], dtype=torch.float32).to(self.device)
+                batch_actions = torch.tensor(actions_arr[episode], dtype=torch.long).to(self.device)
+                batch_old_log_probs = torch.tensor(old_log_probs_arr[episode], dtype=torch.float32).to(
+                    self.device)
+                batch_advantages = advantages_all[episode].to(self.device)
+                batch_value_targets = value_targets_all[episode].to(self.device)
+                batch_stages = stages_arr[episode]
+            # for i in range(0, len(episode_indices), self.batch_size):
+            #     batch_episode_indices = episode_indices[i:i + self.batch_size]
             #
-            #     # Get the mini-batch of sequences
-            #     batch_states = torch.tensor(states_arr[episode], dtype=torch.float32).to(self.device)
-            #     batch_actions = torch.tensor(actions_arr[episode], dtype=torch.long).to(self.device)
-            #     batch_old_log_probs = torch.tensor(old_log_probs_arr[episode], dtype=torch.float32).to(
-            #         self.device)
-            #     batch_advantages = advantages_all[episode].to(self.device)
-            #     batch_value_targets = value_targets_all[episode].to(self.device)
-            #     batch_stages = stages_arr[episode]
-            for i in range(0, len(episode_indices), self.batch_size):
-                batch_episode_indices = episode_indices[i:i + self.batch_size]
-
-                # --- 3. Pad the data for this batch ---
-                max_len = max(len(ep) for ep in batch_episode_indices)
-
-                # Create zero tensors for padded data and the attention mask
-                # Shape: (batch_size, max_len, feature_dim)
-                batch_states = torch.zeros(len(batch_episode_indices), max_len, states_arr.shape[1],
-                                           dtype=torch.float32)
-                batch_actions = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.long)
-                batch_old_log_probs = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
-                batch_advantages = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
-                batch_value_targets = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
-                batch_stages = torch.zeros(len(batch_episode_indices), max_len, 1, dtype=torch.float32)
-                # The mask is crucial! 1 for real data, 0 for padding.
-                attention_mask = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
-
-                # Populate the padded tensors
-                for j, ep_indices in enumerate(batch_episode_indices):
-                    ep_len = len(ep_indices)
-                    batch_states[j, :ep_len] = torch.tensor(states_arr[ep_indices])
-                    batch_actions[j, :ep_len] = torch.tensor(actions_arr[ep_indices])
-                    batch_old_log_probs[j, :ep_len] = torch.tensor(old_log_probs_arr[ep_indices])
-                    batch_advantages[j, :ep_len] = advantages[ep_indices]
-                    batch_value_targets[j, :ep_len] = value_targets_all[ep_indices]
-                    batch_stages[j, :ep_len] = batch_stages[ep_indices]
-                    attention_mask[j, :ep_len] = 1.0
-
-                # Move batch to device
-                batch_states, batch_actions, batch_old_log_probs, batch_advantages, batch_value_targets, attention_mask = \
-                    batch_states.to(self.device), batch_actions.to(self.device), batch_old_log_probs.to(self.device), \
-                        batch_advantages.to(self.device), batch_value_targets.to(self.device), attention_mask.to(
-                        self.device)
-
+            #     # --- 3. Pad the data for this batch ---
+            #     max_len = max(len(ep) for ep in batch_episode_indices)
+            #
+            #     # Create zero tensors for padded data and the attention mask
+            #     # Shape: (batch_size, max_len, feature_dim)
+            #     batch_states = torch.zeros(len(batch_episode_indices), max_len, states_arr.shape[1],
+            #                                dtype=torch.float32)
+            #     batch_actions = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.long)
+            #     batch_old_log_probs = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
+            #     batch_advantages = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
+            #     batch_value_targets = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
+            #     batch_stages = torch.zeros(len(batch_episode_indices), max_len, 1, dtype=torch.float32)
+            #     # The mask is crucial! 1 for real data, 0 for padding.
+            #     attention_mask = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
+            #
+            #     # Populate the padded tensors
+            #     for j, ep_indices in enumerate(batch_episode_indices):
+            #         ep_len = len(ep_indices)
+            #         batch_states[j, :ep_len] = torch.tensor(states_arr[ep_indices])
+            #         batch_actions[j, :ep_len] = torch.tensor(actions_arr[ep_indices])
+            #         batch_old_log_probs[j, :ep_len] = torch.tensor(old_log_probs_arr[ep_indices])
+            #         batch_advantages[j, :ep_len] = advantages[ep_indices]
+            #         batch_value_targets[j, :ep_len] = value_targets_all[ep_indices]
+            #         batch_stages[j, :ep_len] = torch.tensor(stages_arr[ep_indices]).unsqueeze(-1)
+            #         attention_mask[j, :ep_len] = 1.0
+            #
+            #     # Move batch to device
+            #     batch_states, batch_actions, batch_old_log_probs, batch_advantages, batch_value_targets, attention_mask = \
+            #         batch_states.to(self.device), batch_actions.to(self.device), batch_old_log_probs.to(self.device), \
+            #             batch_advantages.to(self.device), batch_value_targets.to(self.device), attention_mask.to(
+            #             self.device)
+                # current_batch_size = len(batch_episode_indices)
+                # initial_hidden_state = (
+                #     torch.zeros(1, current_batch_size, self.lstm_hidden_dim).to(self.device),
+                #     torch.zeros(1, current_batch_size, self.lstm_hidden_dim).to(self.device)
+                # )
                 initial_hidden_state = (
-                    torch.zeros(1, 1, self.lstm_hidden_dim).to(self.device),
-                    torch.zeros(1, 1, self.lstm_hidden_dim).to(self.device)
+                    torch.zeros(1, self.lstm_hidden_dim).to(self.device),
+                    torch.zeros(1, self.lstm_hidden_dim).to(self.device)
                 )
 
                 # --- Recompute log probabilities using initial hidden states ---
@@ -307,16 +300,18 @@ class LSTMPPOAgent(PPOAgent):
                 ratios = torch.exp(new_log_prob - batch_old_log_probs)
                 objective = ratios * batch_advantages
                 penalty = (torch.abs(batch_advantages) / (2 * self.epsilon)) * ((ratios - 1) ** 2)
-                policy_loss = -(objective - penalty)
-                policy_loss *= attention_mask  # Zero out loss for padded steps
-                policy_loss = policy_loss.sum() / attention_mask.sum()  # Average over real steps only
+                policy_loss = -torch.mean(objective - penalty)
+                # policy_loss = -(objective - penalty)
+                # policy_loss *= attention_mask  # Zero out loss for padded steps
+                # policy_loss = policy_loss.sum() / attention_mask.sum()  # Average over real steps only
 
                 value_loss = F.mse_loss(values, batch_value_targets)
-                value_loss *= attention_mask
-                value_loss = value_loss.sum() / attention_mask.sum()
-                entropy_loss = -new_entropy
-                entropy_loss *= attention_mask
-                entropy_loss = entropy_loss.sum() / attention_mask.sum()
+                # value_loss = F.mse_loss(values, batch_value_targets, reduction='none')
+                # value_loss *= attention_mask
+                # value_loss = value_loss.sum() / attention_mask.sum()
+                entropy_loss = -new_entropy.mean()
+                # entropy_loss *= attention_mask
+                # entropy_loss = entropy_loss.sum() / attention_mask.sum()
 
                 total_loss = policy_loss + self.value_coef * value_loss + self.entropy_coef * entropy_loss
                 losses.append(total_loss.item())
@@ -345,7 +340,7 @@ class LSTMPPOAgent(PPOAgent):
 
             if self.learn_step_counter % 50 == 0:
                 self.graph_history()
-        self.device = "cpu"
+        # self.device = "cpu"
 
     def _compute_log_prob_lstm_batch(self, batch_stages, batch_states, batch_actions, h_initial, c_initial):
         """
@@ -363,6 +358,7 @@ class LSTMPPOAgent(PPOAgent):
 
         # Get batch dimensions
         episode_length, _ = batch_states.shape
+        # batch_size, episode_length, _ = batch_states.shape
 
         # Reshape the initial hidden states to the format expected by the LSTM:
         # (num_layers, batch_size, hidden_dim)
@@ -373,6 +369,8 @@ class LSTMPPOAgent(PPOAgent):
         initial_hidden_state = (h_initial, c_initial)
 
         # Separate state into static and dynamic parts for the model across the whole batch
+        # static_features = batch_states[:, :, :self.card_embed_dim]
+        # dynamic_features = batch_states[:, :, self.card_embed_dim:]
         static_features = batch_states[:, :self.card_embed_dim]
         dynamic_features = batch_states[:, self.card_embed_dim:]
 
@@ -380,7 +378,7 @@ class LSTMPPOAgent(PPOAgent):
 
         # Process all battle sequences through the LSTM at once
         # The LSTM will process the tensor of shape (batch_size, sequence_length, dynamic_dim)
-        # print(initial_hidden_state[0].shape)
+
         lstm_out, _ = self.actor_critic.lstm(dynamic_features, initial_hidden_state)
 
         # Combine LSTM output with static features
@@ -391,8 +389,10 @@ class LSTMPPOAgent(PPOAgent):
         cb_base_out = self.actor_critic.cb_base_network(static_features)
 
         # Use a mask to select the correct output for each item in the batch based on its stage
+
+        # is_battle_stage = (batch_stages == self.GameStage.BATTLE.value).to(self.device).squeeze(-1)
         is_battle_stage = torch.tensor((batch_stages == self.GameStage.BATTLE.value)).to(self.device)
-        base_output = torch.where(is_battle_stage.unsqueeze(-1), bt_base_out, cb_base_out)
+        base_output = torch.where(is_battle_stage.unsqueeze(-1), bt_base_out, cb_base_out).to(self.device)
 
         # --- 3. Get Logits, Values, and Entropy ---
 
@@ -403,6 +403,8 @@ class LSTMPPOAgent(PPOAgent):
         bt_logits = self.actor_critic.actor_bt_head(base_output)
         cb_logits = self.actor_critic.actor_cb_head(base_output)
 
+        # log_probs = torch.empty(batch_size, episode_length, device=self.device)
+        # entropy = torch.empty(batch_size, episode_length, device=self.device)
         log_probs = torch.empty(episode_length, device=self.device)
         entropy = torch.empty(episode_length, device=self.device)
 
