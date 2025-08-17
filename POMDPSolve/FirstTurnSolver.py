@@ -76,7 +76,7 @@ class FirstTurnSolver:
             # We start the recursive generation with an empty hand and from the first card type
             self._generate_hands_recursive([], 0)
 
-            new_hands = [[hand for i, hand in enumerate(self.all_hands) if len(hand) == i] for i in range(5)]
+            new_hands = [[hand for hand in self.all_hands if len(hand) ==  aj] for j in range(5)]
             self.all_hands = new_hands
 
             print(self.all_hands)
