@@ -212,12 +212,23 @@ class CardEncoder(nn.Module):
 
         # A sequence of layers forming a Multi-Layer Perceptron (MLP).
         # We use Linear layers with a non-linear activation (ReLU) in between.
+        leaky_relu_slope = 0.02
+        network_size = 256
+        xavier_gain = nn.init.calculate_gain('leaky_relu', leaky_relu_slope)
+        layer_1 = nn.Linear(feature_vector_dim, network_size)
+        nn.init.xavier_uniform_(layer_1.weight, gain=xavier_gain)
+        layer_2 = nn.Linear(network_size, network_size // 2)
+        nn.init.xavier_uniform_(layer_2.weight, gain=xavier_gain)
+        layer_3 = nn.Linear(network_size // 2, embedding_dim)
+        nn.init.xavier_uniform_(layer_3.weight, gain=xavier_gain)
         self.network = nn.Sequential(
-            nn.Linear(feature_vector_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, embedding_dim)  # The final layer outputs the embedding.
+            layer_1,
+            # nn.LayerNorm(network_size),
+            nn.LeakyReLU(leaky_relu_slope),
+            layer_2,
+            # nn.LayerNorm(network_size // 2), # do these before each non-linear function
+            nn.LeakyReLU(leaky_relu_slope),
+            layer_3
         )
 
     def forward(self, card_features_batch: torch.Tensor) -> torch.Tensor:
@@ -242,7 +253,7 @@ class PPOAgent:
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
     def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256,
-                 learning_enabled=True, lr=0.0003, gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.993, learn_epochs=8):
+                 learning_enabled=True, lr=0.0003, gamma=0.999, epsilon=0.2, value_coef=0.5, entropy_coef=0.002, entropy_decay=0.99, learn_epochs=10):
         # Hyperparameters
         self.gamma = gamma
         self.epsilon = epsilon
@@ -274,7 +285,7 @@ class PPOAgent:
 
         # Initialize actors and critics for each agent
         self.state_dim = self.card_embed_dim + (self.card_embed_dim * self.max_cards)
-        self.state_dim += self.max_enemies * self.enemy_embed_dim + 11  # 11 Player features
+        self.state_dim += self.max_enemies * self.enemy_embed_dim + 13  # 13 Player features
         self.actor_critic = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices)
         self.old_network = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices)
         # self.actor_critic = ActorCritic(self.state_dim, self.card_embed_dim, self.enemy_embed_dim, self.max_card_choices).to(self.device)
@@ -309,7 +320,7 @@ class PPOAgent:
             'stages': [],
             # 'action_masks': []
         }
-        self.batch_size = 1
+        self.batch_size = 256
         self.learn_size = 2048
         self.max_memory = 20000
 
@@ -757,6 +768,7 @@ class PPOAgent:
     def save_models(self, filepath):
         """Save all model weights"""
         checkpoint = {
+            'card_embedding': self.card_embedding.state_dict(),
             'actor_critic': self.actor_critic.state_dict(),
             'optimizer': self.optimizer.state_dict(),
         }
@@ -765,6 +777,6 @@ class PPOAgent:
     def load_models(self, filepath):
         """Load all model weights"""
         checkpoint = torch.load(filepath)
-
+        self.card_embedding.load_state_dict(checkpoint['card_embedding'])
         self.actor_critic.load_state_dict(checkpoint['actor_critic'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])

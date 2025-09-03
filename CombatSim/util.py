@@ -233,7 +233,7 @@ def visualize_embeddings(card_names, embeddings, perplexity=5, random_state=42):
     plt.clf()
 
 
-def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.RenderType.NONE, combat_type="monster", num_combats=5000):
+def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.RenderType.NONE, combat_type="monster", num_combats=5000, monster_name="JawWorm"):
     renderer = Renderer(render_type=render_type)
 
     possible_enemies = Enemy.get_implemented_enemies(dungeon_path)
@@ -250,15 +250,18 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
     for room in rooms:
         cards = get_default_deck()
         # cards.remove("Defend")
-        # cards.remove("Defend")
-        # cards.extend(["Prostrate", "Worship", "EmptyBody", "CutThroughFate", "FollowUp", "JustLucky", "MentalFortress", "Wallop", "Tranquility", "Crescendo"])
+        # cards.remove("Strike")
+        # cards.extend(["CarveReality", "EmptyFist", "CutThroughFate", "DeceiveReality", "CutThroughFate"])
         addCards(room.player, cards)
+        # for card in room.player.deck.draw_pile:
+        #     if card.name == "EmptyFist" or card.name == "Eruption":
+        #         card.upgrade()
 
         room.player.add_relic(PureWater(room.player))
 
         if combat_type == "monster":
             # enemy_choice = random.choice(list(possible_enemies.keys()))
-            enemy_choice = "JawWorm"
+            enemy_choice = monster_name
             try:
                 enemy_ = getattr(possible_enemies[enemy_choice], enemy_choice)
                 room.enemies = [enemy_(ascension=20, act=1)]

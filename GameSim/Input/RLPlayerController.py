@@ -7,6 +7,7 @@ import torch
 from CombatSim.Actions.Card import Card
 from CombatSim.Actions.Library.Strike import Strike
 from CombatSim.Entities.Enemy import Enemy
+from CombatSim.Entities.Player import Player
 from GameSim.Input.Controller import PlayerController
 from GameSim.Input.LSTM_PPO import LSTMPPOAgent
 from GameSim.Input.PPO import PPOAgent
@@ -22,7 +23,8 @@ class RLPlayerController(PlayerController):
 
         self.max_num_enemies = 5
         self.max_num_cards = 10
-        self.card_vector_length = 779
+        self.card_vector_length = 781
+        self.player_vector_length = 12
 
         self.card_cache = []
 
@@ -47,7 +49,7 @@ class RLPlayerController(PlayerController):
 
         # self.agent = PPOAgent(self.action_space, self.card_vector_length, 13,
                               # learning_enabled=self.train, filepath=filepath)
-        self.agent = LSTMPPOAgent(self.action_space, self.card_vector_length, 13,
+        self.agent = LSTMPPOAgent(self.action_space, self.card_vector_length, self.player_vector_length, 12,
                                   learning_enabled=self.train, filepath=filepath)
 
     def get_enum_value(self, stance):
@@ -60,14 +62,16 @@ class RLPlayerController(PlayerController):
         if card is None:
             # Return a zero vector with the combined length of the manual vector and the text embedding.
             return np.zeros(self.card_vector_length, dtype=np.float32)
-
+        stance_val = self.get_enum_value(card.stance)
         manual_vector = np.array([ #
             card.card_type.value,
             card.energy,
             card.damage,
             card.attacks,
             card.block,
-            self.get_enum_value(card.stance),  # Use the numerical value
+            int(stance_val == Player.Stance.CALM),
+            int(stance_val == Player.Stance.WRATH),
+            int(stance_val == Player.Stance.DIVINITY),
             int(card.upgraded),  # Cast boolean to int (0 or 1)
             card.draw,
             int(card.exhaust),
@@ -91,16 +95,18 @@ class RLPlayerController(PlayerController):
 
     def get_player_vector(self, player):
         # TODO: Include player status list
+        stance_val = player.stance
         return np.array([
-            player.start_health,
-            player.health,
+            player.health / player.start_health,
             player.block,
             player.block_modifier,
             player.block_multiplier,
             player.damage_dealt_modifier,
             player.damage_dealt_multiplier,
             player.damage_taken_multiplier,
-            self.get_enum_value(player.stance),
+            int(stance_val == Player.Stance.CALM),
+            int(stance_val == Player.Stance.WRATH),
+            int(stance_val == Player.Stance.DIVINITY),
             player.energy,
             player.mantra
         ])
@@ -109,8 +115,7 @@ class RLPlayerController(PlayerController):
         # if enemy is None:
         #     return np.zeros(13)
         return np.array([
-            enemy.start_health,
-            enemy.health,
+            enemy.health / enemy.start_health,
             enemy.block,
             enemy.block_modifier,
             enemy.block_multiplier,
@@ -244,7 +249,7 @@ class RLPlayerController(PlayerController):
             # The game engine will handle removing the card from the real player.hand
             return card_index, card
         else:
-            raise Exception("Invalid output from PPOAgent. Invalid action: " + card_index +  ": " + str(self.turn_stable_hand))
+            raise Exception("Invalid output from PPOAgent. Invalid action: " + card_index + ": " + str(self.turn_stable_hand))
 
     def start_turn(self, player, enemies):
         """

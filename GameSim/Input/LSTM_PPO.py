@@ -1,3 +1,4 @@
+import math
 import random
 from enum import Enum
 
@@ -31,24 +32,41 @@ class ActorCriticLSTM(nn.Module):
         # --- Shared Base Network ---
         # This network now processes the LSTM's output combined with static features (like the deck embedding).
         combined_feature_dim = lstm_hidden_dim + static_input_dim
+        leaky_relu_slope = 0.02
+        network_size = 256
+        # I added a custom initialization
+        # also, changed activation to LeakyRelu
+        xavier_gain = nn.init.calculate_gain('leaky_relu', leaky_relu_slope)
+        first_layer = nn.Linear(combined_feature_dim, network_size)
+        nn.init.xavier_uniform_(first_layer.weight, gain=xavier_gain)
+        second_layer = nn.Linear(network_size, network_size // 2)
+        nn.init.xavier_uniform_(second_layer.weight, gain=xavier_gain)
         self.base_network = nn.Sequential(
-            nn.Linear(combined_feature_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 128),
-            nn.ReLU()
+            first_layer,
+            # nn.LayerNorm(network_size),
+            nn.LeakyReLU(leaky_relu_slope),
+            second_layer,
+            # nn.LayerNorm(network_size // 2),
+            nn.LeakyReLU()
         )
 
         # --- Actor Heads ---
-        self.actor_bt_head = nn.Linear(128, total_bt_actions)
+        self.actor_bt_head = nn.Linear(network_size // 2, total_bt_actions)
+        nn.init.xavier_uniform_(self.actor_bt_head.weight, gain=xavier_gain)
         # The Card Build head does not use the LSTM, it uses a separate simple network.
+        cb_layer = nn.Linear(static_input_dim, network_size // 2)
+        nn.init.xavier_uniform_(cb_layer.weight, gain=xavier_gain)
         self.cb_base_network = nn.Sequential(
-            nn.Linear(static_input_dim, 128), # Only sees static deck/player info
-            nn.ReLU()
+            cb_layer, # Only sees static deck/player info
+            # nn.LayerNorm(network_size // 2),
+            nn.LeakyReLU(leaky_relu_slope)
         )
-        self.actor_cb_head = nn.Linear(128, total_cb_actions)
+        self.actor_cb_head = nn.Linear(network_size // 2, total_cb_actions)
+        nn.init.xavier_uniform_(self.actor_cb_head.weight, gain=xavier_gain)
 
         # --- Critic Head ---
-        self.critic_head = nn.Linear(128, 1)
+        self.critic_head = nn.Linear(network_size // 2, 1)
+        nn.init.xavier_uniform_(self.critic_head.weight, gain=xavier_gain)
 
     def forward(self, static_features, dynamic_features, hidden_state, stage):
         """
@@ -99,8 +117,8 @@ class ActorCriticLSTM(nn.Module):
         # --- Sample Action ---
         action_dist = Categorical(logits=masked_logits)
         action = action_dist.sample()
-        print(action_dist.probs)
-
+        # print(action_dist.probs)
+        #
         log_prob = action_dist.log_prob(action).unsqueeze(-1)
 
         return action, log_prob, state_value, new_hidden_state
@@ -110,15 +128,16 @@ class LSTMPPOAgent(PPOAgent):
     #     BATTLE = 0
     #     CARD_BUILD = 1
 
-    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, learning_enabled=True):
+    def __init__(self, num_actions, card_feature_length, player_feature_length, enemy_feature_length, filepath, learning_enabled=True):
         super().__init__(num_actions, card_feature_length, enemy_feature_length, filepath, learning_enabled=learning_enabled)# (Keep your existing __init__ arguments)
 
+        self.best_avg_reward = -math.inf
         # Define the dimensions for the new network
         self.lstm_hidden_dim = 256
         # Static features are things that don't change turn-to-turn (like the deck)
         static_dim = self.card_embed_dim
         # Dynamic features are turn-specific (player stats, hand, enemies)
-        dynamic_dim = 11 + (self.card_embed_dim * self.max_cards) + (self.max_enemies * self.enemy_embed_dim)
+        dynamic_dim = player_feature_length + (self.card_embed_dim * self.max_cards) + (self.max_enemies * self.enemy_embed_dim)
 
         # --- Initialize the New Network ---
         self.actor_critic = ActorCriticLSTM(
@@ -142,12 +161,15 @@ class LSTMPPOAgent(PPOAgent):
         self.params = list(self.actor_critic.parameters()) + list(self.card_embedding.parameters())
         self.optimizer = optim.Adam(self.params, lr=self.lr)
         self.initial_lr = self.lr
-        self.lr_scheduler = optim.lr_scheduler.LinearLR(
-            self.optimizer,
-            start_factor=1.0,
-            end_factor=0.05,
-            total_iters=1000
-        )
+        # self.lr_scheduler = optim.lr_scheduler.CyclicLR(self.optimizer,
+        #                                                 self.initial_lr / 5,
+        #                                                 self.initial_lr * 2,
+        #                                                 step_size_up=100)
+
+        self.lr_scheduler = optim.lr_scheduler.LinearLR(self.optimizer,
+                                                        start_factor=self.initial_lr,
+                                                        end_factor=self.initial_lr * 0.1,
+                                                        total_iters=2000)
 
         # --- Add a placeholder for the hidden state ---
         self.hidden_state = None
@@ -180,7 +202,6 @@ class LSTMPPOAgent(PPOAgent):
         # For now, let's assume it does:
         # static_features, dynamic_features, stage, action_mask = self.embed_state_v2(state_tensors)
 
-        # This is a simplified example of how you'd split your state:
         full_state, stage, action_mask = self.embed_state(state_tensors)
         static_features = full_state[:self.card_embed_dim]
         dynamic_features = full_state[self.card_embed_dim:]
@@ -224,11 +245,6 @@ class LSTMPPOAgent(PPOAgent):
                 episode_indices.append(range(current_episode_start, i + 1))
                 current_episode_start = i + 1
 
-        #
-        # # We only need the initial hidden state for each sequence
-        # h_initial = hidden_states_arr.reshape(num_sequences, self.sequence_length, 1, 1, -1)[:, 0, :, :, :]
-        # c_initial = cell_states_arr.reshape(num_sequences, self.sequence_length, 1, 1, -1)[:, 0, :, :, :]
-
         losses = []
         for _ in range(self.learn_epochs):
             # Shuffle the sequences, NOT the individual steps
@@ -247,45 +263,6 @@ class LSTMPPOAgent(PPOAgent):
                 batch_advantages = advantages_all[episode].to(self.device)
                 batch_value_targets = value_targets_all[episode].to(self.device)
                 batch_stages = stages_arr[episode]
-            # for i in range(0, len(episode_indices), self.batch_size):
-            #     batch_episode_indices = episode_indices[i:i + self.batch_size]
-            #
-            #     # --- 3. Pad the data for this batch ---
-            #     max_len = max(len(ep) for ep in batch_episode_indices)
-            #
-            #     # Create zero tensors for padded data and the attention mask
-            #     # Shape: (batch_size, max_len, feature_dim)
-            #     batch_states = torch.zeros(len(batch_episode_indices), max_len, states_arr.shape[1],
-            #                                dtype=torch.float32)
-            #     batch_actions = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.long)
-            #     batch_old_log_probs = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
-            #     batch_advantages = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
-            #     batch_value_targets = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
-            #     batch_stages = torch.zeros(len(batch_episode_indices), max_len, 1, dtype=torch.float32)
-            #     # The mask is crucial! 1 for real data, 0 for padding.
-            #     attention_mask = torch.zeros(len(batch_episode_indices), max_len, dtype=torch.float32)
-            #
-            #     # Populate the padded tensors
-            #     for j, ep_indices in enumerate(batch_episode_indices):
-            #         ep_len = len(ep_indices)
-            #         batch_states[j, :ep_len] = torch.tensor(states_arr[ep_indices])
-            #         batch_actions[j, :ep_len] = torch.tensor(actions_arr[ep_indices])
-            #         batch_old_log_probs[j, :ep_len] = torch.tensor(old_log_probs_arr[ep_indices])
-            #         batch_advantages[j, :ep_len] = advantages[ep_indices]
-            #         batch_value_targets[j, :ep_len] = value_targets_all[ep_indices]
-            #         batch_stages[j, :ep_len] = torch.tensor(stages_arr[ep_indices]).unsqueeze(-1)
-            #         attention_mask[j, :ep_len] = 1.0
-            #
-            #     # Move batch to device
-            #     batch_states, batch_actions, batch_old_log_probs, batch_advantages, batch_value_targets, attention_mask = \
-            #         batch_states.to(self.device), batch_actions.to(self.device), batch_old_log_probs.to(self.device), \
-            #             batch_advantages.to(self.device), batch_value_targets.to(self.device), attention_mask.to(
-            #             self.device)
-                # current_batch_size = len(batch_episode_indices)
-                # initial_hidden_state = (
-                #     torch.zeros(1, current_batch_size, self.lstm_hidden_dim).to(self.device),
-                #     torch.zeros(1, current_batch_size, self.lstm_hidden_dim).to(self.device)
-                # )
                 initial_hidden_state = (
                     torch.zeros(1, self.lstm_hidden_dim).to(self.device),
                     torch.zeros(1, self.lstm_hidden_dim).to(self.device)
@@ -301,17 +278,9 @@ class LSTMPPOAgent(PPOAgent):
                 objective = ratios * batch_advantages
                 penalty = (torch.abs(batch_advantages) / (2 * self.epsilon)) * ((ratios - 1) ** 2)
                 policy_loss = -torch.mean(objective - penalty)
-                # policy_loss = -(objective - penalty)
-                # policy_loss *= attention_mask  # Zero out loss for padded steps
-                # policy_loss = policy_loss.sum() / attention_mask.sum()  # Average over real steps only
 
                 value_loss = F.mse_loss(values, batch_value_targets)
-                # value_loss = F.mse_loss(values, batch_value_targets, reduction='none')
-                # value_loss *= attention_mask
-                # value_loss = value_loss.sum() / attention_mask.sum()
                 entropy_loss = -new_entropy.mean()
-                # entropy_loss *= attention_mask
-                # entropy_loss = entropy_loss.sum() / attention_mask.sum()
 
                 total_loss = policy_loss + self.value_coef * value_loss + self.entropy_coef * entropy_loss
                 losses.append(total_loss.item())
@@ -338,8 +307,13 @@ class LSTMPPOAgent(PPOAgent):
             self.losses.append(avg_loss)
             self.rewards.append(avg_reward)
 
-            if self.learn_step_counter % 50 == 0:
-                self.graph_history()
+            if avg_reward > self.best_avg_reward:
+                self.best_avg_reward = avg_reward
+                self.save_models("artifacts/models/first_fight/ppo_agent_best.pt")
+                print("New best reward found! saving to ppo_agent_beset.pt...")
+
+        if self.learn_step_counter % 50 == 0:
+            self.graph_history()
         # self.device = "cpu"
 
     def _compute_log_prob_lstm_batch(self, batch_stages, batch_states, batch_actions, h_initial, c_initial):
