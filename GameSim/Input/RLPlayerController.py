@@ -24,7 +24,7 @@ class RLPlayerController(PlayerController):
         self.max_num_enemies = 5
         self.max_num_cards = 10
         self.card_vector_length = 781
-        self.player_vector_length = 12
+        self.player_vector_length = 13
 
         self.card_cache = []
 
@@ -49,7 +49,7 @@ class RLPlayerController(PlayerController):
 
         # self.agent = PPOAgent(self.action_space, self.card_vector_length, 13,
                               # learning_enabled=self.train, filepath=filepath)
-        self.agent = LSTMPPOAgent(self.action_space, self.card_vector_length, self.player_vector_length, 12,
+        self.agent = LSTMPPOAgent(self.action_space, self.card_vector_length, self.player_vector_length, 13,
                                   learning_enabled=self.train, filepath=filepath)
 
     def get_enum_value(self, stance):
@@ -97,7 +97,8 @@ class RLPlayerController(PlayerController):
         # TODO: Include player status list
         stance_val = player.stance
         return np.array([
-            player.health / player.start_health,
+            player.health,
+            player.start_health,
             player.block,
             player.block_modifier,
             player.block_multiplier,
@@ -115,7 +116,8 @@ class RLPlayerController(PlayerController):
         # if enemy is None:
         #     return np.zeros(13)
         return np.array([
-            enemy.health / enemy.start_health,
+            enemy.health,
+            enemy.start_health,
             enemy.block,
             enemy.block_modifier,
             enemy.block_multiplier,
