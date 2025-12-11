@@ -152,16 +152,16 @@ class PPOAgent:
         self.filepath = filepath
 
         # Device configuration
-        # self.device = torch.device(
-        #     "mps" if torch.backends.mps.is_available() else
-        #     "cuda" if torch.cuda.is_available() else "cpu"
-        # )
-        self.device = torch.device("cpu")
+        self.device = torch.device(
+            "mps" if torch.backends.mps.is_available() else
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
+        # self.device = torch.device("cpu")
         print(f"Using device: {self.device}")
 
         # Card Embeddings
         self.card_embed_dim = embedding_dim
-        self.card_embedding = CardEncoder(card_feature_length, embedding_dim)
+        self.card_embedding = CardEncoder(card_feature_length, embedding_dim).to(self.device)
 
         self.enemy_embed_dim = enemy_feature_length
 
@@ -171,8 +171,8 @@ class PPOAgent:
         # Initialize actors and critics for each agent
         self.state_dim = self.card_embed_dim + (self.card_embed_dim * self.max_cards)
         self.state_dim += self.max_enemies * self.enemy_embed_dim + 13  # 13 Player features
-        self.actor_critic = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices)
-        self.old_network = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices)
+        self.actor_critic = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices).to(self.device)
+        self.old_network = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices).to(self.device)
         # self.actor_critic = ActorCritic(self.state_dim, self.card_embed_dim, self.enemy_embed_dim, self.max_card_choices).to(self.device)
         #
         # self.old_network = ActorCritic(self.state_dim, self.card_embed_dim, self.enemy_embed_dim, self.max_card_choices).to(self.device)
@@ -205,8 +205,8 @@ class PPOAgent:
             'stages': [],
             # 'action_masks': []
         }
-        self.batch_size = 512
-        self.learn_size = 4096
+        self.batch_size = 1000
+        self.learn_size = 10_000
         self.max_memory = 20000
 
         self.learn_step_counter = 0
@@ -232,7 +232,7 @@ class PPOAgent:
         self.memory['dones'].append(done)
 
         # For scalar tensors, use .item() to get the Python number
-        self.memory['actions'].append(action)
+        self.memory['actions'].append(action.item() if isinstance(action, torch.Tensor) else action)
         self.memory['log_probs'].append(log_prob.item())
         self.memory['values'].append(value.item())
 
@@ -260,7 +260,7 @@ class PPOAgent:
         deck_card_features = state['deck'].to(self.device)
         player = state['player'].to(self.device)
 
-        # Handle the edge case where the deck is empty (e.g., at the very start of a run).
+        # Handle the edge case where the deck is empty
         if deck_card_features.shape[0] == 0:
             # If there are no cards, the deck's representation is just a zero vector.
             deck_embed = torch.zeros(self.card_embed_dim, device=self.device)
@@ -269,6 +269,7 @@ class PPOAgent:
             #    The CardEncoder handles the transformation from features to embeddings.
             #    Input shape: (num_cards_in_deck, feature_dim)
             #    Output shape: (num_cards_in_deck, card_embed_dim)
+            deck_card_embeddings = torch.tensor(np.array([0 for i in range(self.card_embed_dim)]), device=self.device)
             deck_card_embeddings = self.card_embedding(deck_card_features)
 
             # 2. Aggregate the embeddings into a single vector using mean.
@@ -524,7 +525,7 @@ class PPOAgent:
     def graph_embeddings(self, card_names, card_vectors):
         self.card_embedding.eval()
         card_vectors = torch.tensor(np.array(card_vectors)).to(self.device)
-        embeddings = self.card_embedding(card_vectors).detach().numpy()
+        embeddings = self.card_embedding(card_vectors).detach().cpu().numpy()
         visualize_embeddings(card_names, embeddings)
         self.card_embedding.train()
 
@@ -555,40 +556,6 @@ class PPOAgent:
 
         # Stack the results from the loop back into tensors
         return torch.stack(all_log_probs), torch.stack(all_entropies), torch.stack(all_values)
-
-    # def _compute_log_prob(self, stages, states, hand_embeds, enemy_feats, choice_embeds, actions):
-    #     """
-    #     Computes log probabilities for a BATCH of experiences.
-    #     Note: This is a simplified example. Handling batches where items have
-    #     different numbers of cards/enemies requires careful padding or looping.
-    #     For now, we will loop to ensure correctness.
-    #     """
-    #     all_log_probs, all_entropies, all_values = [], [], []
-    #
-    #     for i in range(len(stages)):
-    #         stage = self.GameStage(int(stages[i].item()))
-    #         state = states[i].unsqueeze(0)  # Add batch dim
-    #         action = actions[i]
-    #
-    #         hand = hand_embeds[i].unsqueeze(0) if hand_embeds[i] is not None else None
-    #         enemy = enemy_feats[i].unsqueeze(0) if enemy_feats[i] is not None else None
-    #         choice = choice_embeds[i].unsqueeze(0) if choice_embeds[i] is not None else None
-    #
-    #         # Correctly call the forward pass
-    #         logits, value = self.actor_critic(
-    #             stage,
-    #             state_summary=state,
-    #             hand_card_embeddings=hand,
-    #             enemy_features=enemy,
-    #             card_choices_embeddings=choice
-    #         )
-    #
-    #         dist = torch.distributions.Categorical(logits=logits)
-    #         all_log_probs.append(dist.log_prob(action))
-    #         all_entropies.append(dist.entropy())
-    #         all_values.append(value)
-    #
-    #     return torch.stack(all_log_probs), torch.stack(all_entropies), torch.stack(all_values)
 
     def _convert_state_to_tensors(self, state_np: dict) -> dict:
         """
