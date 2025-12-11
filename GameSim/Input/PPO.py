@@ -81,121 +81,6 @@ class ActorCritic(nn.Module):
 
         return action, log_prob, value
 
-# class ActorCritic(nn.Module):
-#     """
-#     An Actor-Critic network designed for context-aware action selection.
-#     It takes an aggregated state summary for context, and then combines that
-#     context with individual card and enemy features to score each possible action.
-#     """
-#     def __init__(self, state_summary_dim, card_embed_dim, enemy_feature_dim, total_cb_actions):
-#         super().__init__()
-#         self.card_embed_dim = card_embed_dim
-#         self.enemy_feature_dim = enemy_feature_dim
-#
-#         # --- Shared Base ---
-#         # Processes the aggregated state summary to create a "context vector".
-#         self.base_network = nn.Sequential(
-#             nn.Linear(state_summary_dim, 256),
-#             nn.ReLU(),
-#             nn.Linear(256, 128) # Output is a 128-dim context vector
-#         )
-#         base_output_dim = 128
-#
-#         # --- Critic Head ---
-#         # Operates on the context vector to determine the state's value.
-#         self.critic_head = nn.Linear(base_output_dim, 1)
-#
-#         # --- Actor Heads ---
-#         # This head is now a mini-network that scores a single action.
-#         # Its input is the combination of context, a card's embedding,
-#         # and an enemy's features. It outputs a single score (logit) for that action.
-#         actor_input_dim = base_output_dim + self.card_embed_dim + self.enemy_feature_dim
-#         self.battle_actor_head = nn.Sequential(
-#             nn.Linear(actor_input_dim, 64),
-#             nn.ReLU(),
-#             nn.Linear(64, 1) # Output is a single score
-#         )
-#
-#         # The card build head can remain simple as it doesn't have targeting.
-#         self.card_build_actor_head = nn.Linear(base_output_dim, total_cb_actions)
-#
-#     def forward(self, stage, state_summary, hand_card_embeddings=None,
-#                 enemy_features=None, card_choices_embeddings=None):
-#         """
-#         Performs the forward pass.
-#
-#         Args:
-#             stage (GameStage): The current game stage (BATTLE or CARD_BUILD).
-#             state_summary (torch.Tensor): A dense, aggregated summary of the game state.
-#             hand_card_embeddings (torch.Tensor, optional): Embeddings for each card in the hand.
-#                                                            Shape: (batch, num_cards, card_dim).
-#             enemy_features (torch.Tensor, optional): Features for each enemy.
-#                                                      Shape: (batch, num_enemies, enemy_dim).
-#             card_choices_embeddings (torch.Tensor, optional): Embeddings for card choices.
-#
-#         Returns:
-#             A tuple of (action_logits, state_value).
-#         """
-#         # 1. Get the context vector from the state summary.
-#         # Shape: (batch, 128)
-#         context_vector = self.base_network(state_summary)
-#
-#         # 2. Get the state value from the critic head. Easy!
-#         # Shape: (batch, 1) -> squeezed to (batch,)
-#         state_value = self.critic_head(context_vector).squeeze(-1)
-#
-#         # 3. Calculate action logits based on the game stage.
-#         if stage == PPOAgent.GameStage.BATTLE:
-#             # This is the advanced logic for battle actions.
-#             batch_size, num_cards, _ = hand_card_embeddings.shape
-#             _, num_enemies, _ = enemy_features.shape
-#
-#             # Prepare tensors for broadcasting by adding dimensions.
-#             # Context: (B, 128) -> (B, 1, 1, 128)
-#             # Cards:   (B, N_c, C_dim) -> (B, N_c, 1, C_dim)
-#             # Enemies: (B, N_e, E_dim) -> (B, 1, N_e, E_dim)
-#             expanded_context = context_vector.unsqueeze(1).unsqueeze(1).expand(-1, num_cards, num_enemies, -1)
-#             expanded_cards = hand_card_embeddings.unsqueeze(2).expand(-1, -1, num_enemies, -1)
-#             expanded_enemies = enemy_features.unsqueeze(1).expand(-1, num_cards, -1, -1)
-#
-#             # Concatenate to create a feature vector for EACH possible action.
-#             # Shape: (B, N_c, N_e, 128 + C_dim + E_dim)
-#             action_features = torch.cat([expanded_context, expanded_cards, expanded_enemies], dim=-1)
-#
-#             # Pass all action features through the actor head to get a score for each.
-#             # The head processes the last dimension.
-#             # Output shape: (B, N_c, N_e, 1)
-#             action_scores = self.battle_actor_head(action_features)
-#
-#             # Reshape scores into a flat logit vector for the Categorical distribution.
-#             # Shape: (B, N_c * N_e)
-#             action_logits = action_scores.squeeze(-1).flatten(start_dim=1)
-#
-#         elif stage == PPOAgent.GameStage.CARD_BUILD:
-#             # Card building is simpler, we can just use the context vector.
-#             action_logits = self.card_build_actor_head(context_vector)
-#         else:
-#             raise ValueError(f"Unknown stage: {stage}")
-#
-#         return action_logits, state_value
-#
-#
-#     def sample_action(self, stage, state_summary, hand_card_embeddings=None,
-#                       enemy_features=None, card_choices_embeddings=None):
-#
-#         action_logits, value = self.forward(stage, state_summary, hand_card_embeddings, enemy_features, card_choices_embeddings)
-#
-#         dist = torch.distributions.Categorical(logits=action_logits)
-#         # print("action distribution:")
-#         # print(dist.probs)
-#         # Sample action
-#         action = dist.sample()
-#
-#         # Compute log probability of the sampled action
-#         log_prob = dist.log_prob(action).unsqueeze(-1)
-#
-#         return action.item(), log_prob, value
-
 
 class CardEncoder(nn.Module):
     """
@@ -252,8 +137,8 @@ class PPOAgent:
 
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
-    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256,
-                 learning_enabled=True, lr=0.0003, gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=10):
+    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=32,
+                 learning_enabled=True, lr=0.0003, gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
         # Hyperparameters
         self.gamma = gamma
         self.epsilon = epsilon
@@ -320,8 +205,8 @@ class PPOAgent:
             'stages': [],
             # 'action_masks': []
         }
-        self.batch_size = 256
-        self.learn_size = 2048
+        self.batch_size = 512
+        self.learn_size = 4096
         self.max_memory = 20000
 
         self.learn_step_counter = 0
@@ -638,7 +523,7 @@ class PPOAgent:
 
     def graph_embeddings(self, card_names, card_vectors):
         self.card_embedding.eval()
-        card_vectors = torch.tensor(card_vectors).to(self.device)
+        card_vectors = torch.tensor(np.array(card_vectors)).to(self.device)
         embeddings = self.card_embedding(card_vectors).detach().numpy()
         visualize_embeddings(card_names, embeddings)
         self.card_embedding.train()

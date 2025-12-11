@@ -257,7 +257,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
         #     if card.name == "EmptyFist" or card.name == "Eruption":
         #         card.upgrade()
 
-        room.player.add_relic(PureWater(room.player))
+        # room.player.add_relic(PureWater(room.player))
 
         if combat_type == "monster":
             # enemy_choice = random.choice(list(possible_enemies.keys()))
