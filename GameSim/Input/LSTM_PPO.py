@@ -146,7 +146,7 @@ class LSTMPPOAgent(PPOAgent):
             lstm_hidden_dim=self.lstm_hidden_dim,
             total_bt_actions=(self.max_cards * self.max_enemies) + self.other_actions,
             total_cb_actions=self.max_card_choices
-        )
+        ).to(self.device)
 
         self.old_network = ActorCriticLSTM(
             static_input_dim=static_dim,
@@ -154,7 +154,7 @@ class LSTMPPOAgent(PPOAgent):
             lstm_hidden_dim=self.lstm_hidden_dim,
             total_bt_actions=(self.max_cards * self.max_enemies) + self.other_actions,
             total_cb_actions=self.max_card_choices
-        )
+        ).to(self.device)
 
         self.old_network.load_state_dict(self.actor_critic.state_dict())
 
@@ -217,7 +217,7 @@ class LSTMPPOAgent(PPOAgent):
                 self.hidden_state = new_hidden_state
 
         self.actor_critic.train()
-        return action_choice, log_prob, value
+        return action_choice.detach().cpu().item(), log_prob.detach().cpu(), value.detach().cpu()
 
     def _learn(self):
         # self.device = "mps"
@@ -228,7 +228,7 @@ class LSTMPPOAgent(PPOAgent):
         dones_arr = np.array(self.memory['dones'])
         old_log_probs_arr = np.array(self.memory['log_probs'])
         values_arr = np.array(self.memory['values'])
-        stages_arr = np.array(self.memory['stages'])
+        stages_arr = self.memory['stages']
         # hidden_states_arr = np.array(self.memory['hidden_states'])
         # cell_states_arr = np.array(self.memory['cell_states'])
 
@@ -242,7 +242,7 @@ class LSTMPPOAgent(PPOAgent):
         # Find the start index of each episode
         for i in range(len(dones_arr)):
             if dones_arr[i]:
-                episode_indices.append(range(current_episode_start, i + 1))
+                episode_indices.append(list(range(current_episode_start, i + 1)))
                 current_episode_start = i + 1
 
         losses = []
@@ -262,7 +262,7 @@ class LSTMPPOAgent(PPOAgent):
                     self.device)
                 batch_advantages = advantages_all[episode].to(self.device)
                 batch_value_targets = value_targets_all[episode].to(self.device)
-                batch_stages = stages_arr[episode]
+                batch_stages = [stages_arr[i] for i in episode]
                 initial_hidden_state = (
                     torch.zeros(1, self.lstm_hidden_dim).to(self.device),
                     torch.zeros(1, self.lstm_hidden_dim).to(self.device)
@@ -365,7 +365,7 @@ class LSTMPPOAgent(PPOAgent):
         # Use a mask to select the correct output for each item in the batch based on its stage
 
         # is_battle_stage = (batch_stages == self.GameStage.BATTLE.value).to(self.device).squeeze(-1)
-        is_battle_stage = torch.tensor((batch_stages == self.GameStage.BATTLE.value)).to(self.device)
+        is_battle_stage = torch.tensor([stage == self.GameStage.BATTLE.value for stage in batch_stages]).to(self.device)
         base_output = torch.where(is_battle_stage.unsqueeze(-1), bt_base_out, cb_base_out).to(self.device)
 
         # --- 3. Get Logits, Values, and Entropy ---
