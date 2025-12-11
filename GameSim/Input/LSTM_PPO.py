@@ -34,8 +34,7 @@ class ActorCriticLSTM(nn.Module):
         combined_feature_dim = lstm_hidden_dim + static_input_dim
         leaky_relu_slope = 0.02
         network_size = 256
-        # I added a custom initialization
-        # also, changed activation to LeakyRelu
+
         xavier_gain = nn.init.calculate_gain('leaky_relu', leaky_relu_slope)
         first_layer = nn.Linear(combined_feature_dim, network_size)
         nn.init.xavier_uniform_(first_layer.weight, gain=xavier_gain)

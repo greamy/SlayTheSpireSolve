@@ -664,4 +664,5 @@ class PPOAgent:
         checkpoint = torch.load(filepath)
         self.card_embedding.load_state_dict(checkpoint['card_embedding'])
         self.actor_critic.load_state_dict(checkpoint['actor_critic'])
+        self.old_network.load_state_dict(self.actor_critic.state_dict())
         self.optimizer.load_state_dict(checkpoint['optimizer'])
