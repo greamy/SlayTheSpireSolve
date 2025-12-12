@@ -1,6 +1,8 @@
 import math
 import random
 from enum import Enum
+from collections import deque
+import gc
 
 import numpy as np
 import torch
@@ -397,6 +399,13 @@ class LSTMPPOAgent(PPOAgent):
         for key in self.memory:
             self.memory[key].clear()
 
+        # Explicit memory cleanup to combat PyTorch memory fragmentation
+        gc.collect()
+        if torch.backends.mps.is_available():
+            torch.mps.empty_cache()
+        elif torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
         if self.learn_step_counter % 10 == 0:
             avg_loss = sum(losses) / len(losses)
             avg_reward = (sum(rewards_arr) / len(rewards_arr))
@@ -561,7 +570,7 @@ class LSTMPPOAgent(PPOAgent):
 
     def load_models(self, filepath):
         """Load all model weights and observation normalization statistics"""
-        checkpoint = torch.load(filepath)
+        checkpoint = torch.load(filepath, weights_only=False)
         self.card_embedding.load_state_dict(checkpoint['card_embedding'])
         self.actor_critic.load_state_dict(checkpoint['actor_critic'])
         self.old_network.load_state_dict(self.actor_critic.state_dict())
