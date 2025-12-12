@@ -139,7 +139,7 @@ class PPOAgent:
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
     def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=128,
-                 learning_enabled=True, lr=0.0005, gamma=0.99, epsilon=0.225, value_coef=0.5, entropy_coef=0.00016379, entropy_decay=0.996, learn_epochs=5):
+                 learning_enabled=True, lr=0.0005, gamma=0.99, epsilon=0.25, value_coef=0.5, entropy_coef=1e-5, entropy_decay=0.996, learn_epochs=5):
 
         # Hyperparameters
         self.gamma = gamma
@@ -207,7 +207,7 @@ class PPOAgent:
             'stages': [],
             # 'action_masks': []
         }
-        self.batch_size = 512
+        self.batch_size = 1024
         self.learn_size = 5_000
         self.max_memory = 20000
 
@@ -573,14 +573,15 @@ class PPOAgent:
         Returns:
             dict: A new state dictionary with values as PyTorch tensors on the correct device.
         """
-        # Ensure the 'features' array is at least 1D, which torch.from_numpy expects
-        # features_np = np.atleast_1d(state_np['deck'])
+        # Use torch.tensor() instead of torch.from_numpy() to create a COPY
+        # This breaks the reference to the numpy array, allowing it to be garbage collected
+        # torch.from_numpy() shares memory and keeps the numpy array alive
         tensors = {}
         for key, value in state_np.items():
             if key == "action_mask":
-                tensors[key] = torch.from_numpy(value).to(self.device)
+                tensors[key] = torch.tensor(value, dtype=torch.bool, device=self.device)
                 continue
-            tensors[key] = torch.from_numpy(value).float().to(self.device)
+            tensors[key] = torch.tensor(value, dtype=torch.float32, device=self.device)
         return tensors
 
     def step(self, prev_state, action_taken, log_prob, reward, done, new_state, value):
