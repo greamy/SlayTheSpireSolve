@@ -138,7 +138,8 @@ class PPOAgent:
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
     def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=32,
-                 learning_enabled=True, lr=0.0003, gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
+                 learning_enabled=True, lr=0.0003, gamma=0.99, epsilon=0.3, value_coef=0.5, entropy_coef=0.005, entropy_decay=0.996, learn_epochs=5):
+
         # Hyperparameters
         self.gamma = gamma
         self.epsilon = epsilon
@@ -205,8 +206,8 @@ class PPOAgent:
             'stages': [],
             # 'action_masks': []
         }
-        self.batch_size = 1000
-        self.learn_size = 10_000
+        self.batch_size = 512
+        self.learn_size = 5_000
         self.max_memory = 20000
 
         self.learn_step_counter = 0
@@ -498,10 +499,10 @@ class PPOAgent:
                 self.optimizer.step()
             self.lr_scheduler.step()
             self.learn_step_counter += 1
+            self.entropy_coef *= self.entropy_decay
 
         self.old_network.load_state_dict(self.actor_critic.state_dict())
 
-        self.entropy_coef *= self.entropy_decay
 
         # Clear memory after learning
         for key in self.memory:
