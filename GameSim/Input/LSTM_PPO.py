@@ -12,6 +12,97 @@ import torch.optim as optim
 from GameSim.Input.PPO import PPOAgent
 
 
+class RunningMeanStd:
+    """
+    Tracks running mean and standard deviation of observations using Welford's online algorithm.
+    This is used for normalizing observations to have zero mean and unit variance.
+    """
+    def __init__(self, shape, epsilon=1e-4):
+        """
+        Args:
+            shape: Shape of the observations to track
+            epsilon: Small constant for numerical stability
+        """
+        self.mean = np.zeros(shape, dtype=np.float32)
+        self.var = np.ones(shape, dtype=np.float32)
+        self.count = epsilon
+        self.epsilon = epsilon
+
+    def update(self, batch):
+        """
+        Update running statistics with a batch of observations.
+        Uses Welford's online algorithm for numerical stability.
+
+        Args:
+            batch: Batch of observations (can be single observation or multiple)
+        """
+        if isinstance(batch, torch.Tensor):
+            batch = batch.detach().cpu().numpy()
+
+        # Handle single observation
+        if batch.ndim == 1:
+            batch = batch.reshape(1, -1)
+
+        batch_mean = np.mean(batch, axis=0)
+        batch_var = np.var(batch, axis=0)
+        batch_count = batch.shape[0]
+
+        self.update_from_moments(batch_mean, batch_var, batch_count)
+
+    def update_from_moments(self, batch_mean, batch_var, batch_count):
+        """
+        Update statistics from batch moments using parallel algorithm.
+
+        Args:
+            batch_mean: Mean of the batch
+            batch_var: Variance of the batch
+            batch_count: Number of samples in the batch
+        """
+        delta = batch_mean - self.mean
+        total_count = self.count + batch_count
+
+        new_mean = self.mean + delta * batch_count / total_count
+        m_a = self.var * self.count
+        m_b = batch_var * batch_count
+        M2 = m_a + m_b + np.square(delta) * self.count * batch_count / total_count
+        new_var = M2 / total_count
+
+        self.mean = new_mean
+        self.var = new_var
+        self.count = total_count
+
+    def normalize(self, obs, update=True):
+        """
+        Normalize observations using current statistics.
+
+        Args:
+            obs: Observations to normalize (numpy array or torch tensor)
+            update: Whether to update running statistics with this observation
+
+        Returns:
+            Normalized observations in the same format as input
+        """
+        is_tensor = isinstance(obs, torch.Tensor)
+        device = obs.device if is_tensor else None
+
+        if is_tensor:
+            obs_np = obs.detach().cpu().numpy()
+        else:
+            obs_np = obs
+
+        if update:
+            self.update(obs_np)
+
+        # Normalize
+        normalized = (obs_np - self.mean) / np.sqrt(self.var + self.epsilon)
+
+        # Convert back to tensor if input was tensor
+        if is_tensor:
+            normalized = torch.from_numpy(normalized).float().to(device)
+
+        return normalized
+
+
 class ActorCriticLSTM(nn.Module):
     """
     An Actor-Critic network that uses an LSTM to process sequential battle states.
@@ -178,6 +269,11 @@ class LSTMPPOAgent(PPOAgent):
 
         self.sequence_length = 64
 
+        # --- Observation Normalization ---
+        # Separate normalizers for static and dynamic features
+        self.obs_norm_static = RunningMeanStd(shape=static_dim)
+        self.obs_norm_dynamic = RunningMeanStd(shape=dynamic_dim)
+
     def reset_hidden_state(self):
         """Call this at the beginning of each battle."""
         # Initialize a zero hidden state and cell state for the LSTM
@@ -204,6 +300,10 @@ class LSTMPPOAgent(PPOAgent):
         full_state, stage, action_mask = self.embed_state(state_tensors)
         static_features = full_state[:self.card_embed_dim]
         dynamic_features = full_state[self.card_embed_dim:]
+
+        # Normalize observations (update statistics during training)
+        static_features = self.obs_norm_static.normalize(static_features, update=self.learning_enabled)
+        dynamic_features = self.obs_norm_dynamic.normalize(dynamic_features, update=self.learning_enabled)
 
         self.actor_critic.eval()
         with torch.no_grad():
@@ -347,19 +447,30 @@ class LSTMPPOAgent(PPOAgent):
         static_features = batch_states[:, :self.card_embed_dim]
         dynamic_features = batch_states[:, self.card_embed_dim:]
 
+        # Normalize observations during training (don't update stats, just use existing)
+        # We normalize each observation in the batch
+        static_features_normalized = torch.stack([
+            self.obs_norm_static.normalize(static_features[i], update=False)
+            for i in range(static_features.shape[0])
+        ])
+        dynamic_features_normalized = torch.stack([
+            self.obs_norm_dynamic.normalize(dynamic_features[i], update=False)
+            for i in range(dynamic_features.shape[0])
+        ])
+
         # --- 2. Vectorized Forward Pass ---
 
         # Process all battle sequences through the LSTM at once
         # The LSTM will process the tensor of shape (batch_size, sequence_length, dynamic_dim)
 
-        lstm_out, _ = self.actor_critic.lstm(dynamic_features, initial_hidden_state)
+        lstm_out, _ = self.actor_critic.lstm(dynamic_features_normalized, initial_hidden_state)
 
         # Combine LSTM output with static features
-        combined_features = torch.cat((lstm_out, static_features), dim=-1)
+        combined_features = torch.cat((lstm_out, static_features_normalized), dim=-1)
         bt_base_out = self.actor_critic.base_network(combined_features)
 
         # Process all card build sequences through the non-LSTM path
-        cb_base_out = self.actor_critic.cb_base_network(static_features)
+        cb_base_out = self.actor_critic.cb_base_network(static_features_normalized)
 
         # Use a mask to select the correct output for each item in the batch based on its stage
 
@@ -432,4 +543,36 @@ class LSTMPPOAgent(PPOAgent):
             self._learn()
 
         return action, new_log_prob, value
+
+    def save_models(self, filepath):
+        """Save all model weights and observation normalization statistics"""
+        checkpoint = {
+            'card_embedding': self.card_embedding.state_dict(),
+            'actor_critic': self.actor_critic.state_dict(),
+            'optimizer': self.optimizer.state_dict(),
+            'obs_norm_static_mean': self.obs_norm_static.mean,
+            'obs_norm_static_var': self.obs_norm_static.var,
+            'obs_norm_static_count': self.obs_norm_static.count,
+            'obs_norm_dynamic_mean': self.obs_norm_dynamic.mean,
+            'obs_norm_dynamic_var': self.obs_norm_dynamic.var,
+            'obs_norm_dynamic_count': self.obs_norm_dynamic.count,
+        }
+        torch.save(checkpoint, filepath)
+
+    def load_models(self, filepath):
+        """Load all model weights and observation normalization statistics"""
+        checkpoint = torch.load(filepath)
+        self.card_embedding.load_state_dict(checkpoint['card_embedding'])
+        self.actor_critic.load_state_dict(checkpoint['actor_critic'])
+        self.old_network.load_state_dict(self.actor_critic.state_dict())
+        self.optimizer.load_state_dict(checkpoint['optimizer'])
+
+        # Load observation normalization statistics if they exist
+        if 'obs_norm_static_mean' in checkpoint:
+            self.obs_norm_static.mean = checkpoint['obs_norm_static_mean']
+            self.obs_norm_static.var = checkpoint['obs_norm_static_var']
+            self.obs_norm_static.count = checkpoint['obs_norm_static_count']
+            self.obs_norm_dynamic.mean = checkpoint['obs_norm_dynamic_mean']
+            self.obs_norm_dynamic.var = checkpoint['obs_norm_dynamic_var']
+            self.obs_norm_dynamic.count = checkpoint['obs_norm_dynamic_count']
 
