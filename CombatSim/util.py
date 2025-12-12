@@ -244,51 +244,41 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
     # Use deque for wins to prevent unbounded memory growth
     # Keep only last 1000 results for rolling win rate calculation
     from collections import deque
+    import gc
     wins = deque(maxlen=1000)
     total_wins = 0  # Track total wins separately
     total_combats = 0  # Track total combats
+    enemy_combats = {}
 
-    if combat_type == "monster":
-        rooms = [MonsterRoom(createPlayer(controller=controller, cards=[], lib_path=library_path), 1, 0, [], [], random.randint(1, 2), 20) for i in range(num_combats)]
-    elif combat_type == "elite":
-        rooms = [EliteRoom(createPlayer(controller=controller, cards=[], lib_path=library_path), 1, 0, [], [], random.randint(1, 2), 20) for i in range(num_combats)]
-    else:
-        rooms = []
-    for room in rooms:
+    # Create rooms one at a time instead of pre-allocating all at once
+    # This allows completed rooms to be garbage collected, saving ~7GB
+    for i in range(num_combats):
+        # Create a fresh room for this combat
+        if combat_type == "monster":
+            room = MonsterRoom(createPlayer(controller=controller, cards=[], lib_path=library_path),
+                             1, 0, [], [], random.randint(1, 2), 20)
+        elif combat_type == "elite":
+            room = EliteRoom(createPlayer(controller=controller, cards=[], lib_path=library_path),
+                           1, 0, [], [], random.randint(1, 2), 20)
+        else:
+            continue
+
+        # Setup the room's deck and enemies
         cards = get_default_deck()
-        # cards.remove("Defend")
-        # cards.remove("Strike")
-        # cards.extend(["CarveReality", "EmptyFist", "CutThroughFate", "DeceiveReality", "CutThroughFate"])
         addCards(room.player, cards)
-        # for card in room.player.deck.draw_pile:
-        #     if card.name == "EmptyFist" or card.name == "Eruption":
-        #         card.upgrade()
-
-        # room.player.add_relic(PureWater(room.player))
 
         if combat_type == "monster":
-            # enemy_choice = random.choice(list(possible_enemies.keys()))
             enemy_choice = monster_name
             try:
                 enemy_ = getattr(possible_enemies[enemy_choice], enemy_choice)
                 room.enemies = [enemy_(ascension=20, act=1)]
-                # room.enemies[0].health = 1
             except AttributeError:
                 room.enemies = [AcidSlimeSmall(20, 1)]
                 enemy_choice = "AcidSlimeSmall"
 
-    enemy_combats = {}
-
-    for i, room in enumerate(rooms):
-        if combat_type == "monster":
-            room.player.begin_combat(room.enemies, False)
+            # Begin the combat
             room.player.start_turn(room.enemies, False)
-            # room.player.deck.hand.clear()
-            # cards = [Defend(room.player), Defend(room.player), Defend(room.player), Defend(room.player), Strike(room.player)]
-            # room.player.deck.hand.extend(cards)
             room.player.controller.begin_combat(room.player, room.enemies, False)
-            # Get enemy choice from room instead of tracking in separate list
-            enemy_choice = room.enemies[0].__class__.__name__
         else:
             room.start()
             enemy_choice = room.player.last_elite
@@ -328,6 +318,11 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
             controller.agent.graph_embeddings(card_names, card_vectors)
 
             controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent.pt")
+
+        # Explicit garbage collection every 100 combats to prevent accumulation
+        # This helps clean up numpy arrays and tensors that haven't been freed yet
+        if i % 100 == 0 and i > 0:
+            gc.collect()
 
     print(f"Final overall win rate: {total_wins / total_combats:.2%}")
     for key in sorted(enemy_combats.keys()):

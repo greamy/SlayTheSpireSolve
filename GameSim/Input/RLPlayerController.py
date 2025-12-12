@@ -79,7 +79,9 @@ class RLPlayerController(PlayerController):
             int(card.playable)
         ], dtype=np.float32)
 
-        if card not in self.card_cache:
+        # Check if card already has embedding before computing
+        # This prevents unnecessary DistilBERT calls and improves performance
+        if card.text_embedding is None:
             inputs = self.tokenizer(card.description, return_tensors="pt", padding=True, truncation=True)
             with torch.no_grad():
                 outputs = self.text_model(**inputs)
