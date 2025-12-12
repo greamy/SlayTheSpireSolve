@@ -15,7 +15,7 @@ def main():
     rl_controller = RLPlayerController(delay=0, train=True, filepath="artifacts/images/model_results/first_fight/")
     # rl_controller = RandomPlayerController(delay=0)
     # rl_controller.agent.load_models(f"artifacts/models/first_fight/ppo_agent_{episodes}.pt")
-    rl_controller.agent.load_models(f"artifacts/models/first_fight/ppo_agent.pt")
+    # rl_controller.agent.load_models(f"artifacts/models/first_fight/ppo_agent_JawWorm100.pt")
     run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
                    Renderer.RenderType.NONE, "monster", episodes, "JawWorm")
 

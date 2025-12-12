@@ -266,6 +266,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
         # Setup the room's deck and enemies
         cards = get_default_deck()
         addCards(room.player, cards)
+        room.player.deck.shuffle()
 
         if combat_type == "monster":
             enemy_choice = monster_name

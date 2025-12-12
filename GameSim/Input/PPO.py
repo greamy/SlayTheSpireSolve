@@ -139,7 +139,7 @@ class PPOAgent:
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
     def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=128,
-                 learning_enabled=True, lr=0.0005, gamma=0.99, epsilon=0.25, value_coef=0.5, entropy_coef=1e-5, entropy_decay=0.996, learn_epochs=5):
+                 learning_enabled=True, lr=0.001, gamma=0.99, epsilon=0.23, value_coef=0.5, entropy_coef=0.0005, entropy_decay=0.998, learn_epochs=10):
 
         # Hyperparameters
         self.gamma = gamma
