@@ -129,6 +129,7 @@ def visualize_bot_comparison(simple_history, random_history):
 
     plt.tight_layout()
     plt.show()
+    plt.close(fig)
 
 def visualize_bot_history(loss_hist, reward_hist, filepath):
     """
@@ -230,7 +231,7 @@ def visualize_embeddings(card_names, embeddings, perplexity=5, random_state=42):
     ax.set_ylabel('t-SNE Dimension 2', fontsize=12)
     plt.grid(True)
     plt.savefig("artifacts/images/model_results/first_fight/embed_vis.png")
-    plt.clf()
+    plt.close(fig)
 
 
 def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.RenderType.NONE, combat_type="monster", num_combats=5000, monster_name="JawWorm"):
