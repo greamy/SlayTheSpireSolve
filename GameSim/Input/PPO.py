@@ -1,4 +1,5 @@
 from enum import Enum
+from collections import deque
 
 import torch
 import torch.nn as nn
@@ -137,8 +138,8 @@ class PPOAgent:
 
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
-    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=32,
-                 learning_enabled=True, lr=0.0003, gamma=0.99, epsilon=0.3, value_coef=0.5, entropy_coef=0.005, entropy_decay=0.996, learn_epochs=5):
+    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=128,
+                 learning_enabled=True, lr=0.0005, gamma=0.99, epsilon=0.225, value_coef=0.5, entropy_coef=0.00016379, entropy_decay=0.996, learn_epochs=5):
 
         # Hyperparameters
         self.gamma = gamma
@@ -212,8 +213,10 @@ class PPOAgent:
 
         self.learn_step_counter = 0
 
-        self.losses = []
-        self.rewards = []
+        # Use deque with maxlen to prevent unbounded memory growth
+        self.max_history = 1000  # Keep last 1000 entries
+        self.losses = deque(maxlen=self.max_history)
+        self.rewards = deque(maxlen=self.max_history)
 
     def reset_hidden_state(self):
         pass
