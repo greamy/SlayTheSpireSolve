@@ -106,6 +106,8 @@ class Player(Entity):
         self.draw_cards(self.draw_amount, enemies, debug)
         self.controller.start_turn(self, enemies)
         self.notify_listeners(Listener.Event.START_TURN, self, enemies, debug)
+        # Clear the previously played card display at the start of the new turn
+        self.card_played = None
 
     def do_next_action(self, enemies, debug):
         playable_cards = self.get_playable_cards()
@@ -185,7 +187,6 @@ class Player(Entity):
             self.set_stance(self.Stance.NONE)
 
         self.turn_over = False
-        self.card_played = None
 
     def draw_cards(self, amount, enemies, debug):
         self.deck.draw_cards(amount)

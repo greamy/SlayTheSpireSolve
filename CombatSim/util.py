@@ -264,8 +264,15 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
             continue
 
         # Setup the room's deck and enemies
-        cards = get_default_deck()
+        # cards = get_default_deck()
+        cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
         addCards(room.player, cards)
+
+        for card in room.player.deck.get_deck():
+            if card.name == "Eruption":
+                card.upgrade() # Upgrade one of our eruption cards.
+                break
+
         room.player.deck.shuffle()
 
         if combat_type == "monster":

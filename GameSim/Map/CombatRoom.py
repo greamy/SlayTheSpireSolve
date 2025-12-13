@@ -1,3 +1,5 @@
+import time
+
 import pygame
 
 from CombatSim.Entities.Enemy import Enemy
@@ -28,6 +30,10 @@ class CombatRoom(Room):
         self.fail_msg = None
         self.fail_msg_counter = 0
 
+        # Enemy turn delay mechanism
+        self.enemy_turn_counter = 0
+        self.enemy_turn_ready = False
+
     def start(self):
         self.enemies = self.create_enemies(self.act, self.ascension)
         self.player.begin_combat(self.enemies, self.debug)
@@ -51,8 +57,21 @@ class CombatRoom(Room):
             if turn_over:
                 self.player.end_turn(self.enemies, self.debug)
                 self.current_turn = self.ENEMY_TURN
+                # Reset enemy turn delay counter when switching to enemy turn
+                self.enemy_turn_counter = 0
+                self.enemy_turn_ready = False
 
         elif self.current_turn == self.ENEMY_TURN:
+            # Add delay before enemy turn executes (similar to player's wait_for_counter)
+            if not self.enemy_turn_ready:
+                self.enemy_turn_counter += 1
+                delay = self.player.controller.delay
+                framerate = self.player.controller.framerate
+                if delay != 0 and self.enemy_turn_counter < (delay * framerate):
+                    return True  # Keep waiting, don't execute enemy turn yet
+                self.enemy_turn_ready = True
+
+            # Execute enemy turn after delay has passed
             for enemy in self.enemies:
                 enemy.start_turn([self.player], self.debug)
                 enemy.do_turn(self.player, self.debug)
