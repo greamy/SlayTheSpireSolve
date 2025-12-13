@@ -139,7 +139,7 @@ class PPOAgent:
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
     def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=128,
-                 learning_enabled=True, lr=0.00075, gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.00025, entropy_decay=0.998, learn_epochs=10):
+                 learning_enabled=True, lr=0.001, gamma=0.99, epsilon=0.23, value_coef=0.5, entropy_coef=0.0005, entropy_decay=0.999, learn_epochs=10):
 
         # Hyperparameters
         self.gamma = gamma
@@ -208,7 +208,7 @@ class PPOAgent:
             # 'action_masks': []
         }
         self.batch_size = 1024
-        self.learn_size = 5_000
+        self.learn_size = 8192
         self.max_memory = 20000
 
         self.learn_step_counter = 0

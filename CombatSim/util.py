@@ -264,8 +264,8 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
             continue
 
         # Setup the room's deck and enemies
-        # cards = get_default_deck()
-        cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
+        cards = get_default_deck()
+        # cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
         addCards(room.player, cards)
 
         for card in room.player.deck.get_deck():
@@ -314,10 +314,102 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
                 enemy_combats[enemy_choice] = [0, 1]
 
         if i % 500 == 0: # every 500 episodes we output embedding visualizations
-            print(f"Combat {i+1} complete")
+            print(f"\nCombat {i+1} complete")
             # Use rolling window for recent win rate
             print(f"Recent win rate (last {len(wins)} games): {sum(wins) / len(wins) if len(wins) > 0 else 0:.2%}")
             print(f"Overall win rate: {total_wins / total_combats:.2%}")
+
+            # Calculate rolling stats for last 1000 combats (or fewer if less than 1000)
+            window_start = max(0, len(controller.final_healths) - 1000)
+            recent_healths = controller.final_healths[window_start:]
+            recent_turns = controller.turn_counts[window_start:]
+            recent_cards = controller.cards_played_counts[window_start:]
+
+            # Stats for wins only in the recent window
+            recent_wins = [h for h in recent_healths if h > 0]
+            if recent_wins:
+                recent_win_indices = [idx for idx, h in enumerate(recent_healths) if h > 0]
+                avg_health_wins = sum(recent_wins) / len(recent_wins)
+                avg_turns_wins = sum(recent_turns[idx] for idx in recent_win_indices) / len(recent_win_indices)
+                avg_cards_wins = sum(recent_cards[idx] for idx in recent_win_indices) / len(recent_win_indices)
+
+                print(f"Recent avg health (wins only): {avg_health_wins:.1f}")
+                print(f"Recent avg turns (wins only): {avg_turns_wins:.1f}")
+                print(f"Recent avg cards played (wins only): {avg_cards_wins:.1f}")
+
+            # Overall stats for recent window
+            avg_health_all = sum(recent_healths) / len(recent_healths) if recent_healths else 0
+            avg_turns_all = sum(recent_turns) / len(recent_turns) if recent_turns else 0
+            avg_cards_all = sum(recent_cards) / len(recent_cards) if recent_cards else 0
+            print(f"Recent avg health (overall): {avg_health_all:.1f}")
+            print(f"Recent avg turns (overall): {avg_turns_all:.1f}")
+            print(f"Recent avg cards played (overall): {avg_cards_all:.1f}")
+
+            # Create training progress visualization
+            # Calculate rolling averages for visualization
+            window = 100
+            rolling_health = []
+            rolling_turns = []
+            rolling_cards = []
+            rolling_winrate = []
+
+            for j in range(len(controller.final_healths)):
+                start_idx = max(0, j - window + 1)
+                # Health (wins only)
+                window_healths = controller.final_healths[start_idx:j+1]
+                window_wins = [h for h in window_healths if h > 0]
+                rolling_health.append(sum(window_wins) / len(window_wins) if window_wins else 0)
+
+                # Turns (wins only)
+                window_turns_all = controller.turn_counts[start_idx:j+1]
+                win_turn_indices = [idx for idx, h in enumerate(window_healths) if h > 0]
+                window_turns_wins = [window_turns_all[idx] for idx in win_turn_indices]
+                rolling_turns.append(sum(window_turns_wins) / len(window_turns_wins) if window_turns_wins else 0)
+
+                # Cards (wins only)
+                window_cards_all = controller.cards_played_counts[start_idx:j+1]
+                window_cards_wins = [window_cards_all[idx] for idx in win_turn_indices]
+                rolling_cards.append(sum(window_cards_wins) / len(window_cards_wins) if window_cards_wins else 0)
+
+                # Win rate
+                rolling_winrate.append(len(window_wins) / len(window_healths) * 100 if window_healths else 0)
+
+            # Create 2x2 subplot for training progress
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+
+            # Plot 1: Rolling Average Health (wins only)
+            ax1.plot(rolling_health, color='tab:blue', linewidth=1, alpha=0.8)
+            ax1.set_xlabel('Combat Number', fontsize=10)
+            ax1.set_ylabel('Avg Health (wins)', fontsize=10)
+            ax1.set_title(f'Rolling Avg Final Health (window={window}, wins only)', fontsize=12)
+            ax1.grid(True, alpha=0.3)
+
+            # Plot 2: Rolling Average Turns (wins only)
+            ax2.plot(rolling_turns, color='tab:green', linewidth=1, alpha=0.8)
+            ax2.set_xlabel('Combat Number', fontsize=10)
+            ax2.set_ylabel('Avg Turns (wins)', fontsize=10)
+            ax2.set_title(f'Rolling Avg Turns (window={window}, wins only)', fontsize=12)
+            ax2.grid(True, alpha=0.3)
+
+            # Plot 3: Rolling Average Cards Played (wins only)
+            ax3.plot(rolling_cards, color='tab:orange', linewidth=1, alpha=0.8)
+            ax3.set_xlabel('Combat Number', fontsize=10)
+            ax3.set_ylabel('Avg Cards (wins)', fontsize=10)
+            ax3.set_title(f'Rolling Avg Cards Played (window={window}, wins only)', fontsize=12)
+            ax3.grid(True, alpha=0.3)
+
+            # Plot 4: Rolling Win Rate
+            ax4.plot(rolling_winrate, color='tab:purple', linewidth=1, alpha=0.8)
+            ax4.set_xlabel('Combat Number', fontsize=10)
+            ax4.set_ylabel('Win Rate (%)', fontsize=10)
+            ax4.set_title(f'Rolling Win Rate (window={window})', fontsize=12)
+            ax4.grid(True, alpha=0.3)
+            ax4.set_ylim(0, 105)
+
+            plt.tight_layout()
+            plt.savefig("artifacts/images/model_results/first_fight/training_progress.png", dpi=150)
+            plt.close(fig)
+
             room.player.deck.reshuffle()
             deck = room.player.deck.get_deck()
             card_names = [c.name for c in deck]

@@ -42,8 +42,14 @@ class RLPlayerController(PlayerController):
 
         self.turn_stable_hand = []
         self.final_healths = []
+        self.turn_counts = []
+        self.cards_played_counts = []
         self.health = 0
         self.enemy_health = 0
+
+        # Current combat tracking
+        self.current_turn_count = 0
+        self.current_cards_played = 0
 
         self.tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
         self.text_model = AutoModel.from_pretrained("distilbert-base-uncased")
@@ -271,6 +277,9 @@ class RLPlayerController(PlayerController):
             # so the agent knows it can't be played again this turn.
             self.turn_stable_hand[card_index][1] = False
 
+            # Increment cards played counter
+            self.current_cards_played += 1
+
             # The game engine will handle removing the card from the real player.hand
             return card_index, card
         else:
@@ -283,11 +292,14 @@ class RLPlayerController(PlayerController):
         # We store a list of tuples: (card_object, is_still_in_hand_bool)
         self.turn_stable_hand = [[card, True] for card in player.deck.hand]
 
-        self.reward = -0.1
+        # Increment turn counter (one turn is a player->enemy cycle)
+        self.current_turn_count += 1
+
+        self.reward = -1
         health_lost = self.health - player.health
         damage_done = self.enemy_health - sum([enemy.health for enemy in enemies])
-        self.reward += health_lost * -0.5
-        self.reward += damage_done * 0.25
+        self.reward += health_lost * -5.0
+        self.reward += damage_done * 2.5
 
         self.health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
@@ -295,6 +307,10 @@ class RLPlayerController(PlayerController):
     def begin_combat(self, player, enemies, debug):
         self.health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
+
+        # Reset combat-specific counters
+        self.current_turn_count = 0
+        self.current_cards_played = 0
 
         self.agent.reset_hidden_state()
 
@@ -331,6 +347,11 @@ class RLPlayerController(PlayerController):
         else:
             reward = -5
         self.agent.step(self.prev_obs, self.action_choice, self.log_prob, reward, True, state, self.value)
+
+        # Store combat stats
+        self.final_healths.append(player.health)
+        self.turn_counts.append(self.current_turn_count)
+        self.cards_played_counts.append(self.current_cards_played)
 
         self.prev_obs = state
         self.card_cache = []
