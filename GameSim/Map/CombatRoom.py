@@ -208,6 +208,20 @@ class CombatRoom(Room):
             end_turn_text = title_font.render("End Turn", True, (0, 0, 0))
             screen.blit(end_turn_text, (self.end_turn_x + 5, self.end_turn_y + 5))
 
+            # Render end turn probability if available (RL agent in PYGAME mode)
+            if hasattr(self.player, 'controller') and self.player.controller is not None and hasattr(self.player.controller, 'end_turn_probability'):
+                end_turn_prob = self.player.controller.end_turn_probability
+
+                # Calculate color gradient: green (high prob) to red (low prob)
+                green = int(255 * end_turn_prob)
+                red = int(255 * (1 - end_turn_prob))
+                color = (red, green, 0)
+
+                # Render probability percentage above the End Turn button
+                prob_text = f"{int(end_turn_prob * 100)}%"
+                prob_surface = main_font.render(prob_text, True, color)
+                screen.blit(prob_surface, (self.end_turn_x + 10, self.end_turn_y - 30))
+
         combat_running = self.do_next_turn()
         return combat_running
 
