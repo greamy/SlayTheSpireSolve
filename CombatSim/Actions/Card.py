@@ -72,29 +72,49 @@ class Card(Playable):
         if y is None:
             y = self.y
         self.x = self.start_x + (pos * self.dist)
-        color = "white"
+
+        # Determine border color based on probability if available
+        border_color = "white"
         if self.upgraded:
-            color = 'green'
-        pygame.draw.rect(screen, color, pygame.Rect(self.x, y, self.width, self.height), 10, 2)
-        text = font.render(self.name, True, (255, 255, 255))
-        screen.blit(text, (self.x+10, y+10))
+            border_color = 'green'
 
-        cost = font.render(str(self.energy), True, (0, 255, 0))
-        screen.blit(cost, (self.x+(self.width - 20), y+10))
-
-        # Render probability if available (RL agent in PYGAME mode)
+        # Override with probability-based color if RL agent is active
         if controller is not None and hasattr(controller, 'card_probabilities'):
             prob = controller.card_probabilities.get(pos, 0.0)
 
+            # Dynamic color scaling based on min/max probabilities
+            min_prob = getattr(controller, 'min_probability', 0.0)
+            max_prob = getattr(controller, 'max_probability', 1.0)
+
+            # Normalize probability to [0, 1] range based on current distribution
+            if max_prob > min_prob:
+                normalized_prob = (prob - min_prob) / (max_prob - min_prob)
+            else:
+                normalized_prob = 0.5  # If all probs are equal, use middle color
+
             # Calculate color gradient: green (high prob) to red (low prob)
-            green = int(255 * prob)
-            red = int(255 * (1 - prob))
-            color = (red, green, 0)
+            green = int(255 * normalized_prob)
+            red = int(255 * (1 - normalized_prob))
+            prob_color = (red, green, 0)
+
+            # Use probability color for border (overrides upgrade color)
+            border_color = prob_color
 
             # Render probability percentage above the card
             prob_text = f"{int(prob * 100)}%"
-            prob_surface = font.render(prob_text, True, color)
+            prob_surface = font.render(prob_text, True, prob_color)
             screen.blit(prob_surface, (self.x + 10, y - 30))
+
+        # Draw card border
+        pygame.draw.rect(screen, border_color, pygame.Rect(self.x, y, self.width, self.height), 10, 2)
+
+        # Draw card name
+        text = font.render(self.name, True, (255, 255, 255))
+        screen.blit(text, (self.x+10, y+10))
+
+        # Draw energy cost
+        cost = font.render(str(self.energy), True, (0, 255, 0))
+        screen.blit(cost, (self.x+(self.width - 20), y+10))
 
     def remove_listeners(self, player: Player):
         if self.listener is not None and self.listener in player.listeners:

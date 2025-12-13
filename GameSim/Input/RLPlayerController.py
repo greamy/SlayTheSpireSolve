@@ -22,6 +22,8 @@ class RLPlayerController(PlayerController):
         self.framerate = 60
         self.card_probabilities = {}
         self.end_turn_probability = 0.0
+        self.min_probability = 0.0
+        self.max_probability = 1.0
 
         self.max_num_enemies = 5
         self.max_num_cards = 10
@@ -248,6 +250,11 @@ class RLPlayerController(PlayerController):
             # End turn probability
             self.end_turn_probability = float(action_probs[self.num_bt_actions-1])
 
+            # Calculate min/max for dynamic color scaling
+            all_probs = list(self.card_probabilities.values()) + [self.end_turn_probability]
+            self.min_probability = min(all_probs)
+            self.max_probability = max(all_probs)
+
         self.prev_obs = state
         self.reward = 0
 
@@ -306,6 +313,14 @@ class RLPlayerController(PlayerController):
                 end_action = start_action + self.max_num_enemies
                 card_prob = action_probs[start_action:end_action].sum()
                 self.card_probabilities[card_idx] = float(card_prob)
+
+            # End turn probability
+            self.end_turn_probability = float(action_probs[self.num_bt_actions-1])
+
+            # Calculate min/max for dynamic color scaling
+            all_probs = list(self.card_probabilities.values()) + [self.end_turn_probability]
+            self.min_probability = min(all_probs)
+            self.max_probability = max(all_probs)
 
         self.prev_obs = state
 
