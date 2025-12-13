@@ -20,6 +20,10 @@ class RLPlayerController(PlayerController):
         self.delay = delay
         self.counter = 0
         self.framerate = 60
+        self.card_probabilities = {}
+        self.end_turn_probability = 0.0
+        self.min_probability = 0.0
+        self.max_probability = 1.0
 
         self.max_num_enemies = 5
         self.max_num_cards = 10
@@ -231,8 +235,25 @@ class RLPlayerController(PlayerController):
         # self.reward -= 0.01 # small negative each card play to encourage efficient play
 
         state = self.get_battle_state(player, enemies, playable_cards, debug)
-        self.action_choice, self.log_prob, self.value = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
+        self.action_choice, self.log_prob, self.value, action_probs = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
                                                        log_prob=self.log_prob, reward=self.reward, done=False, new_state=state, value=self.value)
+
+        # Calculate per-card probabilities (sum across enemy targets)
+        if action_probs is not None:
+            self.card_probabilities = {}
+            for card_idx in range(self.max_num_cards):
+                start_action = card_idx * self.max_num_enemies
+                end_action = start_action + self.max_num_enemies
+                card_prob = action_probs[start_action:end_action].sum()
+                self.card_probabilities[card_idx] = float(card_prob)
+
+            # End turn probability
+            self.end_turn_probability = float(action_probs[self.num_bt_actions-1])
+
+            # Calculate min/max for dynamic color scaling
+            all_probs = list(self.card_probabilities.values()) + [self.end_turn_probability]
+            self.min_probability = min(all_probs)
+            self.max_probability = max(all_probs)
 
         self.prev_obs = state
         self.reward = 0
@@ -280,9 +301,26 @@ class RLPlayerController(PlayerController):
         self.start_turn(player, enemies)
         playable = player.get_playable_cards()
         state = self.get_battle_state(player, enemies, playable, debug)
-        self.action_choice, self.log_prob, self.value = self.agent.choose_action(
+        self.action_choice, self.log_prob, self.value, action_probs = self.agent.choose_action(
             self.agent._convert_state_to_tensors(state)
         )
+
+        # Calculate per-card probabilities (sum across enemy targets)
+        if action_probs is not None:
+            self.card_probabilities = {}
+            for card_idx in range(self.max_num_cards):
+                start_action = card_idx * self.max_num_enemies
+                end_action = start_action + self.max_num_enemies
+                card_prob = action_probs[start_action:end_action].sum()
+                self.card_probabilities[card_idx] = float(card_prob)
+
+            # End turn probability
+            self.end_turn_probability = float(action_probs[self.num_bt_actions-1])
+
+            # Calculate min/max for dynamic color scaling
+            all_probs = list(self.card_probabilities.values()) + [self.end_turn_probability]
+            self.min_probability = min(all_probs)
+            self.max_probability = max(all_probs)
 
         self.prev_obs = state
 

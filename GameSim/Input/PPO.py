@@ -80,7 +80,7 @@ class ActorCritic(nn.Module):
         # Compute log probability of the sampled action
         log_prob = dist.log_prob(action).unsqueeze(-1)
 
-        return action, log_prob, value
+        return action, log_prob, value, dist.probs
 
 
 class CardEncoder(nn.Module):
@@ -344,11 +344,11 @@ class PPOAgent:
 
         self.actor_critic.eval()
         with torch.no_grad():
-            agent_action, agent_log_prob, value = self.actor_critic.sample_action(stage, state, action_mask)
+            agent_action, agent_log_prob, value, action_probs = self.actor_critic.sample_action(stage, state, action_mask)
 
         self.actor_critic.train()
 
-        return agent_action, agent_log_prob, value
+        return agent_action, agent_log_prob, value, action_probs
 
     def _compute_gae(self, rewards, values, dones, lambda_=0.95):
         """Compute Generalized Advantage Estimation"""
@@ -610,17 +610,18 @@ class PPOAgent:
 
         # Sample actions
         if not done:
-            action, new_log_prob, value = self.choose_action(new_state_tensor)
+            action, new_log_prob, value, action_probs = self.choose_action(new_state_tensor)
         else:
             action = None
             new_log_prob = None
             value = None
+            action_probs = None
 
         # Learn if enough experiences are collected
         if self.learning_enabled and len(self.memory['states']) >= self.learn_size:
             self._learn()
 
-        return action, new_log_prob, value
+        return action, new_log_prob, value, action_probs
 
     def save_models(self, filepath):
         """Save all model weights"""

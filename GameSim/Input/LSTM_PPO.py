@@ -213,7 +213,7 @@ class ActorCriticLSTM(nn.Module):
         #
         log_prob = action_dist.log_prob(action).unsqueeze(-1)
 
-        return action, log_prob, state_value, new_hidden_state
+        return action, log_prob, state_value, new_hidden_state, action_dist.probs
 
 class LSTMPPOAgent(PPOAgent):
     # class GameStage(Enum):
@@ -310,7 +310,7 @@ class LSTMPPOAgent(PPOAgent):
         self.actor_critic.eval()
         with torch.no_grad():
             # Pass the current hidden state to the network
-            action_choice, log_prob, value, new_hidden_state = self.actor_critic.sample_action(
+            action_choice, log_prob, value, new_hidden_state, action_probs = self.actor_critic.sample_action(
                 stage, static_features, dynamic_features, self.hidden_state, action_mask
             )
             # Update the agent's hidden state for the next step
@@ -318,7 +318,7 @@ class LSTMPPOAgent(PPOAgent):
                 self.hidden_state = new_hidden_state
 
         self.actor_critic.train()
-        return action_choice.detach().cpu().item(), log_prob.detach().cpu(), value.detach().cpu()
+        return action_choice.detach().cpu().item(), log_prob.detach().cpu(), value.detach().cpu(), action_probs.detach().cpu().numpy()
 
     def _learn(self):
         # self.device = "mps"
@@ -541,17 +541,18 @@ class LSTMPPOAgent(PPOAgent):
 
         # Sample actions
         if not done:
-            action, new_log_prob, value = self.choose_action(new_state_tensor)
+            action, new_log_prob, value, action_probs = self.choose_action(new_state_tensor)
         else:
             action = None
             new_log_prob = None
             value = None
+            action_probs = None
 
         # Learn if enough experiences are collected
         if self.learning_enabled and len(self.memory['states']) >= self.learn_size:
             self._learn()
 
-        return action, new_log_prob, value
+        return action, new_log_prob, value, action_probs
 
     def save_models(self, filepath):
         """Save all model weights and observation normalization statistics"""

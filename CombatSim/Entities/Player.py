@@ -301,7 +301,7 @@ class Player(Entity):
         screen.blit(energy_text, (self.x+self.width, self.y))
 
         for i, card in enumerate(self.deck.hand):
-            card.render(screen, font, i)
+            card.render(screen, font, i, controller=self.controller)
 
         if self.card_played is not None:
             text = font.render("Played: " + self.card_played.name, True, (255, 255, 255))
