@@ -7,7 +7,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 from GameSim.Input.RLPlayerController import RLPlayerController
-from CombatSim.util import run_many_games
+from CombatSim.util import run_many_games, run_many_game_sequences
 
 
 def main():
@@ -39,8 +39,21 @@ def main():
     if load_model:
         rl_controller.agent.load_models(model_path)
 
-    run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
-                   render_type, "monster", episodes, "JawWorm")
+    # run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
+    #                render_type, "monster", episodes, "JawWorm")
+
+    run_many_game_sequences(
+        controller=rl_controller,
+        dungeon_path="CombatSim/Entities/Dungeon/",
+        library_path="CombatSim/Actions/Library",
+        num_episodes=episodes,  # Total episodes to run
+        combats_per_rest=4,  # Rest bonus every N combats
+        max_combats_per_episode=20,  # Hard cap
+        heal_percent=0.20,  # 20% heal between combats
+        monster_name="JawWorm",  # Enemy to fight
+        ascension=20,
+        act=1
+    )
 
     if train:
         rl_controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_{episodes}.pt")

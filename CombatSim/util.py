@@ -250,8 +250,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
     total_combats = 0  # Track total combats
     enemy_combats = {}
 
-    # Create rooms one at a time instead of pre-allocating all at once
-    # This allows completed rooms to be garbage collected, saving ~7GB
+
     for i in range(num_combats):
         # Create a fresh room for this combat
         if combat_type == "monster":
@@ -263,7 +262,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
         else:
             continue
 
-        # Setup the room's deck and enemies
+        # Set up the player's deck and enemies
         cards = get_default_deck()
         # cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
         addCards(room.player, cards)
@@ -285,12 +284,15 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
                 enemy_choice = "AcidSlimeSmall"
 
             # Begin the combat
+            room.player.controller.begin_episode()  # Reset LSTM for single-combat episode
             room.player.start_turn(room.enemies, False)
             room.player.controller.begin_combat(room.player, room.enemies, False)
         else:
+            room.player.controller.begin_episode()  # Reset LSTM for single-combat episode
             room.start()
             enemy_choice = room.player.last_elite
 
+        # Shows "NEW COMBAT" On screen when render mode is pygame.
         new_combat_room = NewCombatRoom(room.player, 0, 0, [], [], 1, 20)
         renderer.render_room(new_combat_room)
 
@@ -428,4 +430,284 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
     for key in sorted(enemy_combats.keys()):
         print(f"{key}: {enemy_combats[key]}")
     return enemy_combats
+
+
+def run_many_game_sequences(controller, dungeon_path, library_path,
+                           render_type=Renderer.RenderType.NONE,
+                           num_episodes=1000,
+                           combats_per_rest=4,
+                           max_combats_per_episode=20,
+                           heal_percent=0.20,
+                           monster_name="JawWorm",
+                           ascension=20,
+                           act=1):
+    """
+    Train agent on multi-combat episodes.
+
+    Each episode: Fight same enemy multiple times with healing between combats.
+    Episode ends when player dies or max combats reached.
+
+    Args:
+        controller: RL controller
+        dungeon_path: Path to enemy implementations
+        library_path: Path to card library
+        render_type: Rendering mode (NONE or PYGAME)
+        num_episodes: Total episodes to run
+        combats_per_rest: Combats between rest site bonuses (default: 4)
+        max_combats_per_episode: Hard limit on combats (default: 20)
+        heal_percent: HP heal between combats (default: 0.20 = 20%)
+        monster_name: Enemy to fight (default: "JawWorm")
+        ascension: Ascension level
+        act: Act number
+    """
+    from collections import deque
+    import gc
+
+    renderer = Renderer(render_type=render_type)
+    possible_enemies = Enemy.get_implemented_enemies(dungeon_path)
+
+    # Episode-level statistics
+    episode_wins = deque(maxlen=1000)
+    total_episodes_won = 0
+    combats_per_episode_history = deque(maxlen=1000)
+    combats_won_per_episode_history = deque(maxlen=1000)
+    final_health_history = deque(maxlen=1000)
+
+    random.seed(42)
+
+    for episode_idx in range(num_episodes):
+        # === EPISODE INITIALIZATION ===
+        # Create Player ONCE for entire episode (not per combat!)
+        player = createPlayer(controller=controller, cards=[], lib_path=library_path)
+        cards = get_default_deck()
+        addCards(player, cards)
+
+        # Upgrade one Eruption
+        for card in player.deck.get_deck():
+            if card.name == "Eruption":
+                card.upgrade()
+                break
+
+        player.deck.shuffle()
+
+        # Episode tracking
+        episode_done = False
+        episode_won = False
+        combats_completed = 0
+        combats_won = 0
+
+        # === COMBAT LOOP WITHIN EPISODE ===
+        while not episode_done and combats_completed < max_combats_per_episode:
+            # Create room with reused player instance
+            room = MonsterRoom(player, act, 0, [], [], random.randint(1, 2), ascension)
+            room.enemies = [createEnemy(monster_name, ascension, act)]
+
+            # Combat initialization
+            if combats_completed == 0:
+                # First combat: initialize episode and begin combat
+                controller.begin_episode()  # Resets LSTM hidden state
+
+            # Begin combat (same for all combats - no LSTM reset in this method anymore)
+            player.begin_combat(room.enemies, False)
+            player.start_turn(room.enemies, False)
+            controller.begin_combat(player, room.enemies, False)
+
+            # Render combat
+            new_combat_room = NewCombatRoom(player, 0, 0, [], [], 1, ascension)
+            renderer.render_room(new_combat_room)
+            renderer.render_room(room)
+
+            # Check combat outcome
+            combat_won = player.is_alive()
+            combats_completed += 1
+            if combat_won:
+                combats_won += 1
+
+            # === COMBAT OUTCOME HANDLING ===
+            if not player.is_alive():
+                # Player died → Episode ends
+                episode_done = True
+                episode_won = False
+                player.end_combat(room.enemies, False, episode_done=True)
+
+            else:
+                # Combat won
+                # Check for rest site bonus
+                if combats_completed % combats_per_rest == 0:
+                    controller.apply_episode_bonus(50, reason=f"rest_site_{combats_completed//combats_per_rest}")
+                    # Heal player
+                    heal_amount = int(player.start_health * heal_percent)
+                    player.health = min(player.health + heal_amount, player.start_health)
+
+                # Check episode termination
+                if combats_completed >= max_combats_per_episode:
+                    # Reached max combats
+                    episode_done = True
+                    episode_won = True
+                    controller.apply_episode_bonus(25, reason="max_combats_reached")
+                    player.end_combat(room.enemies, False, episode_done=True)
+                else:
+                    # Episode continues
+                    player.end_combat(room.enemies, False, episode_done=False)
+
+        # === EPISODE STATISTICS ===
+        if episode_won:
+            episode_wins.append(True)
+            total_episodes_won += 1
+        else:
+            episode_wins.append(False)
+
+        combats_per_episode_history.append(combats_completed)
+        combats_won_per_episode_history.append(combats_won)
+        final_health_history.append(player.health)
+
+        # Logging
+        if (episode_idx + 1) % 100 == 0:
+            # Calculate rolling window averages
+            recent_combats = list(combats_per_episode_history)
+            recent_wins = list(combats_won_per_episode_history)
+            recent_health = list(final_health_history)
+
+            avg_combats = np.mean(recent_combats) if recent_combats else 0
+            avg_combats_won = np.mean(recent_wins) if recent_wins else 0
+
+            # Combat win rate (total combats won / total combats played in window)
+            total_combats_in_window = sum(recent_combats)
+            total_wins_in_window = sum(recent_wins)
+            combat_win_rate = total_wins_in_window / total_combats_in_window if total_combats_in_window > 0 else 0
+
+            # Average health (wins only, or 0 if no wins)
+            wins_health = [h for h in recent_health if h > 0]
+            avg_health = np.mean(wins_health) if wins_health else 0.0
+
+            # Get recent loss and reward from agent
+            avg_loss = np.mean(list(controller.agent.losses)) if controller.agent.losses else 0.0
+            avg_reward = np.mean(list(controller.agent.rewards)) if controller.agent.rewards else 0.0
+
+            print(f"\n=== Episode {episode_idx+1}/{num_episodes} ===")
+            print(f"Last episode: {combats_won}/{combats_completed} combats won, final health: {player.health}")
+            print(f"Combat win rate (rolling): {combat_win_rate:.2%}")
+            print(f"Avg combats per episode (rolling): {avg_combats:.2f}")
+            print(f"Avg combats won per episode (rolling): {avg_combats_won:.2f}")
+            print(f"Avg final health when survived (rolling): {avg_health:.1f}")
+            print(f"Avg loss (recent): {avg_loss:.4f}")
+            print(f"Avg reward (recent): {avg_reward:.2f}")
+
+        # Save model and create visualizations
+        if (episode_idx + 1) % 500 == 0:
+            print(f"\n{'='*60}")
+            print(f"Creating visualizations at episode {episode_idx+1}...")
+            print(f"{'='*60}")
+
+            # Calculate rolling window statistics for all combats
+            window = 100
+            rolling_health = []
+            rolling_turns = []
+            rolling_cards = []
+            rolling_winrate = []
+
+            # Note: In multi-combat episodes, we track per-combat stats differently
+            # We'll use the total number of completed episodes for the rolling window
+            for j in range(len(controller.final_healths)):
+                start_idx = max(0, j - window + 1)
+                # Health (for all episodes, including losses)
+                window_healths = controller.final_healths[start_idx:j+1]
+                window_wins = [h for h in window_healths if h > 0]
+                rolling_health.append(sum(window_wins) / len(window_wins) if window_wins else 0)
+
+                # Turns (wins only)
+                window_turns_all = controller.turn_counts[start_idx:j+1]
+                win_turn_indices = [idx for idx, h in enumerate(window_healths) if h > 0]
+                window_turns_wins = [window_turns_all[idx] for idx in win_turn_indices]
+                rolling_turns.append(sum(window_turns_wins) / len(window_turns_wins) if window_turns_wins else 0)
+
+                # Cards (wins only)
+                window_cards_all = controller.cards_played_counts[start_idx:j+1]
+                window_cards_wins = [window_cards_all[idx] for idx in win_turn_indices]
+                rolling_cards.append(sum(window_cards_wins) / len(window_cards_wins) if window_cards_wins else 0)
+
+                # Win rate (episodes that didn't end in death)
+                rolling_winrate.append(len(window_wins) / len(window_healths) * 100 if window_healths else 0)
+
+            # Create 2x2 subplot for training progress
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
+
+            # Plot 1: Rolling Average Health (wins only)
+            ax1.plot(rolling_health, color='tab:blue', linewidth=1, alpha=0.8)
+            ax1.set_xlabel('Episode Number', fontsize=10)
+            ax1.set_ylabel('Avg Health (wins)', fontsize=10)
+            ax1.set_title(f'Rolling Avg Final Health (window={window}, wins only)', fontsize=12)
+            ax1.grid(True, alpha=0.3)
+
+            # Plot 2: Rolling Average Turns (wins only)
+            ax2.plot(rolling_turns, color='tab:green', linewidth=1, alpha=0.8)
+            ax2.set_xlabel('Episode Number', fontsize=10)
+            ax2.set_ylabel('Avg Turns (wins)', fontsize=10)
+            ax2.set_title(f'Rolling Avg Turns per Episode (window={window}, wins only)', fontsize=12)
+            ax2.grid(True, alpha=0.3)
+
+            # Plot 3: Rolling Average Cards Played (wins only)
+            ax3.plot(rolling_cards, color='tab:orange', linewidth=1, alpha=0.8)
+            ax3.set_xlabel('Episode Number', fontsize=10)
+            ax3.set_ylabel('Avg Cards (wins)', fontsize=10)
+            ax3.set_title(f'Rolling Avg Cards Played per Episode (window={window}, wins only)', fontsize=12)
+            ax3.grid(True, alpha=0.3)
+
+            # Plot 4: Rolling Win Rate (episodes that survived)
+            ax4.plot(rolling_winrate, color='tab:purple', linewidth=1, alpha=0.8)
+            ax4.set_xlabel('Episode Number', fontsize=10)
+            ax4.set_ylabel('Survival Rate (%)', fontsize=10)
+            ax4.set_title(f'Rolling Episode Survival Rate (window={window})', fontsize=12)
+            ax4.grid(True, alpha=0.3)
+            ax4.set_ylim(0, 105)
+
+            plt.tight_layout()
+            plt.savefig("artifacts/images/model_results/first_fight/combat_stats.png", dpi=150)
+            plt.close(fig)
+            print("✓ Combat statistics graph saved")
+
+            # Create embedding visualization
+            player.deck.reshuffle()
+            deck = player.deck.get_deck()
+            card_names = [c.name for c in deck]
+            card_vectors = [controller.get_card_vector(c) for c in deck]
+            controller.agent.graph_embeddings(card_names, card_vectors)
+            print("✓ Embedding visualization saved")
+
+            # Create loss/reward visualization if agent has data
+            if controller.agent.losses and controller.agent.rewards:
+                visualize_bot_history(controller.agent.losses, controller.agent.rewards,
+                                    "artifacts/images/model_results/first_fight/rew_loss.png")
+                print("✓ Loss/reward graph saved")
+
+            # Save model
+            controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_multicombat.pt")
+            print(f"✓ Model saved at episode {episode_idx+1}")
+            print(f"{'='*60}\n")
+
+        # Garbage collection
+        if episode_idx % 100 == 0 and episode_idx > 0:
+            gc.collect()
+
+    # Final statistics
+    total_combats = sum(combats_per_episode_history)
+    total_combats_won = sum(combats_won_per_episode_history)
+    final_combat_win_rate = total_combats_won / total_combats if total_combats > 0 else 0
+
+    print(f"\n=== Training Complete ===")
+    print(f"Total combats: {total_combats}")
+    print(f"Total combats won: {total_combats_won}")
+    print(f"Overall combat win rate: {final_combat_win_rate:.2%}")
+    print(f"Avg combats per episode: {np.mean(combats_per_episode_history):.2f}")
+    print(f"Avg combats won per episode: {np.mean(combats_won_per_episode_history):.2f}")
+    print(f"Episodes that reached max combats: {total_episodes_won}/{num_episodes}")
+
+    return {
+        "combat_win_rate": final_combat_win_rate,
+        "avg_combats_per_episode": np.mean(combats_per_episode_history),
+        "avg_combats_won_per_episode": np.mean(combats_won_per_episode_history),
+        "total_combats": total_combats,
+        "total_combats_won": total_combats_won,
+        "episode_win_rate": total_episodes_won / num_episodes
+    }
 

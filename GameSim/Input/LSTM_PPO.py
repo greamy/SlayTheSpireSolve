@@ -126,19 +126,20 @@ class ActorCriticLSTM(nn.Module):
         # This network now processes the LSTM's output combined with static features (like the deck embedding).
         combined_feature_dim = lstm_hidden_dim + static_input_dim
         leaky_relu_slope = 0.02
-        network_size = 256
+        network_size = 512
 
         xavier_gain = nn.init.calculate_gain('leaky_relu', leaky_relu_slope)
         first_layer = nn.Linear(combined_feature_dim, network_size)
         nn.init.xavier_uniform_(first_layer.weight, gain=xavier_gain)
         second_layer = nn.Linear(network_size, network_size // 2)
         nn.init.xavier_uniform_(second_layer.weight, gain=xavier_gain)
+        third_layer = nn.Linear(network_size // 2, network_size // 4)
         self.base_network = nn.Sequential(
             first_layer,
-            # nn.LayerNorm(network_size),
             nn.LeakyReLU(leaky_relu_slope),
             second_layer,
-            # nn.LayerNorm(network_size // 2),
+            nn.LeakyReLU(leaky_relu_slope),
+            third_layer,
             nn.LeakyReLU()
         )
 
@@ -225,7 +226,7 @@ class LSTMPPOAgent(PPOAgent):
 
         self.best_avg_reward = -math.inf
         # Define the dimensions for the new network
-        self.lstm_hidden_dim = 256
+        self.lstm_hidden_dim = 1024
         # Static features are things that don't change turn-to-turn (like the deck)
         static_dim = self.card_embed_dim
         # Dynamic features are turn-specific (player stats, hand, enemies)

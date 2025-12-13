@@ -86,8 +86,18 @@ class Player(Entity):
 
         self.notify_listeners(Listener.Event.START_COMBAT, self, enemies, debug)
 
-    def end_combat(self, enemies, debug):
-        self.controller.end_combat(self, enemies, debug)
+    def end_combat(self, enemies, debug, episode_done=True):
+        """
+        Reset combat state.
+
+        Args:
+            episode_done: If True, notify controller of episode end.
+                         If False, this is mid-episode (don't notify controller).
+        """
+        # Notify controller with episode_done flag
+        self.controller.end_combat(self, enemies, debug, episode_done=episode_done)
+
+        # Always reset deck/stance/mantra (needed for next combat)
         self.deck.end_combat()
         self.notify_listeners(Listener.Event.END_COMBAT, self, enemies, debug)
         for card in self.deck.draw_pile:

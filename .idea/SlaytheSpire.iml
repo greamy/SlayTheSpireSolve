@@ -4,8 +4,9 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.12 (SlayTheSpireSolve)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.14 (SlayTheSpireSolve)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

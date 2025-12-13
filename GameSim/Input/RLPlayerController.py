@@ -312,8 +312,6 @@ class RLPlayerController(PlayerController):
         self.current_turn_count = 0
         self.current_cards_played = 0
 
-        self.agent.reset_hidden_state()
-
         self.start_turn(player, enemies)
         playable = player.get_playable_cards()
         state = self.get_battle_state(player, enemies, playable, debug)
@@ -340,21 +338,64 @@ class RLPlayerController(PlayerController):
 
         self.prev_obs = state
 
-    def end_combat(self, player, enemies, debug):
+    def end_combat(self, player, enemies, debug, episode_done=True):
+        """
+        Handle end of combat.
+
+        Args:
+            episode_done: If True, this is the final combat in episode (terminal state).
+                         If False, episode continues (mid-episode combat completion).
+        """
         state = self.get_battle_state(player, enemies, player.get_playable_cards(), debug)
-        if player.health > 0:
-            reward = 5
+
+        if episode_done:
+            # Episode-level terminal rewards
+            if player.health > 0:
+                base_reward = 100  # Episode victory
+            else:
+                base_reward = -100  # Episode failure
+
+            # Include accumulated bonuses (rest sites, max combats, etc.)
+            total_reward = self.reward + base_reward
+
+            # Signal episode termination
+            self.agent.step(self.prev_obs, self.action_choice, self.log_prob, total_reward, True, state, self.value)
+
+            # Store episode stats
+            self.final_healths.append(player.health)
+            self.turn_counts.append(self.current_turn_count)
+            self.cards_played_counts.append(self.current_cards_played)
         else:
-            reward = -5
-        self.agent.step(self.prev_obs, self.action_choice, self.log_prob, reward, True, state, self.value)
+            # Mid-episode combat completion
+            base_combat_reward = 10
 
-        # Store combat stats
-        self.final_healths.append(player.health)
-        self.turn_counts.append(self.current_turn_count)
-        self.cards_played_counts.append(self.current_cards_played)
+            # Include accumulated bonuses (rest sites)
+            total_reward = self.reward + base_combat_reward
 
+            # Episode continues (done=False)
+            self.agent.step(self.prev_obs, self.action_choice, self.log_prob, total_reward, False, state, self.value)
+
+        # Reset accumulated reward for next combat
+        self.reward = 0
         self.prev_obs = state
         self.card_cache = []
+
+    def begin_episode(self):
+        """
+        Initialize episode-level state.
+        Called once at the start of each multi-combat episode.
+        """
+        self.agent.reset_hidden_state()
+
+    def apply_episode_bonus(self, bonus_reward, reason=""):
+        """
+        Apply bonus reward during episode (e.g., rest site bonus).
+        Adds to accumulated reward that will be given at next step.
+        """
+        self.reward += bonus_reward
+
+        if reason:
+            print(f"  Bonus: +{bonus_reward} ({reason})")
 
     def get_map_choice(self, player, map_gen, floor, room_idx):
         if not self.wait_for_counter():
