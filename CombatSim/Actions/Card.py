@@ -68,7 +68,7 @@ class Card(Playable):
     def set_text_embedding(self, embedding):
         self.text_embedding = embedding
 
-    def render(self, screen, font, pos, y=None):
+    def render(self, screen, font, pos, y=None, controller=None):
         if y is None:
             y = self.y
         self.x = self.start_x + (pos * self.dist)
@@ -81,6 +81,20 @@ class Card(Playable):
 
         cost = font.render(str(self.energy), True, (0, 255, 0))
         screen.blit(cost, (self.x+(self.width - 20), y+10))
+
+        # Render probability if available (RL agent in PYGAME mode)
+        if controller is not None and hasattr(controller, 'card_probabilities'):
+            prob = controller.card_probabilities.get(pos, 0.0)
+
+            # Calculate color gradient: green (high prob) to red (low prob)
+            green = int(255 * prob)
+            red = int(255 * (1 - prob))
+            color = (red, green, 0)
+
+            # Render probability percentage above the card
+            prob_text = f"{int(prob * 100)}%"
+            prob_surface = font.render(prob_text, True, color)
+            screen.blit(prob_surface, (self.x + 10, y - 30))
 
     def remove_listeners(self, player: Player):
         if self.listener is not None and self.listener in player.listeners:
