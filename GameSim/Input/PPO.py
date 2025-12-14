@@ -99,7 +99,7 @@ class CardEncoder(nn.Module):
         # A sequence of layers forming a Multi-Layer Perceptron (MLP).
         # We use Linear layers with a non-linear activation (ReLU) in between.
         leaky_relu_slope = 0.02
-        network_size = 256
+        network_size = 512
         xavier_gain = nn.init.calculate_gain('leaky_relu', leaky_relu_slope)
         layer_1 = nn.Linear(feature_vector_dim, network_size)
         nn.init.xavier_uniform_(layer_1.weight, gain=xavier_gain)
@@ -139,7 +139,7 @@ class PPOAgent:
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
     def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=128,
-                 learning_enabled=True, lr=0.001, gamma=0.99, epsilon=0.23, value_coef=0.5, entropy_coef=0.0005, entropy_decay=0.999, learn_epochs=10):
+                 learning_enabled=True, lr=0.0003, gamma=0.99, epsilon=0.2, value_coef=0.25, entropy_coef=0.01, entropy_decay=0.9999, learn_epochs=3):
 
         # Hyperparameters
         self.gamma = gamma
@@ -207,8 +207,8 @@ class PPOAgent:
             'stages': [],
             # 'action_masks': []
         }
-        self.batch_size = 1024
-        self.learn_size = 8192
+        self.batch_size = 256
+        self.learn_size = 4096
         self.max_memory = 20000
 
         self.learn_step_counter = 0
@@ -363,6 +363,26 @@ class PPOAgent:
             delta = rewards[t] + self.gamma * values[t + 1] * (1 - dones[t]) - values[t]
             gae = delta + self.gamma * lambda_ * (1 - dones[t]) * gae
             advantages.insert(0, gae)
+
+        return advantages
+
+    def _compute_gae_per_episode(self, rewards, values, dones, lambda_=0.95):
+        """Compute GAE respecting episode boundaries."""
+        advantages = np.zeros_like(rewards)
+        gae = 0
+
+        for t in reversed(range(len(rewards))):
+            if dones[t]:
+                gae = 0  # Reset GAE at episode boundary
+
+            if t == len(rewards) - 1:
+                next_value = 0
+            else:
+                next_value = values[t + 1] * (1 - dones[t])
+
+            delta = rewards[t] + self.gamma * next_value - values[t]
+            gae = delta + self.gamma * lambda_ * (1 - dones[t]) * gae
+            advantages[t] = gae
 
         return advantages
 

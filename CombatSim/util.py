@@ -471,7 +471,7 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
     total_episodes_won = 0
     combats_per_episode_history = deque(maxlen=1000)
     combats_won_per_episode_history = deque(maxlen=1000)
-    final_health_history = deque(maxlen=1000)
+    health_lost_history = deque(maxlen=1000)
 
     random.seed(42)
 
@@ -495,6 +495,8 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
         episode_won = False
         combats_completed = 0
         combats_won = 0
+        start_health = player.health
+        health_lost_per_combat = []
 
         # === COMBAT LOOP WITHIN EPISODE ===
         while not episode_done and combats_completed < max_combats_per_episode:
@@ -516,6 +518,10 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
             new_combat_room = NewCombatRoom(player, 0, 0, [], [], 1, ascension)
             renderer.render_room(new_combat_room)
             renderer.render_room(room)
+
+            # Store health lost
+            health_lost_per_combat.append(start_health - player.health)
+            start_health = player.health
 
             # Check combat outcome
             combat_won = player.is_alive()
@@ -559,14 +565,14 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
 
         combats_per_episode_history.append(combats_completed)
         combats_won_per_episode_history.append(combats_won)
-        final_health_history.append(player.health)
+        health_lost_history.append(sum(health_lost_per_combat) / len(health_lost_per_combat))
 
         # Logging
         if (episode_idx + 1) % 100 == 0:
             # Calculate rolling window averages
             recent_combats = list(combats_per_episode_history)
             recent_wins = list(combats_won_per_episode_history)
-            recent_health = list(final_health_history)
+            recent_health = list(health_lost_history)
 
             avg_combats = np.mean(recent_combats) if recent_combats else 0
             avg_combats_won = np.mean(recent_wins) if recent_wins else 0
@@ -577,21 +583,15 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
             combat_win_rate = total_wins_in_window / total_combats_in_window if total_combats_in_window > 0 else 0
 
             # Average health (wins only, or 0 if no wins)
-            wins_health = [h for h in recent_health if h > 0]
-            avg_health = np.mean(wins_health) if wins_health else 0.0
-
-            # Get recent loss and reward from agent
-            avg_loss = np.mean(list(controller.agent.losses)) if controller.agent.losses else 0.0
-            avg_reward = np.mean(list(controller.agent.rewards)) if controller.agent.rewards else 0.0
+            # wins_health = [h for h in recent_health if h > 0]
+            avg_health = np.mean(recent_health) if recent_health else 0.0
 
             print(f"\n=== Episode {episode_idx+1}/{num_episodes} ===")
             print(f"Last episode: {combats_won}/{combats_completed} combats won, final health: {player.health}")
             print(f"Combat win rate (rolling): {combat_win_rate:.2%}")
             print(f"Avg combats per episode (rolling): {avg_combats:.2f}")
             print(f"Avg combats won per episode (rolling): {avg_combats_won:.2f}")
-            print(f"Avg final health when survived (rolling): {avg_health:.1f}")
-            print(f"Avg loss (recent): {avg_loss:.4f}")
-            print(f"Avg reward (recent): {avg_reward:.2f}")
+            print(f"Avg health lost per combat(rolling): {avg_health:.1f}")
 
         # Save model and create visualizations
         if (episode_idx + 1) % 500 == 0:
@@ -634,28 +634,28 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
 
             # Plot 1: Rolling Average Health (wins only)
             ax1.plot(rolling_health, color='tab:blue', linewidth=1, alpha=0.8)
-            ax1.set_xlabel('Episode Number', fontsize=10)
+            ax1.set_xlabel('Combat Number', fontsize=10)
             ax1.set_ylabel('Avg Health (wins)', fontsize=10)
             ax1.set_title(f'Rolling Avg Final Health (window={window}, wins only)', fontsize=12)
             ax1.grid(True, alpha=0.3)
 
             # Plot 2: Rolling Average Turns (wins only)
             ax2.plot(rolling_turns, color='tab:green', linewidth=1, alpha=0.8)
-            ax2.set_xlabel('Episode Number', fontsize=10)
+            ax2.set_xlabel('Combat Number', fontsize=10)
             ax2.set_ylabel('Avg Turns (wins)', fontsize=10)
             ax2.set_title(f'Rolling Avg Turns per Episode (window={window}, wins only)', fontsize=12)
             ax2.grid(True, alpha=0.3)
 
             # Plot 3: Rolling Average Cards Played (wins only)
             ax3.plot(rolling_cards, color='tab:orange', linewidth=1, alpha=0.8)
-            ax3.set_xlabel('Episode Number', fontsize=10)
+            ax3.set_xlabel('Combat Number', fontsize=10)
             ax3.set_ylabel('Avg Cards (wins)', fontsize=10)
             ax3.set_title(f'Rolling Avg Cards Played per Episode (window={window}, wins only)', fontsize=12)
             ax3.grid(True, alpha=0.3)
 
             # Plot 4: Rolling Win Rate (episodes that survived)
             ax4.plot(rolling_winrate, color='tab:purple', linewidth=1, alpha=0.8)
-            ax4.set_xlabel('Episode Number', fontsize=10)
+            ax4.set_xlabel('Combat Number', fontsize=10)
             ax4.set_ylabel('Survival Rate (%)', fontsize=10)
             ax4.set_title(f'Rolling Episode Survival Rate (window={window})', fontsize=12)
             ax4.grid(True, alpha=0.3)
@@ -665,25 +665,6 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
             plt.savefig("artifacts/images/model_results/first_fight/combat_stats.png", dpi=150)
             plt.close(fig)
             print("✓ Combat statistics graph saved")
-
-            # Create embedding visualization
-            player.deck.reshuffle()
-            deck = player.deck.get_deck()
-            card_names = [c.name for c in deck]
-            card_vectors = [controller.get_card_vector(c) for c in deck]
-            controller.agent.graph_embeddings(card_names, card_vectors)
-            print("✓ Embedding visualization saved")
-
-            # Create loss/reward visualization if agent has data
-            if controller.agent.losses and controller.agent.rewards:
-                visualize_bot_history(controller.agent.losses, controller.agent.rewards,
-                                    "artifacts/images/model_results/first_fight/rew_loss.png")
-                print("✓ Loss/reward graph saved")
-
-            # Save model
-            controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_multicombat.pt")
-            print(f"✓ Model saved at episode {episode_idx+1}")
-            print(f"{'='*60}\n")
 
         # Garbage collection
         if episode_idx % 100 == 0 and episode_idx > 0:

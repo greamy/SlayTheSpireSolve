@@ -295,11 +295,11 @@ class RLPlayerController(PlayerController):
         # Increment turn counter (one turn is a player->enemy cycle)
         self.current_turn_count += 1
 
-        self.reward = -1
+        self.reward = -0.1
         health_lost = self.health - player.health
         damage_done = self.enemy_health - sum([enemy.health for enemy in enemies])
-        self.reward += health_lost * -5.0
-        self.reward += damage_done * 2.5
+        self.reward += health_lost * -4.0
+        self.reward += damage_done * 2.0
 
         self.health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
@@ -351,9 +351,10 @@ class RLPlayerController(PlayerController):
         if episode_done:
             # Episode-level terminal rewards
             if player.health > 0:
-                base_reward = 100  # Episode victory
+                health_ratio = player.health / player.start_health
+                base_reward = 20 + (30 * health_ratio) # Episode victory
             else:
-                base_reward = -100  # Episode failure
+                base_reward = -50  # Episode failure
 
             # Include accumulated bonuses (rest sites, max combats, etc.)
             total_reward = self.reward + base_reward
@@ -367,7 +368,7 @@ class RLPlayerController(PlayerController):
             self.cards_played_counts.append(self.current_cards_played)
         else:
             # Mid-episode combat completion
-            base_combat_reward = 10
+            base_combat_reward = 5 + (player.health / player.start_health) * 10
 
             # Include accumulated bonuses (rest sites)
             total_reward = self.reward + base_combat_reward
@@ -394,8 +395,8 @@ class RLPlayerController(PlayerController):
         """
         self.reward += bonus_reward
 
-        if reason:
-            print(f"  Bonus: +{bonus_reward} ({reason})")
+        # if reason:
+        #     print(f"  Bonus: +{bonus_reward} ({reason})")
 
     def get_map_choice(self, player, map_gen, floor, room_idx):
         if not self.wait_for_counter():

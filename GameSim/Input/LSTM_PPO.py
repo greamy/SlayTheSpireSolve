@@ -126,7 +126,7 @@ class ActorCriticLSTM(nn.Module):
         # This network now processes the LSTM's output combined with static features (like the deck embedding).
         combined_feature_dim = lstm_hidden_dim + static_input_dim
         leaky_relu_slope = 0.02
-        network_size = 512
+        network_size = 256
 
         xavier_gain = nn.init.calculate_gain('leaky_relu', leaky_relu_slope)
         first_layer = nn.Linear(combined_feature_dim, network_size)
@@ -144,21 +144,21 @@ class ActorCriticLSTM(nn.Module):
         )
 
         # --- Actor Heads ---
-        self.actor_bt_head = nn.Linear(network_size // 2, total_bt_actions)
+        self.actor_bt_head = nn.Linear(network_size // 4, total_bt_actions)
         nn.init.xavier_uniform_(self.actor_bt_head.weight, gain=xavier_gain)
         # The Card Build head does not use the LSTM, it uses a separate simple network.
-        cb_layer = nn.Linear(static_input_dim, network_size // 2)
+        cb_layer = nn.Linear(static_input_dim, network_size // 4)
         nn.init.xavier_uniform_(cb_layer.weight, gain=xavier_gain)
         self.cb_base_network = nn.Sequential(
             cb_layer, # Only sees static deck/player info
             # nn.LayerNorm(network_size // 2),
             nn.LeakyReLU(leaky_relu_slope)
         )
-        self.actor_cb_head = nn.Linear(network_size // 2, total_cb_actions)
+        self.actor_cb_head = nn.Linear(network_size // 4, total_cb_actions)
         nn.init.xavier_uniform_(self.actor_cb_head.weight, gain=xavier_gain)
 
         # --- Critic Head ---
-        self.critic_head = nn.Linear(network_size // 2, 1)
+        self.critic_head = nn.Linear(network_size // 4, 1)
         nn.init.xavier_uniform_(self.critic_head.weight, gain=xavier_gain)
 
     def forward(self, static_features, dynamic_features, hidden_state, stage):
@@ -260,8 +260,8 @@ class LSTMPPOAgent(PPOAgent):
         #                                                 step_size_up=100)
 
         self.lr_scheduler = optim.lr_scheduler.LinearLR(self.optimizer,
-                                                        start_factor=self.initial_lr,
-                                                        end_factor=self.initial_lr * 0.1,
+                                                        start_factor=1.0,
+                                                        end_factor=0.05,
                                                         total_iters=2000)
 
         # --- Add a placeholder for the hidden state ---
@@ -334,9 +334,22 @@ class LSTMPPOAgent(PPOAgent):
         # hidden_states_arr = np.array(self.memory['hidden_states'])
         # cell_states_arr = np.array(self.memory['cell_states'])
 
-        advantages_arr = self._compute_gae(rewards_arr, values_arr, dones_arr)
+        advantages_arr = self._compute_gae_per_episode(rewards_arr, values_arr, dones_arr)
         advantages = torch.tensor(advantages_arr, dtype=torch.float32).to(self.device)
-        advantages_all = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+
+        adv_mean = advantages.mean()
+        adv_std = advantages.std()
+
+        if adv_std.isnan() or adv_std < 1e-8:
+            print(f"WARNING: Advantage std is {adv_std.item()}, sktipping normalization")
+            advantages_all = advantages - adv_mean
+        else:
+            advantages_all = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+
+        # if torch.isnan(advantages_all).any():
+        #     print("WARNING: NaN in advantages, skipping this batch")
+        #     continue
+
         value_targets_all = advantages_all + torch.tensor(values_arr, dtype=torch.float32).to(self.device)
 
         episode_indices = []
@@ -351,6 +364,7 @@ class LSTMPPOAgent(PPOAgent):
         for _ in range(self.learn_epochs):
             # Shuffle the sequences, NOT the individual steps
             random.shuffle(episode_indices)
+            policy_loss, value_loss, entropy_loss, batch_advantages, ratios = 0, 0, 0, 0, 0
 
             for episode in episode_indices:
                 episode_len = len(episode)
@@ -389,11 +403,21 @@ class LSTMPPOAgent(PPOAgent):
 
                 self.optimizer.zero_grad()
                 total_loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.params, max_norm=0.5)
                 self.optimizer.step()
 
             self.lr_scheduler.step()
             self.entropy_coef *= self.entropy_decay
-            self.learn_step_counter += 1
+
+            if self.learn_step_counter % 2 == 0:
+
+                print(f"Policy Loss: {policy_loss.item():.4f}")
+                print(f"Value Loss: {value_loss.item():.4f}")
+                print(f"Entropy: {-entropy_loss.item():.4f}")
+                # print(f"Approx KL: {approx_kl.item():.4f}")
+                print(f"Clip Fraction: {(torch.abs(ratios - 1) > self.epsilon).float().mean():.2%}")
+                print(f"Advantage Std: {batch_advantages.std():.4f}")
+
 
         self.old_network.load_state_dict(self.actor_critic.state_dict())
         # Clear memory after learning
@@ -407,23 +431,23 @@ class LSTMPPOAgent(PPOAgent):
         elif torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        if self.learn_step_counter % 10 == 0:
-            avg_loss = sum(losses) / len(losses)
-            avg_reward = (sum(rewards_arr) / len(rewards_arr))
+        avg_loss = sum(losses) / len(losses)
+        avg_reward = (sum(rewards_arr) / len(rewards_arr))
+        self.losses.append(avg_loss)
+        self.rewards.append(avg_reward)
+
+        if avg_reward > self.best_avg_reward:
+            self.best_avg_reward = avg_reward
+            self.save_models("artifacts/models/first_fight/ppo_agent_best.pt")
+            print("New best reward found! saving to ppo_agent_beset.pt...")
+
+        if self.learn_step_counter % 5 == 0:
             print("Average Loss at Episode " + str(self.learn_step_counter) + ": " + str(avg_loss))
             print("Average Reward at Episode " + str(self.learn_step_counter) + ": " + str(avg_reward))
-            print(f"Current paramters: entropy_coef={self.entropy_coef} ")
-            self.losses.append(avg_loss)
-            self.rewards.append(avg_reward)
 
-            if avg_reward > self.best_avg_reward:
-                self.best_avg_reward = avg_reward
-                self.save_models("artifacts/models/first_fight/ppo_agent_best.pt")
-                print("New best reward found! saving to ppo_agent_beset.pt...")
-
-        if self.learn_step_counter % 50 == 0:
             self.graph_history()
-        # self.device = "cpu"
+
+        self.learn_step_counter += 1
 
     def _compute_log_prob_lstm_batch(self, batch_stages, batch_states, batch_actions, h_initial, c_initial):
         """
