@@ -33,7 +33,7 @@ def main():
     delay = 0
     render_type = Renderer.RenderType.NONE
     load_model = True
-    model_path = "artifacts/models/first_fight/ppo_agent_JawWormMulti.pt"
+    model_path = "artifacts/models/first_fight/ppo_agent_best_JawWormGauntlet.pt"
 
     rl_controller = RLPlayerController(delay=delay, train=train, filepath="artifacts/images/model_results/first_fight/")
     if load_model:

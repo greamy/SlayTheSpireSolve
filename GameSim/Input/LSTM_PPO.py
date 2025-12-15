@@ -133,32 +133,31 @@ class ActorCriticLSTM(nn.Module):
         nn.init.xavier_uniform_(first_layer.weight, gain=xavier_gain)
         second_layer = nn.Linear(network_size, network_size // 2)
         nn.init.xavier_uniform_(second_layer.weight, gain=xavier_gain)
-        third_layer = nn.Linear(network_size // 2, network_size // 4)
         self.base_network = nn.Sequential(
             first_layer,
             nn.LeakyReLU(leaky_relu_slope),
             second_layer,
             nn.LeakyReLU(leaky_relu_slope),
-            third_layer,
-            nn.LeakyReLU()
+            # third_layer,
+            # nn.LeakyReLU()
         )
 
         # --- Actor Heads ---
-        self.actor_bt_head = nn.Linear(network_size // 4, total_bt_actions)
+        self.actor_bt_head = nn.Linear(network_size // 2, total_bt_actions)
         nn.init.xavier_uniform_(self.actor_bt_head.weight, gain=xavier_gain)
         # The Card Build head does not use the LSTM, it uses a separate simple network.
-        cb_layer = nn.Linear(static_input_dim, network_size // 4)
+        cb_layer = nn.Linear(static_input_dim, network_size // 2)
         nn.init.xavier_uniform_(cb_layer.weight, gain=xavier_gain)
         self.cb_base_network = nn.Sequential(
             cb_layer, # Only sees static deck/player info
             # nn.LayerNorm(network_size // 2),
             nn.LeakyReLU(leaky_relu_slope)
         )
-        self.actor_cb_head = nn.Linear(network_size // 4, total_cb_actions)
+        self.actor_cb_head = nn.Linear(network_size // 2, total_cb_actions)
         nn.init.xavier_uniform_(self.actor_cb_head.weight, gain=xavier_gain)
 
         # --- Critic Head ---
-        self.critic_head = nn.Linear(network_size // 4, 1)
+        self.critic_head = nn.Linear(network_size // 2, 1)
         nn.init.xavier_uniform_(self.critic_head.weight, gain=xavier_gain)
 
     def forward(self, static_features, dynamic_features, hidden_state, stage):
@@ -377,6 +376,10 @@ class LSTMPPOAgent(PPOAgent):
                 batch_old_log_probs = torch.tensor(old_log_probs_arr[episode], dtype=torch.float32).to(
                     self.device)
                 batch_advantages = advantages_all[episode].to(self.device)
+
+                if torch.isnan(batch_advantages).any() or batch_advantages.std() < 1e-6:
+                    continue
+
                 batch_value_targets = value_targets_all[episode].to(self.device)
                 batch_stages = [stages_arr[i] for i in episode]
                 initial_hidden_state = (
@@ -441,7 +444,7 @@ class LSTMPPOAgent(PPOAgent):
             self.save_models("artifacts/models/first_fight/ppo_agent_best.pt")
             print("New best reward found! saving to ppo_agent_beset.pt...")
 
-        if self.learn_step_counter % 5 == 0:
+        if self.learn_step_counter % 2 == 0:
             print("Average Loss at Episode " + str(self.learn_step_counter) + ": " + str(avg_loss))
             print("Average Reward at Episode " + str(self.learn_step_counter) + ": " + str(avg_reward))
 

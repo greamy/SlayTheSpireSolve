@@ -138,7 +138,7 @@ class PPOAgent:
 
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
-    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=128,
+    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=32,
                  learning_enabled=True, lr=0.0003, gamma=0.99, epsilon=0.2, value_coef=0.25, entropy_coef=0.01, entropy_decay=0.9999, learn_epochs=3):
 
         # Hyperparameters
@@ -548,7 +548,7 @@ class PPOAgent:
 
     def graph_embeddings(self, card_names, card_vectors):
         self.card_embedding.eval()
-        card_vectors = torch.tensor(np.array(card_vectors)).to(self.device)
+        card_vectors = torch.tensor(np.array(card_vectors), dtype=torch.float32).to(self.device)
         embeddings = self.card_embedding(card_vectors).detach().cpu().numpy()
         visualize_embeddings(card_names, embeddings)
         self.card_embedding.train()

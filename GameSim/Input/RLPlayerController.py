@@ -27,7 +27,7 @@ class RLPlayerController(PlayerController):
 
         self.max_num_enemies = 5
         self.max_num_cards = 10
-        self.card_vector_length = 781
+        self.card_vector_length = 19
         self.player_vector_length = 13
 
         self.card_cache = []
@@ -45,6 +45,7 @@ class RLPlayerController(PlayerController):
         self.turn_counts = []
         self.cards_played_counts = []
         self.health = 0
+        self.start_health = 70
         self.enemy_health = 0
 
         # Current combat tracking
@@ -68,17 +69,14 @@ class RLPlayerController(PlayerController):
             stance_val = stance.value
         return stance_val
 
-    def get_card_vector(self, card: Card) -> np.array:
+    def get_card_vector(self, card: Card, player: Player, enemies: list[Enemy]) -> np.array:
         if card is None:
             # Return a zero vector with the combined length of the manual vector and the text embedding.
             return np.zeros(self.card_vector_length, dtype=np.float32)
         stance_val = self.get_enum_value(card.stance)
-        manual_vector = np.array([ #
-            card.card_type.value,
+        manual_vector = np.array([
             card.energy,
-            card.damage,
             card.attacks,
-            card.block,
             int(stance_val == Player.Stance.CALM),
             int(stance_val == Player.Stance.WRATH),
             int(stance_val == Player.Stance.DIVINITY),
@@ -89,20 +87,38 @@ class RLPlayerController(PlayerController):
             int(card.playable)
         ], dtype=np.float32)
 
-        # Check if card already has embedding before computing
-        # This prevents unnecessary DistilBERT calls and improves performance
-        if card.text_embedding is None:
-            inputs = self.tokenizer(card.description, return_tensors="pt", padding=True, truncation=True)
-            with torch.no_grad():
-                outputs = self.text_model(**inputs)
-            # Use the [CLS] token's embedding (the first token)
-            text_embedding = outputs.last_hidden_state[0, 0, :].cpu().numpy()
+        features = []
+        if enemies:
+            enemy = enemies[0]  # For single enemy
+            incoming_damage = enemy.intent.damage * enemy.intent.attacks
+            current_block = player.block
 
-            card.set_text_embedding(text_embedding)
-            self.card_cache.append(card)
+            features.extend([
+                # Will this card kill the enemy?
+                float(card.damage >= enemy.health),
+                # Does this block fully prevent incoming damage?
+                float(card.block + current_block >= incoming_damage),
+                # Damage efficiency (damage per energy)
+                (card.damage / max(card.energy, 1)) / 10.0,
+                # Block efficiency
+                (card.block / max(card.energy, 1)) / 10.0,
+                # Overkill amount (negative if not lethal)
+                (card.damage - enemy.health) / 20.0,
+                # Block surplus/deficit after this card
+                (card.block + current_block - incoming_damage) / 20.0,
+            ])
+        else:
+            features.extend([0.0] * 6)
+
+            # Card type one-hot
+        features.extend([
+            float(card.card_type.value == 0),  # Attack
+            float(card.card_type.value == 1),  # Skill
+            float(card.card_type.value == 2),  # Power
+        ])
 
         # 3. Concatenate them into a single, richer vector
-        embedding = np.concatenate((manual_vector, card.text_embedding))
+        embedding = np.concatenate((manual_vector, features))
         return embedding
 
     def get_player_vector(self, player):
@@ -192,8 +208,8 @@ class RLPlayerController(PlayerController):
         """
 
         deck_cards = player.deck.get_deck()
-        deck = np.array([self.get_card_vector(card) for card in deck_cards])
-        hand = np.array([self.get_card_vector(card) if in_hand else self.get_card_vector(None) for card, in_hand in self.turn_stable_hand])
+        deck = np.array([self.get_card_vector(card, player, enemies) for card in deck_cards])
+        hand = np.array([self.get_card_vector(card, player, enemies) if in_hand else self.get_card_vector(None, None, None) for card, in_hand in self.turn_stable_hand])
 
         state_dict = {
             "deck": deck,
@@ -295,10 +311,10 @@ class RLPlayerController(PlayerController):
         # Increment turn counter (one turn is a player->enemy cycle)
         self.current_turn_count += 1
 
-        self.reward = -0.1
+        self.reward = 0
         health_lost = self.health - player.health
         damage_done = self.enemy_health - sum([enemy.health for enemy in enemies])
-        self.reward += health_lost * -4.0
+        self.reward += health_lost * -2.0
         self.reward += damage_done * 2.0
 
         self.health = player.health
@@ -354,7 +370,7 @@ class RLPlayerController(PlayerController):
                 health_ratio = player.health / player.start_health
                 base_reward = 20 + (30 * health_ratio) # Episode victory
             else:
-                base_reward = -50  # Episode failure
+                base_reward = -30  # Episode failure
 
             # Include accumulated bonuses (rest sites, max combats, etc.)
             total_reward = self.reward + base_reward

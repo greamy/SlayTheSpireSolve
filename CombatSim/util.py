@@ -234,7 +234,7 @@ def visualize_embeddings(card_names, embeddings, perplexity=5, random_state=42):
     plt.close(fig)
 
 
-def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.RenderType.NONE, combat_type="monster", num_combats=5000, monster_name="JawWorm"):
+def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.RenderType.NONE, combat_type="monster", num_combats=5000, monster_name="JawWorm", cards=None):
     renderer = Renderer(render_type=render_type)
 
     possible_enemies = Enemy.get_implemented_enemies(dungeon_path)
@@ -263,7 +263,8 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
             continue
 
         # Set up the player's deck and enemies
-        cards = get_default_deck()
+        if cards is None:
+            cards = get_default_deck()
         # cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
         addCards(room.player, cards)
 
@@ -415,7 +416,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
             room.player.deck.reshuffle()
             deck = room.player.deck.get_deck()
             card_names = [c.name for c in deck]
-            card_vectors = [controller.get_card_vector(c) for c in deck]
+            card_vectors = [controller.get_card_vector(c, room.player, room.enemies) for c in deck]
 
             controller.agent.graph_embeddings(card_names, card_vectors)
 
@@ -435,12 +436,13 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
 def run_many_game_sequences(controller, dungeon_path, library_path,
                            render_type=Renderer.RenderType.NONE,
                            num_episodes=1000,
-                           combats_per_rest=4,
+                           combats_per_rest=3,
                            max_combats_per_episode=20,
                            heal_percent=0.20,
                            monster_name="JawWorm",
                            ascension=20,
-                           act=1):
+                           act=1,
+                           cards=None):
     """
     Train agent on multi-combat episodes.
 
@@ -479,7 +481,9 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
         # === EPISODE INITIALIZATION ===
         # Create Player ONCE for entire episode (not per combat!)
         player = createPlayer(controller=controller, cards=[], lib_path=library_path)
-        cards = get_default_deck()
+        if cards is None:
+            cards = get_default_deck()
+
         addCards(player, cards)
 
         # Upgrade one Eruption
@@ -540,10 +544,11 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
                 # Combat won
                 # Check for rest site bonus
                 if combats_completed % combats_per_rest == 0:
-                    controller.apply_episode_bonus(50, reason=f"rest_site_{combats_completed//combats_per_rest}")
                     # Heal player
                     heal_amount = int(player.start_health * heal_percent)
                     player.health = min(player.health + heal_amount, player.start_health)
+
+                    controller.apply_episode_bonus(50, reason=f"rest_site_{combats_completed // combats_per_rest}")
 
                 # Check episode termination
                 if combats_completed >= max_combats_per_episode:
@@ -610,10 +615,11 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
             # We'll use the total number of completed episodes for the rolling window
             for j in range(len(controller.final_healths)):
                 start_idx = max(0, j - window + 1)
-                # Health (for all episodes, including losses)
-                window_healths = controller.final_healths[start_idx:j+1]
-                window_wins = [h for h in window_healths if h > 0]
-                rolling_health.append(sum(window_wins) / len(window_wins) if window_wins else 0)
+                # Health lost
+                # window_healthsths = controller.final_healths[start_idx:j+1]
+                # window_wins = [h for h in window_healths if h > 0]
+                # window_health_lost = [controller.start_health - h for idx, h in enumerate(window_healths) if h > 0]
+                # rolling_health.append(sum(window_health_lost) / len(window_health_lost) if window_health_lost else 0)
 
                 # Turns (wins only)
                 window_turns_all = controller.turn_counts[start_idx:j+1]
@@ -633,10 +639,10 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
             fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
 
             # Plot 1: Rolling Average Health (wins only)
-            ax1.plot(rolling_health, color='tab:blue', linewidth=1, alpha=0.8)
+            ax1.plot(health_lost_history, color='tab:blue', linewidth=1, alpha=0.8)
             ax1.set_xlabel('Combat Number', fontsize=10)
             ax1.set_ylabel('Avg Health (wins)', fontsize=10)
-            ax1.set_title(f'Rolling Avg Final Health (window={window}, wins only)', fontsize=12)
+            ax1.set_title(f'Rolling Avg Health Lost (window={window}, wins only)', fontsize=12)
             ax1.grid(True, alpha=0.3)
 
             # Plot 2: Rolling Average Turns (wins only)
