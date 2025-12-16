@@ -70,10 +70,12 @@ class Enemy(Entity):
 
     def do_turn(self, player, debug):
         self.intent.play(self, [self], player, [player], debug)
+        # intent_played = self.intent
         self.num_turns += 1
         self.choose_intent()
 
         self.end_turn([player], debug)
+        # return intent_played
 
     def render(self, screen, font, font_size=20):
         super().render(screen, font)

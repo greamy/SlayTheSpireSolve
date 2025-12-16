@@ -1,5 +1,6 @@
 import importlib
 import random
+import os
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -37,7 +38,6 @@ def createPlayer(lib_path='../CombatSim/Actions/Library', controller=RandomPlaye
     if cards is None:
         cards = []
     return Player(health, energy, gold, potions, relics, cards, controller, lib_path)
-
 
 def createEnemy(name: str, ascension: int, act: int):
     module = importlib.import_module("CombatSim.Entities.Dungeon." + name)
@@ -174,6 +174,11 @@ def visualize_bot_history(loss_hist, reward_hist, filepath):
         plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to make room for the suptitle
 
         # Save the figure to the specified file path
+        # Ensure directory exists
+        directory = os.path.dirname(filepath)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+        
         plt.savefig(filepath)
         print(f"Plot successfully saved to {filepath}")
 

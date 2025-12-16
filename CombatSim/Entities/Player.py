@@ -44,7 +44,7 @@ class Player(Entity):
     @staticmethod
     def get_implemented_cards(library_path: str) -> dict:
         my_cards = {}
-        card_name_list = os.listdir(os.path.join(os.curdir, library_path))
+        card_name_list = os.listdir(library_path)
         module_path = library_path.replace("../", "").replace("/", ".") + "."
         for card_name in card_name_list:
             if card_name.endswith(".py"):

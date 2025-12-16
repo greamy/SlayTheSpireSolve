@@ -1,4 +1,5 @@
 import matplotlib
+import os
 
 from GameSim.Input.RandomPlayerController import RandomPlayerController
 from GameSim.Render.Renderer import Renderer
@@ -28,36 +29,39 @@ def main():
     """
 
     # Configuration
-    episodes = 1000
-    train = False
+    episodes = 100_000
+    train = True
     delay = 0
     render_type = Renderer.RenderType.NONE
-    load_model = True
+    load_model = False
     model_path = "artifacts/models/first_fight/ppo_agent_best_JawWormGauntletSuperDeck.pt"
     # cards = get_default_deck()
     cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
+    
+    output_dir = "artifacts/images/model_results/first_fight/"
+    os.makedirs(output_dir, exist_ok=True)
 
-    rl_controller = RLPlayerController(delay=delay, train=train, filepath="artifacts/images/model_results/first_fight/")
+    rl_controller = RLPlayerController(delay=delay, train=train, filepath=output_dir)
     if load_model:
         rl_controller.agent.load_models(model_path)
 
-    run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
-                   render_type, "monster", episodes, "JawWorm", cards=cards)
+    # run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
+    #                render_type, "monster", episodes, "JawWorm", cards=cards)
 
-    # run_many_game_sequences(
-    #     controller=rl_controller,
-    #     dungeon_path="CombatSim/Entities/Dungeon/",
-    #     library_path="CombatSim/Actions/Library",
-    #     render_type=render_type,
-    #     num_episodes=episodes,  # Total episodes to run
-    #     combats_per_rest=4,  # Rest bonus every N combats
-    #     max_combats_per_episode=20,  # Hard cap
-    #     heal_percent=0.20,  # 20% heal between combats
-    #     monster_name="JawWorm",  # Enemy to fight
-    #     ascension=20,
-    #     act=1,
-    #     cards=cards
-    # )
+    run_many_game_sequences(
+        controller=rl_controller,
+        dungeon_path="CombatSim/Entities/Dungeon/",
+        library_path="CombatSim/Actions/Library",
+        render_type=render_type,
+        num_episodes=episodes,  # Total episodes to run
+        combats_per_rest=4,  # Rest bonus every N combats
+        max_combats_per_episode=20,  # Hard cap
+        heal_percent=0.20,  # 20% heal between combats
+        monster_name="JawWorm",  # Enemy to fight
+        ascension=20,
+        act=1,
+        cards=cards
+    )
 
     if train:
         rl_controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_{episodes}.pt")
