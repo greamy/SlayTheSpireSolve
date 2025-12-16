@@ -265,7 +265,6 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
         # Set up the player's deck and enemies
         if cards is None:
             cards = get_default_deck()
-        # cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
         addCards(room.player, cards)
 
         for card in room.player.deck.get_deck():
@@ -616,8 +615,8 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
             for j in range(len(controller.final_healths)):
                 start_idx = max(0, j - window + 1)
                 # Health lost
-                # window_healthsths = controller.final_healths[start_idx:j+1]
-                # window_wins = [h for h in window_healths if h > 0]
+                window_healths = controller.final_healths[start_idx:j+1]
+                window_wins = [h for h in window_healths if h > 0]
                 # window_health_lost = [controller.start_health - h for idx, h in enumerate(window_healths) if h > 0]
                 # rolling_health.append(sum(window_health_lost) / len(window_health_lost) if window_health_lost else 0)
 

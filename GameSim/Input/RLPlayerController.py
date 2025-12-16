@@ -1,8 +1,6 @@
 import random
 
 import numpy as np
-from transformers import AutoTokenizer, AutoModel
-import torch
 
 from CombatSim.Actions.Card import Card
 from CombatSim.Actions.Library.Strike import Strike
@@ -10,7 +8,6 @@ from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
 from GameSim.Input.Controller import PlayerController
 from GameSim.Input.LSTM_PPO import LSTMPPOAgent
-from GameSim.Input.PPO import PPOAgent
 
 
 class RLPlayerController(PlayerController):
@@ -20,15 +17,17 @@ class RLPlayerController(PlayerController):
         self.delay = delay
         self.counter = 0
         self.framerate = 60
-        self.card_probabilities = {}
-        self.end_turn_probability = 0.0
-        self.min_probability = 0.0
-        self.max_probability = 1.0
+        # self.card_probabilities = {}
+        # self.end_turn_probability = 0.0
+        # self.min_probability = 0.0
+        # self.max_probability = 1.0
 
         self.max_num_enemies = 5
         self.max_num_cards = 10
         self.card_vector_length = 19
-        self.player_vector_length = 13
+        self.player_vector_length = 12
+        self.enemy_vector_length = 12
+        self.strategic_vector_length = 10
 
         self.card_cache = []
 
@@ -52,15 +51,13 @@ class RLPlayerController(PlayerController):
         self.current_turn_count = 0
         self.current_cards_played = 0
 
-        self.tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
-        self.text_model = AutoModel.from_pretrained("distilbert-base-uncased")
-
         self.action_space = {"BT": [self.max_num_cards, self.max_num_enemies, 1], "CB": 3}
         self.num_bt_actions = (self.max_num_cards * self.max_num_enemies) + 1
 
         # self.agent = PPOAgent(self.action_space, self.card_vector_length, 13,
                               # learning_enabled=self.train, filepath=filepath)
-        self.agent = LSTMPPOAgent(self.action_space, self.card_vector_length, self.player_vector_length, 13,
+        self.agent = LSTMPPOAgent(self.action_space, self.card_vector_length,
+                                  self.player_vector_length + self.strategic_vector_length, self.enemy_vector_length,
                                   learning_enabled=self.train, filepath=filepath)
 
     def get_enum_value(self, stance):
@@ -70,7 +67,7 @@ class RLPlayerController(PlayerController):
         return stance_val
 
     def get_card_vector(self, card: Card, player: Player, enemies: list[Enemy]) -> np.array:
-        if card is None:
+        if card is None or player is None or enemies is None:
             # Return a zero vector with the combined length of the manual vector and the text embedding.
             return np.zeros(self.card_vector_length, dtype=np.float32)
         stance_val = self.get_enum_value(card.stance)
@@ -88,29 +85,35 @@ class RLPlayerController(PlayerController):
         ], dtype=np.float32)
 
         features = []
-        if enemies:
-            enemy = enemies[0]  # For single enemy
-            incoming_damage = enemy.intent.damage * enemy.intent.attacks
-            current_block = player.block
+        incoming_damage = 0
+        for enemy in enemies:  # For single enemy
+            incoming_damage += enemy.intent.damage * enemy.intent.attacks
+        current_block = player.block
 
-            features.extend([
-                # Will this card kill the enemy?
-                float(card.damage >= enemy.health),
-                # Does this block fully prevent incoming damage?
-                float(card.block + current_block >= incoming_damage),
-                # Damage efficiency (damage per energy)
-                (card.damage / max(card.energy, 1)) / 10.0,
-                # Block efficiency
-                (card.block / max(card.energy, 1)) / 10.0,
-                # Overkill amount (negative if not lethal)
-                (card.damage - enemy.health) / 20.0,
-                # Block surplus/deficit after this card
-                (card.block + current_block - incoming_damage) / 20.0,
-            ])
-        else:
-            features.extend([0.0] * 6)
+        total_card_dmg = (card.damage * card.attacks)
+        card_lethal = False
+        overkill_amt = False
+        for enemy in enemies:
+            if (total_card_dmg * player.damage_dealt_multiplier) + player.damage_dealt_modifier >= enemy.health:
+                card_lethal = True
 
-            # Card type one-hot
+            over = total_card_dmg - enemy.health
+            if over < overkill_amt:
+                overkill_amt = over
+        features.extend([
+            # Will this card kill an enemy?
+            card_lethal,
+            # Does this block fully prevent incoming damage?
+            float(card.block + current_block >= incoming_damage and current_block < incoming_damage),
+            # Damage efficiency (damage per energy)
+            (total_card_dmg / max(card.energy, 1)),
+            # Block efficiency
+            (card.block / max(card.energy, 1)),
+            # Overkill amount (negative if not lethal)
+            overkill_amt,
+            # Block surplus/deficit after this card
+            (card.block + current_block - incoming_damage),
+        ])
         features.extend([
             float(card.card_type.value == 0),  # Attack
             float(card.card_type.value == 1),  # Skill
@@ -125,8 +128,7 @@ class RLPlayerController(PlayerController):
         # TODO: Include player status list
         stance_val = player.stance
         return np.array([
-            player.health,
-            player.start_health,
+            player.energy,
             player.block,
             player.block_modifier,
             player.block_multiplier,
@@ -144,8 +146,7 @@ class RLPlayerController(PlayerController):
         # if enemy is None:
         #     return np.zeros(13)
         return np.array([
-            enemy.health,
-            enemy.start_health,
+            enemy.start_health / enemy.health,
             enemy.block,
             enemy.block_modifier,
             enemy.block_multiplier,
@@ -181,7 +182,14 @@ class RLPlayerController(PlayerController):
         for i, (card, is_still_in_hand) in enumerate(self.turn_stable_hand):
             # A slot is playable if the card is still in our hand AND is in the game's current list of playable cards.
             if is_still_in_hand and card in playable_set:
-                mask[i, :num_enemies] = True
+                requires_target = False
+                if card.card_type == Card.Type.ATTACK:
+                    requires_target = True
+
+                if requires_target:
+                    mask[i, :num_enemies] = True
+                else:
+                    mask[i, 0] = True
 
         card_mask = mask.flatten()
         full_mask = np.append(card_mask, True)
@@ -192,6 +200,34 @@ class RLPlayerController(PlayerController):
         mask = np.zeros(3, dtype=bool)
         mask[:len(card_choices)] = True
         return mask
+
+    def get_strategic_features(self, player, enemies):
+        if not enemies:
+            return np.zeros(10, dtype=np.float32)
+
+        raw_incoming = 0
+        for enemy in enemies:
+            raw_incoming += enemy.intent.damage * enemy.intent.attacks if enemy.intent.damage else 0
+
+        playable = [c for c in player.deck.hand if c.playable]
+        raw_damage = sum(c.damage * getattr(c, 'attacks', 1) for c in playable)
+        raw_block = sum(c.block for c in playable)
+
+        return np.array([
+            # === Raw numbers (always accurate, no interpretation) ===
+            raw_incoming,
+            raw_damage,
+            raw_block,
+            player.health / player.start_health,
+            player.block / raw_incoming if raw_incoming > 0 else 1.0,
+
+            # === Card availability flags (let network learn implications) ===
+            float(any(c.stance == Player.Stance.WRATH for c in playable)),  # Has wrath card
+            float(any(c.stance == Player.Stance.CALM for c in playable)),  # Has calm card
+            float(any(c.block > 0 for c in playable)),  # Has block
+            float(any(c.damage > 0 for c in playable)),  # Has damage
+            len(playable),
+        ], dtype=np.float32)
 
     def get_battle_state(self, player, enemies, playable, debug) -> dict:
         """
@@ -214,6 +250,7 @@ class RLPlayerController(PlayerController):
         state_dict = {
             "deck": deck,
             "player": self.get_player_vector(player),
+            "strategic": self.get_strategic_features(player, enemies),
             "action_mask": self.get_battle_action_mask(player, enemies, playable),
             "hand": hand,
             "enemies": np.array([self.get_enemy_vector(enemy) for enemy in enemies])
@@ -261,21 +298,21 @@ class RLPlayerController(PlayerController):
                                                        log_prob=self.log_prob, reward=self.reward, done=False, new_state=state, value=self.value)
 
         # Calculate per-card probabilities (sum across enemy targets)
-        if action_probs is not None:
-            self.card_probabilities = {}
-            for card_idx in range(self.max_num_cards):
-                start_action = card_idx * self.max_num_enemies
-                end_action = start_action + self.max_num_enemies
-                card_prob = action_probs[start_action:end_action].sum()
-                self.card_probabilities[card_idx] = float(card_prob)
-
-            # End turn probability
-            self.end_turn_probability = float(action_probs[self.num_bt_actions-1])
-
-            # Calculate min/max for dynamic color scaling
-            all_probs = list(self.card_probabilities.values()) + [self.end_turn_probability]
-            self.min_probability = min(all_probs)
-            self.max_probability = max(all_probs)
+        # if action_probs is not None:
+        #     self.card_probabilities = {}
+        #     for card_idx in range(self.max_num_cards):
+        #         start_action = card_idx * self.max_num_enemies
+        #         end_action = start_action + self.max_num_enemies
+        #         card_prob = action_probs[start_action:end_action].sum()
+        #         self.card_probabilities[card_idx] = float(card_prob)
+        #
+        #     # End turn probability
+        #     self.end_turn_probability = float(action_probs[self.num_bt_actions-1])
+        #
+        #     # Calculate min/max for dynamic color scaling
+        #     all_probs = list(self.card_probabilities.values()) + [self.end_turn_probability]
+        #     self.min_probability = min(all_probs)
+        #     self.max_probability = max(all_probs)
 
         self.prev_obs = state
         self.reward = 0
@@ -300,6 +337,21 @@ class RLPlayerController(PlayerController):
             return card_index, card
         else:
             raise Exception("Invalid output from PPOAgent. Invalid action: " + card_index + ": " + str(self.turn_stable_hand))
+
+    def select_cards_from_zone(self, player: Player, zone: Player.Deck.Zone, enemies: list[Enemy], num_cards: int, debug: bool):
+        if not self.wait_for_counter():
+            return None
+        selected_indices = set()
+        card_choices = player.deck.get_zone(zone)
+        card_choices = [self.get_card_vector(card, player, enemies) for card in card_choices]
+
+        comparison_cards = player.deck.draw_pile + player.deck.hand
+        comparison_cards = [self.get_card_vector(card, player, enemies) for card in comparison_cards]
+
+        while len(selected_indices) < num_cards:
+            choice = self.agent.choose_card_from_zone(comparison_cards, card_choices, selected_indices)
+            selected_indices.add(choice)
+        return list(selected_indices)
 
     def start_turn(self, player, enemies):
         """

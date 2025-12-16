@@ -331,6 +331,13 @@ class Player(Entity):
         MAX_HAND_SIZE = 10
         MAX_CARDS_ENCODING = 25
 
+        class Zone(Enum):
+            DRAW_PILE = 0
+            HAND = 1
+            DISCARD_PILE = 2
+            EXHAUST_PILE = 3
+            USED_POWERS = 4
+
         def __init__(self, cards):
             self.draw_pile = cards
             self.hand = []
@@ -398,6 +405,20 @@ class Player(Entity):
             if extra_cards is None:
                 extra_cards = list()
             return self.hand + self.draw_pile + self.discard_pile + self.exhaust_pile + self.used_powers + extra_cards
+
+        def get_zone(self, zone: Zone):
+            if zone == self.Zone.DRAW_PILE:
+                return self.draw_pile
+            elif zone == self.Zone.HAND:
+                return self.hand
+            elif zone == self.Zone.DISCARD_PILE:
+                return self.discard_pile
+            elif zone == self.Zone.EXHAUST_PILE:
+                return self.exhaust_pile
+            elif zone == self.Zone.USED_POWERS:
+                return self.used_powers
+            else:
+                return None
 
         def __str__(self):
             return ("Draw Pile:" + str([str(card) for card in self.draw_pile]) +

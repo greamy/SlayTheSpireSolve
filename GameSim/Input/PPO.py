@@ -99,7 +99,7 @@ class CardEncoder(nn.Module):
         # A sequence of layers forming a Multi-Layer Perceptron (MLP).
         # We use Linear layers with a non-linear activation (ReLU) in between.
         leaky_relu_slope = 0.02
-        network_size = 512
+        network_size = 256
         xavier_gain = nn.init.calculate_gain('leaky_relu', leaky_relu_slope)
         layer_1 = nn.Linear(feature_vector_dim, network_size)
         nn.init.xavier_uniform_(layer_1.weight, gain=xavier_gain)
@@ -139,7 +139,7 @@ class PPOAgent:
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
     def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=32,
-                 learning_enabled=True, lr=0.0003, gamma=0.99, epsilon=0.2, value_coef=0.25, entropy_coef=0.01, entropy_decay=0.9999, learn_epochs=3):
+                 learning_enabled=True, lr=0.003, gamma=0.99, epsilon=0.2, value_coef=0.25, entropy_coef=0.01, entropy_decay=0.999, learn_epochs=3):
 
         # Hyperparameters
         self.gamma = gamma
@@ -263,6 +263,7 @@ class PPOAgent:
         # Grab features which are guaranteed to be in the state dictionary.
         deck_card_features = state['deck'].to(self.device)
         player = state['player'].to(self.device)
+        strategic = state['strategic'].to(self.device)
 
         # Handle the edge case where the deck is empty
         if deck_card_features.shape[0] == 0:
@@ -332,7 +333,7 @@ class PPOAgent:
                 # hand_embed = torch.mean(hand_embeddings, dim=0)
 
         # 3. Concatenate the single deck embedding vector with the other state features.
-        return (torch.cat((deck_embed, player, hand_embed, enemies_embed)), stage, state['action_mask'])
+        return (torch.cat((deck_embed, player, strategic, hand_embed, enemies_embed)), stage, state['action_mask'])
 
     def choose_action(self, state_tensors):
         """Choose actions for agent"""
@@ -349,6 +350,28 @@ class PPOAgent:
         self.actor_critic.train()
 
         return agent_action, agent_log_prob, value, action_probs
+
+    def choose_card_from_zone(self, comparison_cards, card_choices_vectors, selected_indices: set):
+        # for now we will try to choose the card most similar to the cards in hand/draw pile
+        # idea is this will provide highest synergy with existing deck and should be decent for cards like Meditate.
+
+        card_choices_tensor = torch.tensor(np.array(card_choices_vectors), dtype=torch.float32).to(self.device)
+        comparison_cards_tensor = torch.tensor(np.array(comparison_cards), dtype=torch.float32).to(self.device)
+        card_choices_embed = self.card_embedding(card_choices_tensor)
+        comparison_cards_embed = self.card_embedding(comparison_cards_tensor)
+        comparison_cards_vec = torch.mean(comparison_cards_embed, dim=0)
+        similarities = F.cosine_similarity(card_choices_embed, comparison_cards_vec.unsqueeze(0), dim=1)
+
+        # get best card, ensure it is not in selected indices:
+        best_index = -1
+        best_similarity = -1.0
+        for i in range(len(card_choices_vectors)):
+            if i in selected_indices:
+                continue
+            if similarities[i].item() > best_similarity:
+                best_similarity = similarities[i].item()
+                best_index = i
+        return best_index
 
     def _compute_gae(self, rewards, values, dones, lambda_=0.95):
         """Compute Generalized Advantage Estimation"""

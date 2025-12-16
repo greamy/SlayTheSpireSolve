@@ -225,7 +225,7 @@ class LSTMPPOAgent(PPOAgent):
 
         self.best_avg_reward = -math.inf
         # Define the dimensions for the new network
-        self.lstm_hidden_dim = 1024
+        self.lstm_hidden_dim = 256
         # Static features are things that don't change turn-to-turn (like the deck)
         static_dim = self.card_embed_dim
         # Dynamic features are turn-specific (player stats, hand, enemies)
@@ -295,9 +295,6 @@ class LSTMPPOAgent(PPOAgent):
 
     def choose_action(self, state_tensors):
         """Choose action, now passing the hidden state."""
-        # --- You will need to modify embed_state to return static and dynamic features separately ---
-        # For now, let's assume it does:
-        # static_features, dynamic_features, stage, action_mask = self.embed_state_v2(state_tensors)
 
         full_state, stage, action_mask = self.embed_state(state_tensors)
         static_features = full_state[:self.card_embed_dim]

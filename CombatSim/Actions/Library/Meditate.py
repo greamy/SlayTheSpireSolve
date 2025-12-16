@@ -20,13 +20,17 @@ class Meditate(Card):
             num_cards = len(player.deck.discard_pile)
         else:
             num_cards = self.num_cards
-        for i in range(num_cards):
-            card = random.choice(player.deck.discard_pile)
+        card_idxs = player.controller.select_cards_from_zone(player, Player.Deck.Zone.DISCARD_PILE, enemies, num_cards, debug)
+        cards = []
+        for idx in card_idxs:
+            cards.append(player.deck.discard_pile[idx])
+
+        for card in cards:
             player.deck.hand.append(card)
             player.deck.discard_pile.remove(card)
             card.temp_retain = True
             player.notify_listeners(Listener.Event.HAND_CHANGED, player, enemies, debug)
-        player.turn_over = True
+            player.turn_over = True
 
         return True
 

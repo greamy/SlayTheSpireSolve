@@ -7,7 +7,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 from GameSim.Input.RLPlayerController import RLPlayerController
-from CombatSim.util import run_many_games, run_many_game_sequences
+from CombatSim.util import run_many_games, run_many_game_sequences, get_default_deck
 
 
 def main():
@@ -33,26 +33,30 @@ def main():
     delay = 0
     render_type = Renderer.RenderType.NONE
     load_model = True
-    model_path = "artifacts/models/first_fight/ppo_agent_best_JawWormGauntlet.pt"
+    model_path = "artifacts/models/first_fight/ppo_agent_best_JawWormGauntletSuperDeck.pt"
+    # cards = get_default_deck()
+    cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
 
     rl_controller = RLPlayerController(delay=delay, train=train, filepath="artifacts/images/model_results/first_fight/")
     if load_model:
         rl_controller.agent.load_models(model_path)
 
     run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
-                   render_type, "monster", episodes, "JawWorm")
+                   render_type, "monster", episodes, "JawWorm", cards=cards)
 
     # run_many_game_sequences(
     #     controller=rl_controller,
     #     dungeon_path="CombatSim/Entities/Dungeon/",
     #     library_path="CombatSim/Actions/Library",
+    #     render_type=render_type,
     #     num_episodes=episodes,  # Total episodes to run
     #     combats_per_rest=4,  # Rest bonus every N combats
     #     max_combats_per_episode=20,  # Hard cap
     #     heal_percent=0.20,  # 20% heal between combats
     #     monster_name="JawWorm",  # Enemy to fight
     #     ascension=20,
-    #     act=1
+    #     act=1,
+    #     cards=cards
     # )
 
     if train:
