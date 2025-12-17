@@ -78,21 +78,19 @@ class Regimen:
 
         current_combat = 0
         self.player = self.get_player(controller)
-        enemies = self._get_enemies()
+
         while episodes < self.max_episodes:
-            if not self.player.is_alive() or current_combat > self.max_gauntlet_length:
+            # Check if we need to create a new player (gauntlet ended)
+            if not self.player.is_alive() or current_combat >= self.max_gauntlet_length:
                 self.player = self.get_player(controller)
                 current_combat = 0
-            elif current_combat > 1:
-                self.player.end_combat(enemies, False, episode_done=False)
-            room = MonsterRoom(self.player,1, 0, [], [], 1, 20)
-            enemies = self._get_enemies()
-            room.enemies = enemies
 
-            if episodes % self.rest_frequency == 0 and episodes != 0:
-                self.player.health = max(self.player.health + int(self.player.start_health * 0.2), self.player.start_health)
+            # Create room for this combat
+            room = MonsterRoom(self.player, 1, 0, [], [], 1, 20)
+            room.enemies = self._get_enemies()
 
             episodes += 1
             current_combat += 1
             yield room
+
         print("Regimen completed all episodes. Moving to next regimen if available.")

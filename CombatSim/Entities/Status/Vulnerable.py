@@ -4,13 +4,14 @@ from CombatSim.Entities.Status.Status import Status
 
 class Vulnerable(Status):
     ID = 0
+    MULT = 1.5
     def __init__(self, duration, entity: Entity):
         super().__init__(duration, entity)
         self.apply()
 
     def apply(self):
         super().apply()
-        self.entity.damage_taken_multiplier *= 1.5
+        self.entity.damage_taken_multiplier *= self.MULT
 
     def remove(self):
-        self.entity.damage_taken_multiplier /= 1.5
+        self.entity.damage_taken_multiplier /= self.MULT

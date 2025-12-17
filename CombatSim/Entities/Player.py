@@ -272,7 +272,14 @@ class Player(Entity):
         return self.mantra % 10
 
     def scry(self, amount, enemies, debug):
-        cards = self.deck.draw_pile[0:amount]
+        cards = []
+        if amount > len(self.deck.draw_pile):
+            cards = self.deck.draw_pile
+            amount -= len(self.deck.draw_pile)
+            self.deck.draw_pile.extend(self.deck.discard_pile)
+            self.deck.discard_pile.clear()
+            self.deck.shuffle()
+        cards.extend(self.deck.draw_pile[0:amount])
         # to_scry = self.bot.scry(cards, enemies, None)
 
         # for i, card in enumerate(cards):

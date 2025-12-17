@@ -61,8 +61,9 @@ class JawWorm(Enemy):
             super().__init__("Bellow", 0, 0, self.block, 45, char.Intent.DEFEND_BUFF)
 
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
-            super().play(enemy, enemy_list, player, player_list, debug)
             enemy.damage_dealt_modifier += self.strength
+            super().play(enemy, enemy_list, player, player_list, debug)
+
 
     class Chomp(Intent):
         def __init__(self, ascension: int):

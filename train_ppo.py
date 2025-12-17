@@ -29,14 +29,14 @@ def main():
     """
 
     # Configuration
-    episodes = 100_000
-    train = True
-    delay = 0
-    render_type = Renderer.RenderType.NONE
-    load_model = False
-    model_path = "artifacts/models/first_fight/ppo_agent_best_JawWormGauntletSuperDeck.pt"
-    # cards = get_default_deck()
-    cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
+    episodes = 1000
+    train = False
+    delay = 2
+    render_type = Renderer.RenderType.PYGAME
+    load_model = True
+    model_path = "artifacts/models/first_fight/ppo_agent_best.pt"
+    cards = get_default_deck()
+    # cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
     
     output_dir = "artifacts/images/model_results/first_fight/"
     os.makedirs(output_dir, exist_ok=True)
@@ -57,7 +57,7 @@ def main():
         combats_per_rest=4,  # Rest bonus every N combats
         max_combats_per_episode=20,  # Hard cap
         heal_percent=0.20,  # 20% heal between combats
-        monster_name="JawWorm",  # Enemy to fight
+        monster_name="Cultist",  # Enemy to fight
         ascension=20,
         act=1,
         cards=cards

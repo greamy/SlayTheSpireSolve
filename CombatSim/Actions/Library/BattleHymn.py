@@ -18,7 +18,8 @@ class BattleHymn(Card):
         return True
 
     def do_power(self, player, enemy, enemies, debug):
-        player.deck.hand.append(Smite(player))
+        if len(player.deck.hand) < Player.Deck.MAX_HAND_SIZE:
+            player.deck.hand.append(Smite(player))
 
     def upgrade(self):
         super().upgrade()

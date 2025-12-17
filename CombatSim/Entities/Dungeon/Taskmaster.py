@@ -40,6 +40,6 @@ class Taskmaster(Enemy):
             super().__init__("Scouring Whip", self.damage, 1, 0, 100, char.Intent.ATTACK)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
-            enemy.damage_dealt_modifier += self.strength
             player.deck.discard_pile.extend([Wound(player) for _ in range(self.wounds_added)])
             super().play(enemy, enemy_list, player, player_list, debug)
+            enemy.damage_dealt_modifier += self.strength

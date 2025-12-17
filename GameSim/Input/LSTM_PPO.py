@@ -220,8 +220,8 @@ class LSTMPPOAgent(PPOAgent):
     #     BATTLE = 0
     #     CARD_BUILD = 1
 
-    def __init__(self, num_actions, card_feature_length, player_feature_length, enemy_feature_length, filepath, learning_enabled=True):
-        super().__init__(num_actions, card_feature_length, enemy_feature_length, filepath, learning_enabled=learning_enabled)# (Keep your existing __init__ arguments)
+    def __init__(self, num_actions, card_feature_length, player_feature_length, enemy_feature_length, filepath, learning_enabled=True, save_model=True):
+        super().__init__(num_actions, card_feature_length, enemy_feature_length, filepath, learning_enabled=learning_enabled, save_weights=save_model)# (Keep your existing __init__ arguments)
 
         self.best_avg_reward = -math.inf
         # Define the dimensions for the new network

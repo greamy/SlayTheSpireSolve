@@ -13,7 +13,7 @@ from GameSim.Input.LSTM_PPO import LSTMPPOAgent
 
 class RLPlayerController(PlayerController):
 
-    def __init__(self, filepath, delay=0, train=True):
+    def __init__(self, filepath, delay=0, train=True, save=True):
         super().__init__()
         self.delay = delay
         self.counter = 0
@@ -33,6 +33,7 @@ class RLPlayerController(PlayerController):
         self.card_cache = []
 
         self.train = train
+        self.save = save
 
         self.prev_obs = None
         self.action_choice = None

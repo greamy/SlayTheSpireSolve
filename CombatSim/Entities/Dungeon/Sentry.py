@@ -37,6 +37,7 @@ class Sentry(Enemy):
             if self.pattern_index >= len(self.pattern):
                 self.pattern_index = 0
             self.intent = self.pattern[self.pattern_index]
+            self.pattern_index += 1
 
     def is_valid_intent(self, intent: Intent) -> bool:
         return True

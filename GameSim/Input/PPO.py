@@ -139,7 +139,8 @@ class PPOAgent:
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
     def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=32,
-                 learning_enabled=True, lr=0.0003, gamma=0.99, epsilon=0.2, value_coef=0.25, entropy_coef=0.01, entropy_decay=0.999, learn_epochs=3):
+                 learning_enabled=True, save_weights=True,
+                 lr=0.0003, gamma=0.99, epsilon=0.2, value_coef=0.25, entropy_coef=0.01, entropy_decay=0.999, learn_epochs=3):
 
         # Hyperparameters
         self.gamma = gamma
@@ -149,6 +150,7 @@ class PPOAgent:
         self.entropy_decay = entropy_decay
         self.learn_epochs = learn_epochs
         self.learning_enabled = learning_enabled
+        self.save_weights = save_weights
         self.lr = lr
 
         self.filepath = filepath
@@ -567,7 +569,8 @@ class PPOAgent:
                 self.graph_history()
 
     def graph_history(self):
-        visualize_bot_history(self.losses, self.rewards, self.filepath + "rew_loss.png")
+        if self.save_weights:
+            visualize_bot_history(self.losses, self.rewards, self.filepath + "rew_loss.png")
 
     def graph_embeddings(self, card_names, card_vectors):
         self.card_embedding.eval()
@@ -668,12 +671,13 @@ class PPOAgent:
 
     def save_models(self, filepath):
         """Save all model weights"""
-        checkpoint = {
-            'card_embedding': self.card_embedding.state_dict(),
-            'actor_critic': self.actor_critic.state_dict(),
-            'optimizer': self.optimizer.state_dict(),
-        }
-        torch.save(checkpoint, filepath)
+        if self.save_weights:
+            checkpoint = {
+                'card_embedding': self.card_embedding.state_dict(),
+                'actor_critic': self.actor_critic.state_dict(),
+                'optimizer': self.optimizer.state_dict(),
+            }
+            torch.save(checkpoint, filepath)
 
     def load_models(self, filepath):
         """Load all model weights"""
