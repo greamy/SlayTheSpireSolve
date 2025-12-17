@@ -16,8 +16,8 @@ from CombatSim.Items.Relics.Relic import Relic
 class Player(Entity):
     REST_FACTOR = 0.3
 
-    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], controller: PlayerController, library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
-        super().__init__(health)
+    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], controller: PlayerController, max_health=None, library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
+        super().__init__(health, max_health)
         self.energy = energy
         self.gold = gold
         self.potions = potions
@@ -363,7 +363,9 @@ class Player(Entity):
                 self.hand.extend(self.draw_pile)
                 num -= len(self.draw_pile)
                 self.draw_pile.clear()
-                self.reshuffle()
+                self.draw_pile.extend(self.discard_pile)
+                self.discard_pile.clear()
+                self.shuffle()
             for i in range(num):
                 self.hand.append(self.draw_pile.pop(0))
 
@@ -375,9 +377,6 @@ class Player(Entity):
             self.draw_pile.extend(self.used_powers)
             self.used_powers.clear()
             self.shuffle()
-
-        def draw(self, amount):
-            self.hand.extend([self.draw_pile.pop(0) for i in range(amount)])
 
         def discard(self, card):
             if card in self.hand:

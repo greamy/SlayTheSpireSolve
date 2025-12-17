@@ -88,7 +88,7 @@ class Renderer:
         if self.do_render():
             room_font = pygame.font.SysFont("Arial", 20)
 
-        # room.start()
+        room.start()
         while self.running:
             if self.do_render():
                 for event in pygame.event.get():

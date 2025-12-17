@@ -29,7 +29,7 @@ def addCards(player, name_list: list[str]):
     player.deck = Player.Deck(cards)
 
 
-def createPlayer(lib_path='../CombatSim/Actions/Library', controller=RandomPlayerController(),
+def createPlayer(lib_path='../CombatSim/Actions/Library', controller=RandomPlayerController(), max_health=70,
                  health=70, energy=3, gold=50, potions=None, relics=None, cards=None):
     if relics is None:
         relics = []
@@ -37,7 +37,7 @@ def createPlayer(lib_path='../CombatSim/Actions/Library', controller=RandomPlaye
         potions = []
     if cards is None:
         cards = []
-    return Player(health, energy, gold, potions, relics, cards, controller, lib_path)
+    return Player(health, energy, gold, potions, relics, cards, controller, max_health, lib_path)
 
 def createEnemy(name: str, ascension: int, act: int):
     module = importlib.import_module("CombatSim.Entities.Dungeon." + name)
@@ -517,10 +517,6 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
                 # First combat: initialize episode and begin combat
                 controller.begin_episode()  # Resets LSTM hidden state
 
-            # Begin combat (same for all combats - no LSTM reset in this method anymore)
-            player.begin_combat(room.enemies, False)
-            player.start_turn(room.enemies, False)
-            controller.begin_combat(player, room.enemies, False)
 
             # Render combat
             new_combat_room = NewCombatRoom(player, 0, 0, [], [], 1, ascension)
