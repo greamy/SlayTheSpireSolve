@@ -24,5 +24,6 @@ class Dazed(Card):
             player.deck.exhaust_pile.append(self)
 
     def remove_listeners(self, player: Player):
-        player.remove_listener(self.ethereal_listener)
+        if self.ethereal_listener in player.listeners:
+            player.remove_listener(self.ethereal_listener)
         super().remove_listeners(player)

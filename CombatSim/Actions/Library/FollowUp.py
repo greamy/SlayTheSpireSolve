@@ -36,6 +36,8 @@ class FollowUp(Card):
         self.damage = 11
 
     def remove_listeners(self, player: Player):
-        player.remove_listener(self.attack_listener)
-        player.remove_listener(self.not_Attack_listener)
+        if self.attack_listener in player.listeners:
+            player.remove_listener(self.attack_listener)
+        if self.not_Attack_listener in player.listeners:
+            player.remove_listener(self.not_Attack_listener)
         super().remove_listeners(player)

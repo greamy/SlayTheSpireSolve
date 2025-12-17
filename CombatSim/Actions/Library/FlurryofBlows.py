@@ -33,5 +33,6 @@ class FlurryofBlows(Card):
         self.damage = 6
 
     def remove_listeners(self, player: Player):
-        player.remove_listener(self.card_listener)
+        if self.card_listener in player.listeners:
+            player.remove_listener(self.card_listener)
         super().remove_listeners(player)

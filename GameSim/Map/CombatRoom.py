@@ -35,7 +35,7 @@ class CombatRoom(Room):
         self.enemy_turn_ready = False
 
     def start(self):
-        self.enemies = self.create_enemies(self.act, self.ascension)
+        # self.enemies = self.create_enemies(self.act, self.ascension)
         self.player.begin_combat(self.enemies, self.debug)
         self.player.start_turn(self.enemies, self.debug)
         self.player.controller.begin_combat(self.player, self.enemies, self.debug)
@@ -87,7 +87,7 @@ class CombatRoom(Room):
                 self.player_won = False
             else:
                 self.player_won = False
-            self.player.end_combat(self.enemies, self.debug)
+            # self.player.end_combat(self.enemies, self.debug)
             self.end_combat()
             return False
 
@@ -111,7 +111,7 @@ class CombatRoom(Room):
 
             num_turns += 1
 
-        self.player.end_combat(self.debug)
+        # self.player.end_combat(self.debug)
         if self.debug:
             if self.player.health <= 0:
                 print("YOU LOSE")

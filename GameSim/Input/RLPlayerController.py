@@ -1,4 +1,5 @@
 import random
+from collections import deque
 
 import numpy as np
 
@@ -43,6 +44,11 @@ class RLPlayerController(PlayerController):
         self.final_healths = []
         self.turn_counts = []
         self.cards_played_counts = []
+        self.combats_per_episode = []
+        self.wins_per_episode = []
+        self.combats_this_episode = 0
+        self.reward_history = deque(maxlen=100)
+
         self.health = 0
         self.start_health = 70
         self.enemy_health = 0
@@ -368,6 +374,7 @@ class RLPlayerController(PlayerController):
         damage_done = self.enemy_health - sum([enemy.health for enemy in enemies])
         self.reward += health_lost * -2.0
         self.reward += damage_done * 2.0
+        self.reward_history.append(self.reward)
 
         self.health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
@@ -417,6 +424,10 @@ class RLPlayerController(PlayerController):
         state = self.get_battle_state(player, enemies, player.get_playable_cards(), debug)
 
         if episode_done:
+            self.combats_per_episode.append(self.combats_this_episode + 1)
+            self.wins_per_episode.append(self.combats_this_episode)
+            self.combats_this_episode = 0
+
             # Episode-level terminal rewards
             if player.health > 0:
                 health_ratio = player.health / player.start_health
@@ -435,6 +446,7 @@ class RLPlayerController(PlayerController):
             self.turn_counts.append(self.current_turn_count)
             self.cards_played_counts.append(self.current_cards_played)
         else:
+            self.combats_this_episode += 1
             # Mid-episode combat completion
             base_combat_reward = 5 + (player.health / player.start_health) * 10
 
@@ -471,3 +483,6 @@ class RLPlayerController(PlayerController):
             return None
         avail_rooms = map_gen.get_avail_floors(floor, room_idx)
         return map_gen.map[floor][random.choice(avail_rooms)]
+
+    def save_agent(self, filepath):
+        self.agent.save_models(filepath)
