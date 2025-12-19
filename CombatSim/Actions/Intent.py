@@ -40,14 +40,14 @@ class Intent(Playable):
         STUN = (200, 200, 0)
         UNKNOWN = (128, 128, 128)
 
-    def __init__(self, name, damage, attacks, block, probability, intent_type, buf_debuff_ids=None):
+    def __init__(self, name, damage, attacks, block, probability, intent_type, buff_debuff_ids=None):
         super().__init__(damage, attacks, block)
-        if buf_debuff_ids is None:
-            buf_debuff_ids = list()
+        if buff_debuff_ids is None:
+            buff_debuff_ids = list()
         self.probability = probability
         self.name = name
         self.intent_type = intent_type
-        self.buf_debuff_ids = buf_debuff_ids
+        self.buff_debuff_ids = buff_debuff_ids
 
         # render attributes
         self.color = list(Intent.IntentRenderColors)[intent_type.value - 1].value

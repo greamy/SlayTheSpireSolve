@@ -41,7 +41,6 @@ class Sentry(Enemy):
 
     def is_valid_intent(self, intent: Intent) -> bool:
         return True
-
     class Beam(Intent):
         def __init__(self, ascension: int):
             if ascension < 3:

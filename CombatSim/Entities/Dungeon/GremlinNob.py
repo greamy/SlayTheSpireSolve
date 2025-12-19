@@ -34,6 +34,12 @@ class GremlinNob(Enemy):
             self.pattern_index = 0
             self.pattern = [self.intent_set[self.SKULLBASH], self.intent_set[self.RUSH], self.intent_set[self.RUSH]]
 
+    def is_alive(self):
+        alive = super().is_alive()
+        if not alive and self.intent_set[self.BELLOW].player is not None:
+            self.intent_set[self.BELLOW].remove_listener()
+        return alive
+
     def choose_intent(self):
         if self.num_turns == 0:
             self.intent = self.intent_set[self.BELLOW]
@@ -54,13 +60,18 @@ class GremlinNob(Enemy):
     class Bellow(Intent):
         def __init__(self, ascension):
             super().__init__("Bellow", 0, 0, 0, 0, char.Intent.DEBUG)
+            self.player = None
+            self.listener = Listener(Listener.Event.SKILL_PLAYED, self.gain_strength)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
-            enemy_listener = Listener(Listener.Event.SKILL_PLAYED, self.gain_strength)
-            enemy.add_listener(enemy_listener)
+            player.add_listener(self.listener)
+            self.player = player
 
         def gain_strength(self, player, enemy, enemies, debug):
             enemy.damage_dealt_modifier += enemy.enrage
+
+        def remove_listener(self):
+            self.player.remove_listener(self.listener)
 
     class Rush(Intent):
         def __init__(self, ascension: int):

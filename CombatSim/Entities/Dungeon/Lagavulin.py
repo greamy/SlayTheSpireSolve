@@ -8,18 +8,17 @@ from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Status.Metallicize import Metallicize
 
 class Lagavulin(Enemy):
-    ATTACK = 0
-    SIPHONSOUL = 1
+    ATTACK = 1
+    SIPHONSOUL = 0
     SLEEP = 2
-
     def __init__(self, ascension: int, act: int):
 
-        intent_set = [self.Sleep(ascension),
-                      self.Attack(ascension),
+        intent_set = [
                       self.SiphonSoul(ascension),
-                      ]
+                      self.Attack(ascension),
+                      self.Sleep(ascension)]
 
-        self.sleep = True
+        self.sleeping = True
 
         if ascension < 8:
             super().__init__(random.randint(109, 111), intent_set, ascension, minion=False)
@@ -33,15 +32,16 @@ class Lagavulin(Enemy):
 
         self.metallicize_amount = 8
         self.metallicize = Metallicize(self.metallicize_amount, self)
+        self.block = self.metallicize_amount
 
     def take_damage(self, amount):
         super().take_damage(amount)
         if self.health < self.start_health :
-            self.sleep = False
+            self.sleeping = False
             self.metallicize.remove()
 
     def choose_intent(self):
-        if self.num_turns < 3 and self.sleep:
+        if self.num_turns < 3 and self.sleeping:
             self.intent = self.intent_set[self.SLEEP]
         else:
             if self.pattern_index >= len(self.pattern):
@@ -71,13 +71,13 @@ class Lagavulin(Enemy):
     class SiphonSoul(Intent):
         def __init__(self, ascension: int):
             if ascension < 18:
-                self.debuf = 1
+                self.debuff = 1
             else:
-                self.debuf = 2
+                self.debuff = 2
             super().__init__("SiphonSoul", 0, 0, 0, 0, char.Intent.STRONG_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
-            player.block_modifier -= self.debuf
-            player.damage_dealt_modifier -= self.debuf
+            player.block_modifier -= self.debuff
+            player.damage_dealt_modifier -= self.debuff
 
 

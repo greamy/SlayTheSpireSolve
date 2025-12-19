@@ -8,44 +8,44 @@ from GameSim.Render.Renderer import Renderer
 
 
 def main():
-    save = False
-    train = False
+    save = True
+    train = True
     delay = 0
     render_type = Renderer.RenderType.NONE
 
     rend = Renderer(render_type=render_type)
     BigAwesomeBot = Trainer(rend, train=train, save=save, delay=delay)
-    # basic_combats = Regimen(
-    #         max_episodes=50_000,
-    #         possible_enemies=       ["Cultist"],
-    #         num_enemies=            [1,2],
-    #         default_deck=           get_default_deck(),
-    #         num_additional_cards=   0,
-    #         additional_cards=       None,
-    #         allow_repeat_enemies=   True,
-    #         player_max_health=      70,
-    #         player_start_health=    70,
-    #         max_gauntlet_length=    20
-    # )
-    #
-    # reduce_variance_combats = Regimen(
-    #         max_episodes=100_000,
-    #         possible_enemies=     ["Cultist", "JawWorm", "GreenLouse", "RedLouse", "SpikeSlimeMedium", "AcidSlimeMedium"],
-    #         num_enemies=          [1,2,2,2,2,3],
-    #         default_deck=         ["FollowUp", "TalktotheHand", "Protect", "CarveReality", "DeceiveReality",
-    #                                                             "Eruption", "Vigilance","BattleHymn"],
-    #         num_additional_cards= 4,
-    #         additional_cards=     {"Strike":0.5, "Defend": 0.5},
-    #         allow_repeat_enemies= False,
-    #         player_max_health =   70,
-    #         player_start_health = 70,
-    #         max_gauntlet_length=  20
-    # )
+    basic_combats = Regimen(
+            max_episodes=60_000,
+            possible_enemies=       ["Cultist"],
+            num_enemies=            [1,2],
+            default_deck=           get_default_deck(),
+            num_additional_cards=   0,
+            additional_cards=       None,
+            allow_repeat_enemies=   True,
+            player_max_health=      70,
+            player_start_health=    70,
+            max_gauntlet_length=    20
+    )
 
-    # ["Sentry", "Sentry", "Sentry"]
+    reduce_variance_combats = Regimen(
+            max_episodes=40_000,
+            possible_enemies=     ["Cultist", "JawWorm", "GreenLouse", "RedLouse", "SpikeSlimeMedium", "AcidSlimeMedium"],
+            num_enemies=          [1,2,2,2,2,3],
+            default_deck=         ["FollowUp", "TalktotheHand", "Protect", "CarveReality", "DeceiveReality",
+                                                                "Eruption", "Vigilance","BattleHymn"],
+            num_additional_cards= 4,
+            additional_cards=     {"Strike":0.5, "Defend": 0.5},
+            allow_repeat_enemies= False,
+            player_max_health =   70,
+            player_start_health = 70,
+            max_gauntlet_length=  20
+    )
+
+    # "Lagavulin", "GremlinNob",
     elite_combats = Regimen(
-            max_episodes=           1000,
-            possible_enemies=       ["GremlinNob", ],
+            max_episodes=           40_000,
+            possible_enemies=       [ "GremlinNob", "Lagavulin", ["Sentry", "Sentry", "Sentry"]],
             num_enemies=            1,
             default_deck=           ["Strike", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "Eruption", "Vigilance"],
             num_additional_cards=   3,
@@ -57,8 +57,8 @@ def main():
             max_gauntlet_length=    3
     )
 
-    # BigAwesomeBot.add_regimen(basic_combats)
-    # BigAwesomeBot.add_regimen(reduce_variance_combats)
+    BigAwesomeBot.add_regimen(basic_combats)
+    BigAwesomeBot.add_regimen(reduce_variance_combats)
     BigAwesomeBot.add_regimen(elite_combats)
     BigAwesomeBot.run()
 

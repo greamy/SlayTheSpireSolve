@@ -24,7 +24,7 @@ class EnemyState(EntityState):
         #[[1-hot encoded kind of intent (ie. Attack, Attack/Block, Attack/Buff..], value (attack value, -1 if na), value 2 (block value), [1-hot encoding kind of buff/debuff]]
         # researching if we should create intent 'embeddings'.. or keep the one-hot encoding
         intent_type_encoding = self.one_hot_encode(np.array([self.entity.intent.intent_type.value], dtype=int), self.INTENT_VOCAB_SIZE, 1)[0]
-        encoded_buf = self.one_hot_encode(np.array(self.entity.intent.buf_debuff_ids, dtype=int), Status.NUM_STATUSES, self.MAX_INTENT_BUF_ENCODING)[0]
+        encoded_buf = self.one_hot_encode(np.array(self.entity.intent.buff_debuff_ids, dtype=int), Status.NUM_STATUSES, self.MAX_INTENT_BUF_ENCODING)[0]
         state = np.concatenate([state, np.array([self.entity.intent.damage*self.entity.intent.attacks, self.entity.intent.block]), intent_type_encoding.flatten(), encoded_buf.flatten()])
 
         # Status Encoding

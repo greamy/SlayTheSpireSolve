@@ -50,8 +50,10 @@ class Enemy(Entity):
 
     def choose_intent(self):
         current_prob = 0
+
         choice = random.randint(0, 99)
         self.intent = None
+        #this_set = sorted(self.intent_set, key=lambda x: x.probability, reverse=False)
         for intent in self.intent_set:
             if intent == self.last_intent:
                 self.num_consecutive += 1

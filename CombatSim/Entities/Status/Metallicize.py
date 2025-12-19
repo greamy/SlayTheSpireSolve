@@ -15,7 +15,7 @@ class Metallicize(Status):
         self.removed = False
 
     def do_block(self, player, enemy, enemies, debug):
-        player.gain_block(self.duration, enemies, debug)
+        self.entity.gain_block(self.duration, enemies, debug)
 
     def remove(self):
         if not self.removed:

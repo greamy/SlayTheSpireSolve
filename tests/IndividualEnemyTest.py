@@ -7,6 +7,7 @@ from numpy.ma.testutils import assert_not_equal
 
 from CombatSim.Actions.Library.Defend import Defend
 from CombatSim.Entities.Dungeon.GremlinNob import GremlinNob
+from CombatSim.Entities.Dungeon.Lagavulin import Lagavulin
 from CombatSim.Entities.Dungeon.Sentry import Sentry
 from CombatSim.Entities.Dungeon.Taskmaster import Taskmaster
 from CombatSim.Entities.Player import Player
@@ -72,10 +73,11 @@ class IndividualEnemyTest(unittest.TestCase):
             current_health = self.player.health
             self.last_intent = self.enemy.intent
             self.enemy.do_turn(self.player, self.debug)  # chooses new intent
-            if self.last_intent == 'Bellow':
+            if self.last_intent.name == 'Bellow':
                 card = Defend(self.player)
                 self.player.deck.hand.append(card)
-                self.player.play_card(card)
+                self.player.play_card(card, self.enemy, [self.enemy], self.debug)
+                self.player.block = 0
                 self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.enrage)
                 self.enemy.damage_dealt_modifier -= self.enemy.enrage
             elif self.last_intent.name == 'SkullBash':
@@ -100,4 +102,42 @@ class IndividualEnemyTest(unittest.TestCase):
                 self.assertIn('Dazed', [card.name for card in self.player.deck.discard_pile])
             else:
                 self.assertEqual(self.player.health, current_health - self.last_intent.damage)
+
+
+    def test_lagavulin(self):
+        self.enemy = Lagavulin(self.ascension, self.act)
+        self.assertEqual(self.enemy.block, 8)
+        self.last_intent = self.enemy.intent
+        self.enemy.start_turn([self.player], self.debug)
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.enemy.block, self.enemy.metallicize_amount)
+
+        # Turn 2 and Turn 3 - Asleep
+        self.enemy.start_turn([self.player], self.debug)
+        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.start_turn([self.player], self.debug)
+        self.enemy.do_turn(self.player, self.debug)
+
+        # Turn 4 - Should wake up and attack
+        self.enemy.start_turn([self.player], self.debug)
+        self.assertTrue(self.enemy.intent == self.enemy.intent_set[Lagavulin.ATTACK])
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.player.health, self.player.start_health - self.enemy.intent_set[Lagavulin.ATTACK].damage)
+
+        # Turn 5 - Should wake up and attack
+        current_health = self.player.health
+        self.enemy.start_turn([self.player], self.debug)
+        self.assertTrue(self.enemy.intent == self.enemy.intent_set[Lagavulin.ATTACK])
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.player.health, current_health - self.enemy.intent_set[Lagavulin.ATTACK].damage)
+
+        # Turn 6 - DEBUFF
+        self.enemy.start_turn([self.player], self.debug)
+        self.assertTrue(self.enemy.intent == self.enemy.intent_set[Lagavulin.SIPHONSOUL])
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.player.damage_dealt_modifier, -self.enemy.intent_set[Lagavulin.SIPHONSOUL].debuff)
+        card = Defend(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card,self.enemy, self.enemy, self.debug )
+        self.assertEqual(self.player.block, card.block - self.enemy.intent_set[Lagavulin.SIPHONSOUL].debuff)
 
