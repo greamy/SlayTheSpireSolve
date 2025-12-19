@@ -34,6 +34,7 @@ class Trainer:
             current_gauntlet_combats = 0
             gauntlet_active = False
             previous_player = None
+            self.controller.agent.reset_new_regimen()
 
             for idx, room in enumerate(rooms):
                 # Check if this is a new gauntlet (new player instance)

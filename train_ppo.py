@@ -31,8 +31,8 @@ def main():
     # Configuration
     episodes = 1000
     train = False
-    delay = 2
-    render_type = Renderer.RenderType.PYGAME
+    delay = 0
+    render_type = Renderer.RenderType.NONE
     load_model = True
     model_path = "artifacts/models/first_fight/ppo_agent_best.pt"
     cards = get_default_deck()
@@ -45,23 +45,23 @@ def main():
     if load_model:
         rl_controller.agent.load_models(model_path)
 
-    # run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
-    #                render_type, "monster", episodes, "JawWorm", cards=cards)
+    run_many_games(rl_controller, "CombatSim/Entities/Dungeon/", "CombatSim/Actions/Library",
+                   render_type, "monster", episodes, "JawWorm", cards=cards)
 
-    run_many_game_sequences(
-        controller=rl_controller,
-        dungeon_path="CombatSim/Entities/Dungeon/",
-        library_path="CombatSim/Actions/Library",
-        render_type=render_type,
-        num_episodes=episodes,  # Total episodes to run
-        combats_per_rest=4,  # Rest bonus every N combats
-        max_combats_per_episode=20,  # Hard cap
-        heal_percent=0.20,  # 20% heal between combats
-        monster_name="Cultist",  # Enemy to fight
-        ascension=20,
-        act=1,
-        cards=cards
-    )
+    # run_many_game_sequences(
+    #     controller=rl_controller,
+    #     dungeon_path="CombatSim/Entities/Dungeon/",
+    #     library_path="CombatSim/Actions/Library",
+    #     render_type=render_type,
+    #     num_episodes=episodes,  # Total episodes to run
+    #     combats_per_rest=4,  # Rest bonus every N combats
+    #     max_combats_per_episode=20,  # Hard cap
+    #     heal_percent=0.20,  # 20% heal between combats
+    #     monster_name="Cultist",  # Enemy to fight
+    #     ascension=20,
+    #     act=1,
+    #     cards=cards
+    # )
 
     if train:
         rl_controller.agent.save_models(f"artifacts/models/first_fight/ppo_agent_{episodes}.pt")

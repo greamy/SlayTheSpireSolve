@@ -153,6 +153,9 @@ class PPOAgent:
         self.save_weights = save_weights
         self.lr = lr
 
+        self.start_entropy_coef = entropy_coef
+        self.start_lr = lr
+
         self.filepath = filepath
 
         # Device configuration
@@ -222,6 +225,16 @@ class PPOAgent:
 
     def reset_hidden_state(self):
         pass
+
+    def reset_new_regimen(self):
+        self.lr = self.start_lr * 0.75
+        self.entropy_coef = self.start_entropy_coef * 0.75
+        self.lr_scheduler = optim.lr_scheduler.LinearLR(
+            self.optimizer,
+            start_factor=1.0,
+            end_factor=0.05,
+            total_iters=2_500
+        )
 
     def remember(self, stage, state, action, reward, done, log_prob, value):
         """Store experience for multiple agents"""

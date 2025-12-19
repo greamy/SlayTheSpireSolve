@@ -308,6 +308,7 @@ def run_many_games(controller, dungeon_path, library_path, render_type=Renderer.
         if room.player.is_alive():
             wins.append(True)
             total_wins += 1
+            room.player.end_combat([], False, episode_done=True)
             if enemy_choice in enemy_combats.keys():
                 enemy_combats[enemy_choice][0] += 1
                 enemy_combats[enemy_choice][1] += 1

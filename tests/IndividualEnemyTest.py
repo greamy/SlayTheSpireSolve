@@ -5,7 +5,9 @@ import copy
 
 from numpy.ma.testutils import assert_not_equal
 
+from CombatSim.Actions.Library.Brilliance import Brilliance
 from CombatSim.Actions.Library.Defend import Defend
+from CombatSim.Actions.Library.Wound import Wound
 from CombatSim.Entities.Dungeon.GremlinNob import GremlinNob
 from CombatSim.Entities.Dungeon.Lagavulin import Lagavulin
 from CombatSim.Entities.Dungeon.Sentry import Sentry
@@ -53,15 +55,12 @@ class IndividualEnemyTest(unittest.TestCase):
 
     def test_Taskmaster(self):
         self.enemy = Taskmaster(self.ascension, self.act)
-        intents_played = []
-        for intent in self.enemy.intent_set:
-            self.enemy.intent = intent
-            current_health = self.player.health
-            self.last_intent = self.enemy.intent
-            self.enemy.do_turn(self.player, self.debug) # chooses new intent
-            self.assertEqual(self.enemy.block, self.last_intent.block)
-            self.enemy.start_turn([self.player], self.debug)
-            self.assertEqual(self.player.health, current_health - self.last_intent.damage)
+        self.assertTrue(self.enemy.intent, self.enemy.intent_set[self.enemy.SCOURINGWHIP])
+        self.enemy.do_turn(self.player,self.debug)
+        self.assertTrue(self.player.health, self.player.start_health - self.enemy.intent_set[self.enemy.SCOURINGWHIP].damage)
+        self.assertEqual(len(self.player.deck.discard_pile), self.enemy.intent_set[self.enemy.SCOURINGWHIP].wounds_added)
+        self.assertIsInstance(Wound, self.player.deck.discard_pile)
+        self.assertTrue(self.enemy.damage_dealt_modifier = self.enemy.intent_set[self.enemy.SCOURINGWHIP].strength)
 
 
     def test_gremlin_nob(self):
@@ -140,4 +139,21 @@ class IndividualEnemyTest(unittest.TestCase):
         self.player.deck.hand.append(card)
         self.player.play_card(card,self.enemy, self.enemy, self.debug )
         self.assertEqual(self.player.block, card.block - self.enemy.intent_set[Lagavulin.SIPHONSOUL].debuff)
+        self.player.damage_dealt_modifier += self.enemy.intent_set[Lagavulin.SIPHONSOUL].debuff # resetting for next combat
+
+        # new combat
+        self.enemy2 = Lagavulin(self.ascension, self.act)
+        # print([self.enemy2.start_health, self.enemy2.health])
+        self.player.health = self.player.start_health
+        self.player.deck.discard_pile.remove(card)
+        self.assertEqual(self.enemy2.intent, self.enemy2.intent_set[Lagavulin.SLEEP])
+
+        card = Brilliance(self.player)
+        self.player.deck.hand.append(card)
+        self.player.play_card(card, self.enemy2, self.enemy2, self.debug)
+        # print([self.enemy2.health, self.enemy2.start_health])
+        self.assertEqual(self.enemy2.health, self.enemy2.start_health + self.enemy2.metallicize_amount - card.damage)
+        self.enemy2.do_turn(self.player, self.debug)
+        self.assertFalse(self.enemy2.sleeping)
+        self.assertTrue(self.enemy2.intent == self.enemy2.intent_set[Lagavulin.ATTACK])
 

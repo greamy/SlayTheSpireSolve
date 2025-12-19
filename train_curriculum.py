@@ -16,8 +16,8 @@ def main():
     rend = Renderer(render_type=render_type)
     BigAwesomeBot = Trainer(rend, train=train, save=save, delay=delay)
     basic_combats = Regimen(
-            max_episodes=60_000,
-            possible_enemies=       ["Cultist"],
+            max_episodes=75_000,
+            possible_enemies=       ["Cultist", "JawWorm"],
             num_enemies=            [1,2],
             default_deck=           get_default_deck(),
             num_additional_cards=   0,
@@ -29,7 +29,7 @@ def main():
     )
 
     reduce_variance_combats = Regimen(
-            max_episodes=40_000,
+            max_episodes=50_000,
             possible_enemies=     ["Cultist", "JawWorm", "GreenLouse", "RedLouse", "SpikeSlimeMedium", "AcidSlimeMedium"],
             num_enemies=          [1,2,2,2,2,3],
             default_deck=         ["FollowUp", "TalktotheHand", "Protect", "CarveReality", "DeceiveReality",
@@ -44,7 +44,7 @@ def main():
 
     # "Lagavulin", "GremlinNob",
     elite_combats = Regimen(
-            max_episodes=           40_000,
+            max_episodes=           50_000,
             possible_enemies=       [ "GremlinNob", "Lagavulin", ["Sentry", "Sentry", "Sentry"]],
             num_enemies=            1,
             default_deck=           ["Strike", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "Eruption", "Vigilance"],
