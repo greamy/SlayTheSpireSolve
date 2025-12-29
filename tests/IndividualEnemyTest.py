@@ -8,6 +8,7 @@ from numpy.ma.testutils import assert_not_equal
 from CombatSim.Actions.Library.Brilliance import Brilliance
 from CombatSim.Actions.Library.Defend import Defend
 from CombatSim.Actions.Library.Wound import Wound
+from CombatSim.Entities.Dungeon.Cultist import Cultist
 from CombatSim.Entities.Dungeon.GremlinNob import GremlinNob
 from CombatSim.Entities.Dungeon.Lagavulin import Lagavulin
 from CombatSim.Entities.Dungeon.Sentry import Sentry
@@ -28,7 +29,8 @@ class IndividualEnemyTest(unittest.TestCase):
         self.gold = 100
         # self.player = Player(self.health, self.energy, self.gold, [], [], [],
         #                      RandomPlayerController(), library_path="/home/grant/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library")
-        self.player = createPlayer(lib_path='CombatSim/Actions/Library')
+        # test Lucas Library path -> 'C:/Users/Owner/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library'
+        self.player = createPlayer(lib_path='../CombatSim/Actions/Library')
         self.player_start_health = self.player.health
         self.ascension = 20
         self.act = 1
@@ -59,7 +61,7 @@ class IndividualEnemyTest(unittest.TestCase):
         self.enemy.do_turn(self.player,self.debug)
         self.assertTrue(self.player.health, self.player.start_health - self.enemy.intent_set[self.enemy.SCOURINGWHIP].damage)
         self.assertEqual(len(self.player.deck.discard_pile), self.enemy.intent_set[self.enemy.SCOURINGWHIP].wounds_added)
-        self.assertIsInstance(Wound, self.player.deck.discard_pile)
+        self.assertIn('Wound', [card.name for card in self.player.deck.discard_pile])
         self.assertTrue(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.SCOURINGWHIP].strength)
 
 
@@ -157,3 +159,19 @@ class IndividualEnemyTest(unittest.TestCase):
         self.assertFalse(self.enemy2.sleeping)
         self.assertTrue(self.enemy2.intent == self.enemy2.intent_set[Lagavulin.ATTACK])
 
+    def test_cultist(self):
+        self.enemy = Cultist(self.ascension, self.act)
+
+        self.assertEqual(self.enemy.intent, self.enemy.intent_set[self.enemy.INCANTATION])
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.enemy.damage_dealt_modifier, 0)
+        self.assertEqual(self.enemy.intent, self.enemy.intent_set[self.enemy.DARKSTRIKE])
+        self.assertEqual(self.enemy.intent_set[self.enemy.INCANTATION].ritual, 5) # 5 is A20 number
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.player.health,
+                         self.player.start_health - self.enemy.intent_set[self.enemy.DARKSTRIKE].damage * i)
+        self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.INCANTATION].ritual * i)
+
+
+    def test_greenlouse(self):
+        pass

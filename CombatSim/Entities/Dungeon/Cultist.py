@@ -35,13 +35,14 @@ class Cultist(Enemy):
         return True
 
     class Incantation(Intent):
+
         def __init__(self, ascension: int):
             super().__init__("Incantation", 0, 0, 0, 0, char.Intent.BUFF)
             self.ritual = 3
             self.first_turn = True
             if ascension >= 2:
                 self.ritual = 4
-            elif ascension >= 17:
+            if ascension >= 17:
                 self.ritual = 5
             self.listener = Listener(Listener.Event.END_TURN, self.do_ritual)
 
