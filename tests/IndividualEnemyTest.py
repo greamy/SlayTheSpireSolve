@@ -60,7 +60,7 @@ class IndividualEnemyTest(unittest.TestCase):
         self.assertTrue(self.player.health, self.player.start_health - self.enemy.intent_set[self.enemy.SCOURINGWHIP].damage)
         self.assertEqual(len(self.player.deck.discard_pile), self.enemy.intent_set[self.enemy.SCOURINGWHIP].wounds_added)
         self.assertIsInstance(Wound, self.player.deck.discard_pile)
-        self.assertTrue(self.enemy.damage_dealt_modifier = self.enemy.intent_set[self.enemy.SCOURINGWHIP].strength)
+        self.assertTrue(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.SCOURINGWHIP].strength)
 
 
     def test_gremlin_nob(self):
