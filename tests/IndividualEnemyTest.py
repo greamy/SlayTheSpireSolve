@@ -1,3 +1,4 @@
+import math
 import os
 import random
 import unittest
@@ -7,8 +8,10 @@ from numpy.ma.testutils import assert_not_equal
 
 from CombatSim.Actions.Library.Brilliance import Brilliance
 from CombatSim.Actions.Library.Defend import Defend
+from CombatSim.Actions.Library.Strike import Strike
 from CombatSim.Actions.Library.Wound import Wound
 from CombatSim.Entities.Dungeon.Cultist import Cultist
+from CombatSim.Entities.Dungeon.GreenLouse import GreenLouse
 from CombatSim.Entities.Dungeon.GremlinNob import GremlinNob
 from CombatSim.Entities.Dungeon.Lagavulin import Lagavulin
 from CombatSim.Entities.Dungeon.Sentry import Sentry
@@ -169,9 +172,27 @@ class IndividualEnemyTest(unittest.TestCase):
         self.assertEqual(self.enemy.intent_set[self.enemy.INCANTATION].ritual, 5) # 5 is A20 number
         self.enemy.do_turn(self.player, self.debug)
         self.assertEqual(self.player.health,
-                         self.player.start_health - self.enemy.intent_set[self.enemy.DARKSTRIKE].damage * i)
-        self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.INCANTATION].ritual * i)
+                         self.player.start_health - self.enemy.intent_set[self.enemy.DARKSTRIKE].damage)
+        self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.INCANTATION].ritual)
 
 
     def test_greenlouse(self):
-        pass
+        for _ in range(100):
+            self.enemy = GreenLouse(self.ascension, self.act)
+            self.player = copy.copy(self.player)
+            for intent in self.enemy.intent_set:
+                if intent.name == "Bite":
+                    start_health = self.player.health
+                    self.enemy.intent = intent
+                    self.enemy.do_turn(self.player, self.debug)
+                    self.assertEqual(start_health - self.player.health, self.enemy.D)
+                    self.player.health = self.player.start_health
+                if intent.name == "SpitWeb":
+                    self.enemy.intent = intent
+                    start_health = self.enemy.health
+                    self.enemy.do_turn(self.player, self.debug)
+                    print(self.player.damage_dealt_multiplier)
+                    card = Strike(self.player)
+                    self.player.deck.hand.append(card)
+                    self.player.play_card(card, self.enemy,[self.enemy], self.debug)
+                    self.assertEqual(self.enemy.health, start_health - math.floor(card.damage * self.player.damage_dealt_multiplier))
