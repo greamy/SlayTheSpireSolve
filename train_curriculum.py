@@ -10,17 +10,24 @@ from GameSim.Render.Renderer import Renderer
 def main():
     save = True
     train = True
+    load_model = True
     delay = 0
     render_type = Renderer.RenderType.NONE
 
+    load_path = "artifacts/models/first_fight/ppo_agent.pt"
+
     rend = Renderer(render_type=render_type)
     BigAwesomeBot = Trainer(rend, train=train, save=save, delay=delay)
+
+    if load_model:
+        BigAwesomeBot.controller.agent.load_models(load_path)
+
     basic_combats = Regimen(
             max_episodes=75_000,
             possible_enemies=       ["Cultist", "JawWorm"],
             num_enemies=            [1,2],
             default_deck=           get_default_deck(),
-            num_additional_cards=   0,
+            num_additional_cards=   0,#
             additional_cards=       None,
             allow_repeat_enemies=   True,
             player_max_health=      70,

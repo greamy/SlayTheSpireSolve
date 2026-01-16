@@ -34,7 +34,7 @@ def main():
     delay = 0
     render_type = Renderer.RenderType.NONE
     load_model = True
-    model_path = "artifacts/models/first_fight/ppo_agent_best.pt"
+    model_path = "artifacts/models/first_fight/ppo_agent.pt"
     cards = get_default_deck()
     # cards = ["Eruption", "Eruption", "Vigilance", "Meditate", "EmptyFist", "EmptyFist", "Strike", "Strike", "Strike", "Defend", "Defend", "Defend", "MentalFortress", "SandsofTime"]
     
