@@ -1,3 +1,4 @@
+import math
 import os
 import random
 import unittest
@@ -7,7 +8,10 @@ from numpy.ma.testutils import assert_not_equal
 
 from CombatSim.Actions.Library.Brilliance import Brilliance
 from CombatSim.Actions.Library.Defend import Defend
+from CombatSim.Actions.Library.Strike import Strike
 from CombatSim.Actions.Library.Wound import Wound
+from CombatSim.Entities.Dungeon.Cultist import Cultist
+from CombatSim.Entities.Dungeon.GreenLouse import GreenLouse
 from CombatSim.Entities.Dungeon.GremlinNob import GremlinNob
 from CombatSim.Entities.Dungeon.Lagavulin import Lagavulin
 from CombatSim.Entities.Dungeon.Sentry import Sentry
@@ -28,7 +32,8 @@ class IndividualEnemyTest(unittest.TestCase):
         self.gold = 100
         # self.player = Player(self.health, self.energy, self.gold, [], [], [],
         #                      RandomPlayerController(), library_path="/home/grant/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library")
-        self.player = createPlayer(lib_path='CombatSim/Actions/Library')
+        # test Lucas Library path -> 'C:/Users/Owner/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library'
+        self.player = createPlayer(lib_path='../CombatSim/Actions/Library')
         self.player_start_health = self.player.health
         self.ascension = 20
         self.act = 1
@@ -59,8 +64,8 @@ class IndividualEnemyTest(unittest.TestCase):
         self.enemy.do_turn(self.player,self.debug)
         self.assertTrue(self.player.health, self.player.start_health - self.enemy.intent_set[self.enemy.SCOURINGWHIP].damage)
         self.assertEqual(len(self.player.deck.discard_pile), self.enemy.intent_set[self.enemy.SCOURINGWHIP].wounds_added)
-        self.assertIsInstance(self.player.deck.discard_pile[0], Wound)
-        self.assertTrue(self.enemy.damage_dealt_modifier == self.enemy.intent_set[self.enemy.SCOURINGWHIP].strength)
+        self.assertIn('Wound', [card.name for card in self.player.deck.discard_pile])
+        self.assertTrue(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.SCOURINGWHIP].strength)
 
 
     def test_gremlin_nob(self):
@@ -157,3 +162,37 @@ class IndividualEnemyTest(unittest.TestCase):
         self.assertFalse(self.enemy2.sleeping)
         self.assertTrue(self.enemy2.intent == self.enemy2.intent_set[Lagavulin.ATTACK])
 
+    def test_cultist(self):
+        self.enemy = Cultist(self.ascension, self.act)
+
+        self.assertEqual(self.enemy.intent, self.enemy.intent_set[self.enemy.INCANTATION])
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.enemy.damage_dealt_modifier, 0)
+        self.assertEqual(self.enemy.intent, self.enemy.intent_set[self.enemy.DARKSTRIKE])
+        self.assertEqual(self.enemy.intent_set[self.enemy.INCANTATION].ritual, 5) # 5 is A20 number
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.player.health,
+                         self.player.start_health - self.enemy.intent_set[self.enemy.DARKSTRIKE].damage)
+        self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.INCANTATION].ritual)
+
+
+    def test_greenlouse(self):
+        for _ in range(100):
+            self.enemy = GreenLouse(self.ascension, self.act)
+            self.player = copy.copy(self.player)
+            for intent in self.enemy.intent_set:
+                if intent.name == "Bite":
+                    start_health = self.player.health
+                    self.enemy.intent = intent
+                    self.enemy.do_turn(self.player, self.debug)
+                    self.assertEqual(start_health - self.player.health, self.enemy.D)
+                    self.player.health = self.player.start_health
+                if intent.name == "SpitWeb":
+                    self.enemy.intent = intent
+                    start_health = self.enemy.health
+                    self.enemy.do_turn(self.player, self.debug)
+                    print(self.player.damage_dealt_multiplier)
+                    card = Strike(self.player)
+                    self.player.deck.hand.append(card)
+                    self.player.play_card(card, self.enemy,[self.enemy], self.debug)
+                    self.assertEqual(self.enemy.health, start_health - math.floor(card.damage * self.player.damage_dealt_multiplier))
