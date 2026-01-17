@@ -18,6 +18,7 @@ from CombatSim.Items.Relics.DisplayCase.HappyFlower import HappyFlower
 from CombatSim.Items.Relics.DisplayCase.HolyWater import HolyWater
 from CombatSim.Items.Relics.DisplayCase.Orichalcum import Orichalcum
 from CombatSim.Items.Relics.DisplayCase.TheBoot import TheBoot
+from GameSim.Input.RandomPlayerController import RandomPlayerController
 
 
 class RelicTest(unittest.TestCase):
@@ -26,7 +27,8 @@ class RelicTest(unittest.TestCase):
         self.health = 100
         self.energy = 3
         self.gold = 100
-        self.player = Player(self.health, self.energy, self.gold, [], [], [], library_path="../CombatSim/Actions/Library")
+        self.controller = RandomPlayerController(delay=0)
+        self.player = Player(self.health, self.energy, self.gold, [], [], [], self.controller, library_path="../CombatSim/Actions/Library")
 
         self.ascension = 20
         self.act = 1
