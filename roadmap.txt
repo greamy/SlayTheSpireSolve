@@ -11,6 +11,7 @@ Finish map generation overview - 80%
 **RELICS** - 22% 33/147
 **POTIONS** - 0%
 **SHOP** - 0%
+** Card Rewards /
 finish campfire - 75%
 Implement Key system for heart - 0%
 

@@ -54,6 +54,7 @@ class Player(Entity):
         return my_cards
 
     def add_card(self, card_name: str):
+        card = None
         self.notify_listeners(Listener.Event.CARD_ADDED_TO_DECK, self, None, False)
         if card_name in self.implemented_cards.keys():
             class_ = getattr(self.implemented_cards[card_name], card_name)
@@ -63,6 +64,8 @@ class Player(Entity):
                 self.notify_listeners(Listener.Event.CURSE_ADDED, self, None, False)
         else:
             raise Exception(f"No implemented card named {card_name}")
+
+        return card
 
     def heal(self, amt):
         self.health = int(min(self.health + amt, self.start_health))
@@ -260,6 +263,8 @@ class Player(Entity):
         elif card.is_power():
             self.deck.used_powers.append(card)
             self.notify_listeners(Listener.Event.POWER_PLAYED, self, enemies, debug)
+        elif card.is_curse():
+            self.notify_listeners(Listener.Event.CURSE_PLAYED, self, enemies, debug)
         if card.exhaust:
             self.deck.exhaust_pile.append(card)
         if card not in self.deck.get_deck():

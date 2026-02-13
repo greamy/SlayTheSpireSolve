@@ -14,6 +14,8 @@ from CombatSim.Items.Relics.DisplayCase.ArtOfWar import ArtOfWar
 from CombatSim.Items.Relics.DisplayCase.BagOfMarbles import BagOfMarbles
 from CombatSim.Items.Relics.DisplayCase.BagOfPreparation import BagOfPreparation
 from CombatSim.Items.Relics.DisplayCase.BloodVial import BloodVial
+from CombatSim.Items.Relics.DisplayCase.BlueCandle import BlueCandle
+from CombatSim.Items.Relics.DisplayCase.BottledFlame import BottledFlame
 from CombatSim.Items.Relics.DisplayCase.BronzeScales import BronzeScales
 from CombatSim.Items.Relics.DisplayCase.CeramicFish import CeramicFish
 from CombatSim.Items.Relics.DisplayCase.CentennialPuzzle import CentennialPuzzle
@@ -51,7 +53,7 @@ class RelicTest(unittest.TestCase):
         self.energy = 3
         self.gold = 100
         self.controller = RandomPlayerController(delay=0)
-        self.player = Player(self.health, self.energy, self.gold, [], [], [], self.controller, library_path="../CombatSim/Actions/Library")
+        self.player = Player(self.health, self.energy, self.gold, [], [], [], self.controller, library_path="CombatSim/Actions/Library")
 
         self.ascension = 20
         self.act = 1
@@ -486,7 +488,7 @@ class RelicTest(unittest.TestCase):
 
         # TODO: Implement ? rooms!!!
 
-    @unittest.skip("Implement Potions!")
+    @unittest.skip("TODO: Implement Potions!")
     def test_tiny_ornithopter(self):
         # Whenever you use a potion, heal 5 HP.
         relic = TinyOrnithopter(self.player)
@@ -557,3 +559,36 @@ class RelicTest(unittest.TestCase):
         self.player.start_turn(self.enemies, self.debug)
         self.assertEqual(self.player.mantra, 1)
 
+    def test_blue_candle(self):
+        # Curse cards can now be played. Playing a Curse will make you lose 1 HP and Exhausts the card.
+        curse_card = self.player.add_card("CurseoftheBell")
+
+        relic = BlueCandle(self.player)
+        self.player.add_relic(relic)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        curse_success = self.player.play_card(curse_card, self.enemy, self.enemies, self.debug)
+        self.assertEqual(True, curse_success)
+        self.assertEqual(self.player.health, self.health - 1)
+
+    def test_bottled_flame(self):
+        # Upon pick up, choose an Attack. Start each combat with this card in your hand.
+
+        # TODO: Make sure this only chooses attacks
+        strike = self.player.add_card("Strike")
+
+        relic = BottledFlame(self.player)
+        self.player.add_relic(relic)
+
+        self.assertTrue(strike.innate)
+
+        for i in range(10):
+            self.player.add_card("Defend")
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertIn(strike, self.player.deck.hand)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertIn(strike, self.player.deck.hand)

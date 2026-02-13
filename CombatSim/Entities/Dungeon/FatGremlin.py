@@ -37,12 +37,12 @@ class FatGremlin(Enemy):
                 self.damage = 5
             if ascension > 16:
                 self.frail = 1
-            super().__init__("Stab", self.damage, 1, 0, 100, char.Intent.ATTACK_DEBUFF)
+            super().__init__("Smash", self.damage, 1, 0, 100, char.Intent.ATTACK_DEBUFF)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
             if self.frail > 0:
-                frail = Frail(self.frail, player)
-            weak = Weak(self.weak, player)
+                Frail(self.frail, player)
+            Weak(self.weak, player)
 
 

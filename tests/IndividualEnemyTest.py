@@ -11,6 +11,7 @@ from CombatSim.Actions.Library.Defend import Defend
 from CombatSim.Actions.Library.Strike import Strike
 from CombatSim.Actions.Library.Wound import Wound
 from CombatSim.Entities.Dungeon.Cultist import Cultist
+from CombatSim.Entities.Dungeon.FatGremlin import FatGremlin
 from CombatSim.Entities.Dungeon.GreenLouse import GreenLouse
 from CombatSim.Entities.Dungeon.GremlinNob import GremlinNob
 from CombatSim.Entities.Dungeon.Lagavulin import Lagavulin
@@ -18,6 +19,7 @@ from CombatSim.Entities.Dungeon.RedLouse import RedLouse
 from CombatSim.Entities.Dungeon.Sentry import Sentry
 from CombatSim.Entities.Dungeon.Taskmaster import Taskmaster
 from CombatSim.Entities.Player import Player
+from CombatSim.Entities.Status.Frail import Frail
 from CombatSim.Entities.Status.Weak import Weak
 from CombatSim.Entities.Status.Vulnerable import Vulnerable
 from CombatSim.util import createPlayer, addCards, get_default_deck
@@ -86,7 +88,7 @@ class IndividualEnemyTest(unittest.TestCase):
                 self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.enrage)
                 self.enemy.damage_dealt_modifier -= self.enemy.enrage
             elif self.last_intent.name == 'SkullBash':
-                self.assertEqual(self.player.damage_taken_multiplier, Vulnerable.MULT)
+                self.assertEqual(self.player.damage_taken_multiplier, Vulnerable.DAMAGE_TAKEN_MULTIPLIER)
                 self.assertEqual(self.player.health,
                                  current_health - (self.last_intent.damage))
             else:
@@ -193,10 +195,22 @@ class IndividualEnemyTest(unittest.TestCase):
                     start_health = self.enemy.health
                     self.enemy.do_turn(self.player, self.debug)
                     card = Strike(self.player)
-                    self.player.deck.hand.append(card)
-                    self.player.play_card(card, self.enemy,[self.enemy], self.debug)
+                    strike1 = self.player.add_card("Strike")
+                    strike2 = self.player.add_card("Strike")
+                    self.player.begin_combat([self.enemy], self.debug)
+                    self.player.start_turn([self.enemy], self.debug)
+                    self.player.play_card(strike1, self.enemy,[self.enemy], self.debug)
+                    # test curl up mechanic
+                    self.assertTrue(self.enemy.block == self.enemy.curl_up)
+                    self.assertTrue(self.enemy.curl_up_used)
+
+                    block = self.enemy.block
                     self.assertTrue(self.player.damage_dealt_multiplier, Weak.DAMAGE_DEALT_MULTIPLIER)
                     self.assertEqual(self.enemy.health, start_health - math.floor(card.damage * self.player.damage_dealt_multiplier))
+
+                    self.player.play_card(strike2, self.enemy, [self.enemy], self.debug)
+
+                    self.assertEqual(self.enemy.block, block - math.floor(strike2.damage * self.player.damage_dealt_multiplier))
 
     def test_redlouse(self):
         for _ in range(100):
@@ -209,10 +223,38 @@ class IndividualEnemyTest(unittest.TestCase):
                     self.enemy.do_turn(self.player, self.debug)
                     self.assertEqual(start_health - self.player.health, self.enemy.D)
                     self.player.health = self.player.start_health
+                    
+                    # test curl up
+                    strike1 = self.player.add_card("Strike")
+                    strike2 = self.player.add_card("Strike")
+                    
+                    self.player.begin_combat([self.enemy], self.debug)
+                    self.player.start_turn([self.enemy], self.debug)
+                    self.player.play_card(strike1, self.enemy, [self.enemy], self.debug)
+                    self.assertEqual(self.enemy.block, self.enemy.curl_up)
+                    self.assertTrue(self.enemy.curl_up_used)
+                    block = self.enemy.block
+                    self.player.play_card(strike2, self.enemy, [self.enemy], self.debug)
+                    self.assertEqual(self.enemy.block, block - math.floor(strike2.damage * self.player.damage_dealt_multiplier))
                 if intent.name == "Grow":
                     self.enemy.intent = intent
                     self.enemy.do_turn(self.player, self.debug)
                     self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.GROW].strength_gain)
                     self.enemy.damage_dealt_modifier -= self.enemy.intent_set[self.enemy.GROW].strength_gain
+
+    def test_FatGremlin(self):
+        self.enemy = FatGremlin(self.ascension, self.act)
+        self.enemy.choose_intent()
+
+        self.enemy.do_turn(self.player, self.debug)
+
+        self.assertTrue(self.player.health == self.player.start_health - self.enemy.intent_set[self.enemy.SMASH].damage)
+
+        self.assertEqual(len(self.player.status_list), 2) # in A20 Fat gremlin applies weak and frail
+        status_ids = [status.ID for status in self.player.status_list]
+        self.assertIn(Frail.ID, status_ids)
+        self.assertIn(Weak.ID, status_ids)
+
+
 
 
