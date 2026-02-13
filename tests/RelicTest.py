@@ -28,7 +28,7 @@ class RelicTest(unittest.TestCase):
         self.energy = 3
         self.gold = 100
         self.controller = RandomPlayerController(delay=0)
-        self.player = Player(self.health, self.energy, self.gold, [], [], [], self.controller, library_path="CombatSim/Actions/Library")
+        self.player = Player(self.health, self.energy, self.gold, [], [], [], self.controller, library_path="../CombatSim/Actions/Library")
 
         self.ascension = 20
         self.act = 1
