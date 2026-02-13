@@ -45,3 +45,4 @@ class Listener:
         ENTER_SHOP = 18
         BUY_FROM_SHOP = 19
         CLIMB_FLOOR = 20
+        ENTER_ELITE = 21

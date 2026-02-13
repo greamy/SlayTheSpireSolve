@@ -67,14 +67,20 @@ class Player(Entity):
     def heal(self, amt):
         self.health = int(min(self.health + amt, self.start_health))
 
+    def add_max_hp(self, amt):
+        self.start_health += amt
+        self.heal(amt)
+
     def shop(self):
         # TODO: Implement shop room, this should not replace the room system.
         self.notify_listeners(Listener.Event.ENTER_SHOP, self, None, False)
         self.notify_listeners(Listener.Event.BUY_FROM_SHOP, self, None, False)
 
     def do_rest(self):
-        self.health = int(min(self.health + (self.start_health * self.REST_FACTOR), self.start_health))
+        amt_to_heal =  self.start_health * self.REST_FACTOR
+        self.health = int(min(self.health + amt_to_heal, self.start_health))
         self.notify_listeners(Listener.Event.REST_SITE, self, None, False)
+        return amt_to_heal
 
     def add_relic(self, relic: Relic):
         self.relics.append(relic)

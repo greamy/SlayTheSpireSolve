@@ -29,7 +29,14 @@ from CombatSim.Items.Relics.DisplayCase.OddlySmoothStone import OddlySmoothStone
 from CombatSim.Items.Relics.DisplayCase.Omamori import Omamori
 from CombatSim.Items.Relics.DisplayCase.Orichalcum import Orichalcum
 from CombatSim.Items.Relics.DisplayCase.PenNib import PenNib
+from CombatSim.Items.Relics.DisplayCase.PotionBelt import PotionBelt
+from CombatSim.Items.Relics.DisplayCase.PreservedInsect import PreservedInsect
+from CombatSim.Items.Relics.DisplayCase.RegalPillow import RegalPillow
+from CombatSim.Items.Relics.DisplayCase.SmilingMask import SmilingMask
+from CombatSim.Items.Relics.DisplayCase.Strawberry import Strawberry
 from CombatSim.Items.Relics.DisplayCase.TheBoot import TheBoot
+from CombatSim.Items.Relics.DisplayCase.TinyChest import TinyChest
+from CombatSim.Items.Relics.DisplayCase.TinyOrnithopter import TinyOrnithopter
 from GameSim.Input.RandomPlayerController import RandomPlayerController
 
 
@@ -430,3 +437,55 @@ class RelicTest(unittest.TestCase):
         self.player.play_card(card_to_play, self.enemy, self.enemies, self.debug)
 
         self.assertEqual(enemy_cur_health - (card_to_play.damage * 2), self.enemy.health)
+
+    @unittest.skip("TODO: Implement potions")
+    def test_potion_belt(self):
+        # Upon pick up, gain 2 potion slots.
+        relic = PotionBelt(self.player)
+        self.player.add_relic(relic)
+
+    @unittest.skip("TODO: Trigger listeners when enter elite room")
+    def test_preserved_insect(self):
+        # Enemies in Elite rooms have 25% less HP.
+        relic = PreservedInsect(self.player)
+        self.player.add_relic(relic)
+
+    def test_regal_pillow(self):
+        # Heal an additional 15 HP when you Rest.
+        relic = RegalPillow(self.player)
+        self.player.add_relic(relic)
+
+        self.player.health = 10
+        start_hp = 10
+        amt = self.player.do_rest()
+        self.assertEqual(self.player.health, start_hp + amt + RegalPillow.HEAL_AMOUNT)
+
+    @unittest.skip("TODO: Implement shop and gold spending")
+    def test_smiling_mask(self):
+        # The merchant's card removal service now always costs 50 Gold.
+        relic = SmilingMask(self.player)
+        self.player.add_relic(relic)
+
+    def test_strawberry(self):
+        # Upon pickup, raise your Max HP by 7.
+        relic = Strawberry(self.player)
+        self.player.add_relic(relic)
+
+        self.assertEqual(self.player.start_health, self.health + Strawberry.MAX_HP_AMOUNT)
+        self.assertEqual(self.player.health, self.health + Strawberry.MAX_HP_AMOUNT)
+
+    @unittest.skip("TODO: Implement ? rooms")
+    def test_tiny_chest(self):
+        # Every 4th ? room is a Treasure room.
+        relic = TinyChest(self.player)
+        self.player.add_relic(relic)
+
+        # TODO: Implement ? rooms!!!
+
+    @unittest.skip("Implement Potions!")
+    def test_tiny_ornithopter(self):
+        # Whenever you use a potion, heal 5 HP.
+        relic = TinyOrnithopter(self.player)
+        self.player.add_relic(relic)
+
+        # TODO: Implement potions
