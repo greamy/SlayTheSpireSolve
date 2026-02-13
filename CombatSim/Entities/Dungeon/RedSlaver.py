@@ -84,8 +84,6 @@ class RedSlaver(Enemy):
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
             vuln = Vulnerable(self.vuln, player)
-            listener = Listener(Listener.Event.START_TURN, vuln.decrement)
-            player.add_listener(listener)
 
     class Entangle(Intent):
         def __init__(self, ascension: int):

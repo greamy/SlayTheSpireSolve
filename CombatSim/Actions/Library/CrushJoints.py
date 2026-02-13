@@ -21,7 +21,6 @@ class CrushJoints(Card):
         super().play(player, player_list, target_enemy, enemies, debug)
         if self.skill_played:
             vuln = Vulnerable(self.vulnerable, target_enemy)
-            target_enemy.add_listener(Listener(Listener.Event.START_TURN, vuln.decrement))
         self.skill_played = False
 
         return True

@@ -93,4 +93,3 @@ class GremlinNob(Enemy):
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
             vuln = Vulnerable(self.vulnerable, player)
-            player.add_listener(Listener(Listener.Event.START_TURN, vuln.decrement))

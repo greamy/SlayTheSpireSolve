@@ -15,13 +15,11 @@ class SashWhip(Card):
         self.weak = 1
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
+        # Deal 8(10) damage. If the last card played this combat was an Attack, apply 1(2) {{Weak}}.
         super().play(player, player_list, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         if self.attack:
             weak = Weak(self.weak, target_enemy)
-            target_enemy.add_listener(Listener(Listener.Event.START_TURN, weak.decrement))
         self.attack = True
-        # Deal 8(10) damage. If the last card played this combat was an Attack, apply 1(2) {{Weak}}.
 
         return True
 

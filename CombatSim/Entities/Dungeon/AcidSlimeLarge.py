@@ -66,8 +66,6 @@ class AcidSlimeLarge(Enemy):
         def play(self, enemy: Enemy, enemy_list: list[Enemy], player: Player, player_list: list[Player], debug: bool):
             super().play(enemy, enemy_list, player, player_list, debug)
             weak = Weak(self.weak, player)
-            listener = Listener(Listener.Event.START_TURN, weak.decrement)
-            player.add_listener(listener)
 
     class Tackle(Intent):
         def __init__(self, ascension: int):

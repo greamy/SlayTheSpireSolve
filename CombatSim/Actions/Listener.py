@@ -14,7 +14,12 @@ class Listener:
         if self.num_turns is not None:
             self.num_turns -= 1
             if self.num_turns == 0:
-                player.listeners.remove(self)
+                if self in player.listeners:
+                    player.remove_listener(self)
+                else:
+                    for e in enemies:
+                        if self in player.listeners:
+                            e.remove_listener(self)
         self.on_listen(player, enemy, enemies, debug)
 
 
@@ -29,8 +34,8 @@ class Listener:
         SCRY_OCCURRED = 7
         HAND_CHANGED = 8
         ENERGY_CHANGED = 9
-        TAKEN_DAMAGE = 10
+        TAKEN_DAMAGE = 10 # only triggers when HP is lost
         BLOCK_GAINED = 11
         START_COMBAT = 12
         END_COMBAT = 13
-
+        IS_ATTACKED = 14 # Need to make this work for TTLH

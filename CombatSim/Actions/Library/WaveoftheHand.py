@@ -24,7 +24,6 @@ class WaveoftheHand(Card):
 
     def block_gained(self, player, enemy, enemies, debug):
         weak = Weak(self.weak, enemy)
-        enemy.add_listener(Listener(Listener.Event.START_TURN, weak.decrement))
 
     def end_card(self, player, enemy, enemies, debug):
         player.listeners.remove(self.listener)

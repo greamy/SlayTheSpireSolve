@@ -1,0 +1,30 @@
+Slay the Spire Solver Roadmap:
+
+Combat and Game simulator tasks:
+Act 1 enemies - 100% , tests needed.
+Act 2 enemies -  40% - Tests needed
+Act 3 enemies - 0%
+Act 4 enemies - 0%
+Finish unit tests for every enemy - 5%
+Finish map generation overview - 80%
+**EVENTS** - 0%
+**RELICS** - 8% 12/147
+**POTIONS** - 0%
+**SHOP** - 0%
+finish campfire - 75%
+Implement Key system for heart - 0%
+
+Reinforcement learning and ML tasks:
+- RL/ML Visualization suite - 20%
+    * Live views of Policy loss, critic loss and other training statistics during training
+    * Live outputs of accuracy in both graph and text for the most recent runs
+- Support for ablation studies and hyperparameter sweeps - 50%
+- Turn our environment into OpenAI env to allow others to more easily experiment with making models - 0%
+
+
+Spirecomm / release tasks:
+Connect learned agent to game - watch gameplay - 20%
+*** STRETCH GOALS ***
+95% WR on ascension 0
+Live STS assistant during games to give information about which paths/cards are best for that situation.
+SPIRE 2 IMPLEMENTATION

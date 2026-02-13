@@ -92,8 +92,6 @@ class Guardian(Enemy):
             super().play(enemy, enemy_list, player, player_list, debug)
             weak = Weak(self.weak, player)
             vuln = Vulnerable(self.vulnerable, player)
-            player.add_listener(Listener(Listener.Event.START_TURN, weak.decrement))
-            player.add_listener(Listener(Listener.Event.START_TURN, vuln.decrement))
 
     class Whirlwind(Intent):
         def __init__(self, ascension):

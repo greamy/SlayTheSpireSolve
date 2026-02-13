@@ -28,7 +28,7 @@ class RelicTest(unittest.TestCase):
         self.energy = 3
         self.gold = 100
         self.controller = RandomPlayerController(delay=0)
-        self.player = Player(self.health, self.energy, self.gold, [], [], [], self.controller, library_path="../CombatSim/Actions/Library")
+        self.player = Player(self.health, self.energy, self.gold, [], [], [], self.controller, library_path="CombatSim/Actions/Library")
 
         self.ascension = 20
         self.act = 1
@@ -39,7 +39,6 @@ class RelicTest(unittest.TestCase):
         self.debug = False
 
     def test_holy_water(self):
-        # ({{Innate}}.) Shuffle a {{C|Beta}} into your draw pile. {{Exhaust}}.
         relic = HolyWater(self.player)
         self.player.add_relic(relic)
 
@@ -145,7 +144,6 @@ class RelicTest(unittest.TestCase):
         self.player.play_card(strike, self.enemy, self.enemies, self.debug)
         self.assertEqual(self.enemy.health, self.enemy_start_health - strike.damage)
 
-    @unittest.skip("art of war not implemented")
     def test_art_of_war(self):
         # If you do not play any Attacks during your turn, gain an extra Energy next turn.
         relic = ArtOfWar(self.player)
@@ -173,7 +171,6 @@ class RelicTest(unittest.TestCase):
         self.player.start_turn(self.enemies, self.debug)
         self.assertEqual(self.player.energy, self.player.max_energy)
 
-    @unittest.skip("bag of marbles not implemented")
     def test_bag_of_marbles(self):
         # At the start of each combat, apply 1 Vulnerable to ALL enemies.
         relic = BagOfMarbles(self.player)
@@ -182,10 +179,10 @@ class RelicTest(unittest.TestCase):
         self.new_enemy = copy.deepcopy(self.enemy)
         self.enemies.append(self.new_enemy)
 
-        self.assertEqual(self.enemy.damage_taken_multiplier, 1)
+        self.assertEqual(1.0, self.enemy.damage_taken_multiplier)
         self.player.begin_combat(self.enemies, self.debug)
-        self.assertEqual(self.enemy.damage_taken_multiplier, 1.5)
-        self.assertEqual(self.new_enemy.damage_taken_multiplier, 1.5)
+        self.assertEqual(1.5, self.enemy.damage_taken_multiplier)
+        self.assertEqual(1.5, self.new_enemy.damage_taken_multiplier)
 
         self.player.end_turn(self.enemies, self.debug)
         for enemy in self.enemies:
@@ -195,7 +192,6 @@ class RelicTest(unittest.TestCase):
         for enemy in self.enemies:
             self.assertEqual(enemy.damage_taken_multiplier, 1.0)
 
-    @unittest.skip("bag of preparation not implemented")
     def test_bag_of_preparation(self):
         # At the start of each combat, draw 2 additional cards.
         relic = BagOfPreparation(self.player)
@@ -203,13 +199,13 @@ class RelicTest(unittest.TestCase):
 
         self.player.deck.draw_pile = [Strike(self.player) for _ in range(10)]
         self.player.begin_combat(self.enemies, self.debug)
-        self.assertEqual(len(self.player.deck.hand), self.player.draw_amount + 2)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertEqual(len(self.player.deck.hand), self.player.draw_amount + BagOfPreparation.DRAW_AMT)
 
         self.player.end_turn(self.enemies, self.debug)
         self.player.start_turn(self.enemies, self.debug)
         self.assertEqual(len(self.player.deck.hand), self.player.draw_amount)
 
-    @unittest.skip("blood vial not implemented")
     def test_blood_vial(self):
         # At the start of each combat, heal 2 HP.
         relic = BloodVial(self.player)
@@ -224,7 +220,6 @@ class RelicTest(unittest.TestCase):
         self.player.start_turn(self.enemies, self.debug)
         self.assertEqual(self.player.health, start_hp + 2)
 
-    @unittest.skip("centennial puzzle not implemented")
     def test_centennial_puzzle(self):
         # The first time you lose HP each combat, draw 3 cards.
         relic = CentennialPuzzle(self.player)
@@ -235,13 +230,14 @@ class RelicTest(unittest.TestCase):
         self.player.start_turn(self.enemies, self.debug)
         self.assertEqual(len(self.player.deck.hand), self.player.draw_amount)
 
-        self.player.take_damage(10)
-        self.assertEqual(len(self.player.deck.hand), self.player.draw_amount + 3)
+        self.enemy.intent = self.enemy.intent_set[JawWorm.CHOMP]
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.player.draw_amount + CentennialPuzzle.DRAW_AMT, len(self.player.deck.hand))
 
-        self.player.take_damage(10)
-        self.assertEqual(len(self.player.deck.hand), self.player.draw_amount + 3)
+        self.enemy.intent = self.enemy.intent_set[JawWorm.CHOMP]
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.player.draw_amount + CentennialPuzzle.DRAW_AMT, len(self.player.deck.hand))
 
-    @unittest.skip("happy flower not implemented")
     def test_happy_flower(self):
         # Every 3 turns, gain 1 Energy.
         relic = HappyFlower(self.player)
@@ -252,8 +248,13 @@ class RelicTest(unittest.TestCase):
 
         for i in range(2):
             self.player.start_turn(self.enemies, self.debug)
+            self.assertEqual(self.player.max_energy, self.player.energy)
             self.player.end_turn(self.enemies, self.debug)
 
         self.player.start_turn(self.enemies, self.debug)
-        self.assertEqual(self.player.energy, self.player.max_energy + 1)
+        self.assertEqual( self.player.max_energy + 1, self.player.energy)
+        self.player.end_turn(self.enemies, self.debug)
+
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertEqual(self.player.max_energy, self.player.energy)
 

@@ -43,10 +43,6 @@ class FatGremlin(Enemy):
             super().play(enemy, enemy_list, player, player_list, debug)
             if self.frail > 0:
                 frail = Frail(self.frail, player)
-                listener = Listener(Listener.Event.START_TURN, frail.decrement)
-                player.add_listener(listener)
             weak = Weak(self.weak, player)
-            listener = Listener(Listener.Event.START_TURN, weak.decrement)
-            player.add_listener(listener)
 
 

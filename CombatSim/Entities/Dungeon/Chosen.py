@@ -91,7 +91,6 @@ class Chosen(Enemy):
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
             vuln = Vulnerable(2, player)
-            player.add_listener(Listener(Listener.Event.START_TURN, vuln.decrement))
 
     class Drain(Intent):
         def __init__(self, ascension):
@@ -100,8 +99,7 @@ class Chosen(Enemy):
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
             weak = Weak(3, player)
-            player.add_listener(Listener(Listener.Event.START_TURN, weak.decrement))
-            enemy.damage_dealt_modifier += 3
+
 
     class Hex(Intent):
         def __init__(self, ascension):

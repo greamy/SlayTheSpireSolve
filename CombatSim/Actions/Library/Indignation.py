@@ -17,7 +17,6 @@ class Indignation(Card):
             player.stance = player.Stance.WRATH
         elif player.stance == player.Stance.WRATH:
             vuln = Vulnerable(self.vulnerable, target_enemy)
-            target_enemy.add_listener(Listener(Listener.Event.START_TURN, vuln.decrement))
 
 
         # If you are in {{Wrath}}, apply 3(5) {{Vulnerable}} to ALL enemies, otherwise enter {{Wrath}}.

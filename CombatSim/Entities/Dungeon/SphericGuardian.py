@@ -74,4 +74,3 @@ class SphericGuardian(Enemy):
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
             frail = Frail(5, player)
-            player.add_listener(Listener(Listener.Event.START_TURN, frail.decrement))

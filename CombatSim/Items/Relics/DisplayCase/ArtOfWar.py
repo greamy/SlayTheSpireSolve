@@ -7,14 +7,22 @@ class ArtOfWar(Relic):
         super().__init__("Art of War", "Common", player)
         self.player = player
         self.attack_played = False
-        self.listener = Listener(Listener.Event.ATTACK_PLAYED, self.attack_was_played)
+        self.attack_listener = Listener(Listener.Event.ATTACK_PLAYED, self.attack_was_played)
         self.turn_over = Listener(Listener.Event.START_TURN, self.start_of_turn)
 
-    def attack_was_played(self):
+    def attack_was_played(self, player, enemy, enemies, debug):
         self.attack_played = True
+
+    def on_pickup(self):
+        self.player.add_listener(self.attack_listener)
+        self.player.add_listener(self.turn_over)
+
+    def on_drop(self):
+        self.player.remove_listener(self.attack_listener)
+        self.player.remove_listener(self.turn_over)
 
     def start_of_turn(self, player, enemy, enemies, debug):
         if not self.attack_played:
-            self.player.energy += 1
+            player.energy += 1
         self.attack_played = False
 

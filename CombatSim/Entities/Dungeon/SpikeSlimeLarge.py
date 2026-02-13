@@ -74,8 +74,6 @@ class SpikeSlimeLarge(Enemy):
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
             frail = Frail(self.frail, player)
-            listener = Listener(Listener.Event.START_TURN, frail.decrement)
-            player.add_listener(listener)
 
     class Split(Intent):
         def __init__(self, ascension: int, act):

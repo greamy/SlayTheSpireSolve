@@ -53,6 +53,9 @@ class Player(Entity):
                 my_cards[card_name] = module
         return my_cards
 
+    def heal(self, amt):
+        self.health = int(min(self.health + amt, self.start_health))
+
     def do_rest(self):
         self.health = int(min(self.health + (self.start_health * self.REST_FACTOR), self.start_health))
 

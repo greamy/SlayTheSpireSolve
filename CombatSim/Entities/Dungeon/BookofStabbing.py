@@ -19,7 +19,7 @@ class BookofStabbing(Enemy):
             super().__init__(random.randint(160, 162), intent_set, ascension, minion=False)
         else:
             super().__init__(random.randint(168, 172), intent_set, ascension, minion=False)
-        self.attacks_done = 0
+        self.attacks_done = 1
         self.all_attacks_flag = self.ascension > 17
 
     def choose_intent(self):
@@ -33,10 +33,15 @@ class BookofStabbing(Enemy):
     def is_valid_intent(self, intent: Intent):
         if self.intent == self.intent_set[self.MultiStab] and self.num_consecutive == 3:
             return False
-        elif self.intent == self.intent_set[self.SingleStab]:
+        elif self.intent == self.intent_set[self.SingleStab] and self.num_consecutive == 2 :
             return False
         else:
             return True
+
+    def do_turn(self, player, debug):
+        super().do_turn(player, debug)
+        if self.intent == self.intent_set[self.MultiStab] or (self.all_attacks_flag and self.intent == self.intent_set[self.SINGLESTAB]):
+            self.intent_set[self.MULTISTAB].attacks += 1
 
     class MultiStab(Intent):
         def __init__(self, ascension:int):
@@ -44,10 +49,9 @@ class BookofStabbing(Enemy):
                 self.damage = 6
             else:
                 self.damage = 7
-            super().__init__("MultiStab", self.damage, 0, 0, 85, char.Intent.ATTACK)
+            super().__init__("MultiStab", self.damage, 2, 0, 85, char.Intent.ATTACK)
 
         def play(self, enemy, enemy_list, player, player_list, debug):
-            self.attacks = enemy.attacks_done
             super().play(enemy, enemy_list, player, player_list, debug)
 
     class SingleStab(Intent):
@@ -57,3 +61,6 @@ class BookofStabbing(Enemy):
             else:
                 self.damage = 24
             super().__init__("SingleStab", self.damage, 1, 0, 15, char.Intent.ATTACK)
+
+        def play(self, enemy, enemy_list, player, player_list, debug):
+            super().play(enemy,enemy_list, player, player_list, debug)

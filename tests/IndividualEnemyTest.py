@@ -14,9 +14,11 @@ from CombatSim.Entities.Dungeon.Cultist import Cultist
 from CombatSim.Entities.Dungeon.GreenLouse import GreenLouse
 from CombatSim.Entities.Dungeon.GremlinNob import GremlinNob
 from CombatSim.Entities.Dungeon.Lagavulin import Lagavulin
+from CombatSim.Entities.Dungeon.RedLouse import RedLouse
 from CombatSim.Entities.Dungeon.Sentry import Sentry
 from CombatSim.Entities.Dungeon.Taskmaster import Taskmaster
 from CombatSim.Entities.Player import Player
+from CombatSim.Entities.Status.Weak import Weak
 from CombatSim.Entities.Status.Vulnerable import Vulnerable
 from CombatSim.util import createPlayer, addCards, get_default_deck
 from GameSim.Input.RandomPlayerController import RandomPlayerController
@@ -33,8 +35,7 @@ class IndividualEnemyTest(unittest.TestCase):
         # self.player = Player(self.health, self.energy, self.gold, [], [], [],
         #                      RandomPlayerController(), library_path="/home/grant/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library")
         # test Lucas Library path -> 'C:/Users/Owner/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library'
-        self.player = createPlayer(lib_path='../CombatSim/Actions/Library')
-        self.player_start_health = self.player.health
+        self.player = createPlayer(lib_path='CombatSim/Actions/Library', max_health=self.health, health=self.health)
         self.ascension = 20
         self.act = 1
         # self.enemy = JawWorm(self.ascension, self.act)
@@ -179,7 +180,7 @@ class IndividualEnemyTest(unittest.TestCase):
     def test_greenlouse(self):
         for _ in range(100):
             self.enemy = GreenLouse(self.ascension, self.act)
-            self.player = copy.copy(self.player)
+            self.player = createPlayer(lib_path='CombatSim/Actions/Library', max_health=self.health)
             for intent in self.enemy.intent_set:
                 if intent.name == "Bite":
                     start_health = self.player.health
@@ -191,8 +192,27 @@ class IndividualEnemyTest(unittest.TestCase):
                     self.enemy.intent = intent
                     start_health = self.enemy.health
                     self.enemy.do_turn(self.player, self.debug)
-                    print(self.player.damage_dealt_multiplier)
                     card = Strike(self.player)
                     self.player.deck.hand.append(card)
                     self.player.play_card(card, self.enemy,[self.enemy], self.debug)
+                    self.assertTrue(self.player.damage_dealt_multiplier, Weak.DAMAGE_DEALT_MULTIPLIER)
                     self.assertEqual(self.enemy.health, start_health - math.floor(card.damage * self.player.damage_dealt_multiplier))
+
+    def test_redlouse(self):
+        for _ in range(100):
+            self.enemy = RedLouse(self.ascension, self.act)
+            self.player = createPlayer(lib_path='CombatSim/Actions/Library', max_health=self.health)
+            for intent in self.enemy.intent_set:
+                if intent.name == "Bite":
+                    start_health = self.player.health
+                    self.enemy.intent = intent
+                    self.enemy.do_turn(self.player, self.debug)
+                    self.assertEqual(start_health - self.player.health, self.enemy.D)
+                    self.player.health = self.player.start_health
+                if intent.name == "Grow":
+                    self.enemy.intent = intent
+                    self.enemy.do_turn(self.player, self.debug)
+                    self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.GROW].strength_gain)
+                    self.enemy.damage_dealt_modifier -= self.enemy.intent_set[self.enemy.GROW].strength_gain
+
+

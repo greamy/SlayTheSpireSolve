@@ -69,4 +69,3 @@ class GreenLouse(Enemy):
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
             weak = Weak(self.weak, player)
-            player.add_listener(Listener(Listener.Event.START_TURN, weak.decrement))

@@ -4,7 +4,7 @@ from CombatSim.Items.Relics.Relic import Relic
 
 
 class PureWater(Relic):
-    # Your first attack each combat deals 8  additional damage.
+    # Start each combat with a Miracle in hand.
     def __init__(self, player):
         super().__init__("Pure Water", "common", player)
         self.listener = Listener(Listener.Event.START_COMBAT, self.add_card)
