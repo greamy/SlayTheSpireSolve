@@ -17,6 +17,7 @@ from CombatSim.Items.Relics.DisplayCase.BloodVial import BloodVial
 from CombatSim.Items.Relics.DisplayCase.BronzeScales import BronzeScales
 from CombatSim.Items.Relics.DisplayCase.CeramicFish import CeramicFish
 from CombatSim.Items.Relics.DisplayCase.CentennialPuzzle import CentennialPuzzle
+from CombatSim.Items.Relics.DisplayCase.Damaru import Damaru
 from CombatSim.Items.Relics.DisplayCase.DreamCatcher import DreamCatcher
 from CombatSim.Items.Relics.DisplayCase.HappyFlower import HappyFlower
 from CombatSim.Items.Relics.DisplayCase.HolyWater import HolyWater
@@ -546,4 +547,13 @@ class RelicTest(unittest.TestCase):
         self.player.add_relic(relic)
         un_upgraded_cards = [card for card in self.player.deck if not card.upgraded]
         self.assertEqual(len(un_upgraded_cards), 1)
+
+    def test_damaru(self):
+        # At the start of your turn, gain 1 Mantra.
+        relic = Damaru(self.player)
+        self.player.add_relic(relic)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertEqual(self.player.mantra, 1)
 
