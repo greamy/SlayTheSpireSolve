@@ -37,6 +37,9 @@ from CombatSim.Items.Relics.DisplayCase.Strawberry import Strawberry
 from CombatSim.Items.Relics.DisplayCase.TheBoot import TheBoot
 from CombatSim.Items.Relics.DisplayCase.TinyChest import TinyChest
 from CombatSim.Items.Relics.DisplayCase.TinyOrnithopter import TinyOrnithopter
+from CombatSim.Items.Relics.DisplayCase.Vajra import Vajra
+from CombatSim.Items.Relics.DisplayCase.WarPaint import WarPaint
+from CombatSim.Items.Relics.DisplayCase.Whetstone import Whetstone
 from GameSim.Input.RandomPlayerController import RandomPlayerController
 
 
@@ -489,3 +492,58 @@ class RelicTest(unittest.TestCase):
         self.player.add_relic(relic)
 
         # TODO: Implement potions
+
+    def test_vajra(self):
+        # At the start of each combat, gain 1 Strength.
+        relic = Vajra(self.player)
+        self.player.add_relic(relic)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.assertEqual(self.player.damage_dealt_modifier, Vajra.STRENGTH_AMOUNT)
+
+    def test_war_paint(self):
+        # Upon pick up, Upgrade 2 random Skills.
+        relic = WarPaint(self.player)
+
+        self.player.add_card("Defend")
+        self.player.add_card("Defend")
+
+        self.player.add_relic(relic)
+
+        self.assertEqual(self.player.deck.draw_pile[0].upgraded, True)
+        self.assertEqual(self.player.deck.draw_pile[1].upgraded, True)
+
+        self.player.deck.draw_pile.clear()
+        self.assertEqual(len(self.player.deck), 0)
+
+        self.player.add_card("Defend")
+        self.player.add_card("Defend")
+        self.player.add_card("Defend")
+
+        self.player.add_relic(relic)
+        un_upgraded_cards = [card for card in self.player.deck if not card.upgraded]
+        self.assertEqual(len(un_upgraded_cards), 1)
+
+    def test_whetstone(self):
+        # Upon pick up, Upgrade 2 random Skills.
+        relic = Whetstone(self.player)
+
+        self.player.add_card("Strike")
+        self.player.add_card("Strike")
+
+        self.player.add_relic(relic)
+
+        self.assertEqual(self.player.deck.draw_pile[0].upgraded, True)
+        self.assertEqual(self.player.deck.draw_pile[1].upgraded, True)
+
+        self.player.deck.draw_pile.clear()
+        self.assertEqual(len(self.player.deck), 0)
+
+        self.player.add_card("Strike")
+        self.player.add_card("Strike")
+        self.player.add_card("Strike")
+
+        self.player.add_relic(relic)
+        un_upgraded_cards = [card for card in self.player.deck if not card.upgraded]
+        self.assertEqual(len(un_upgraded_cards), 1)
+

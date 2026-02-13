@@ -476,3 +476,6 @@ class Player(Entity):
 
         def __iter__(self):
             return iter(self.get_deck())
+
+        def __len__(self):
+            return len(self.get_deck())
