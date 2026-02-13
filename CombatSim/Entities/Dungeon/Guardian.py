@@ -65,10 +65,12 @@ class Guardian(Enemy):
         return True
 
     def take_damage(self, amount):
-        super().take_damage(amount)
-        self.mode_shift -= amount
+        start_hp = self.health
+        lost_health = super().take_damage(amount)
+        self.mode_shift -= (start_hp - self.health) # unblocked damage only
         if self.mode_shift <= 0:
             pass
+        return lost_health
 
     class ChargingUp(Intent):
         def __init__(self, ascension):

@@ -13,6 +13,7 @@ from CombatSim.Items.Relics.DisplayCase.ArtOfWar import ArtOfWar
 from CombatSim.Items.Relics.DisplayCase.BagOfMarbles import BagOfMarbles
 from CombatSim.Items.Relics.DisplayCase.BagOfPreparation import BagOfPreparation
 from CombatSim.Items.Relics.DisplayCase.BloodVial import BloodVial
+from CombatSim.Items.Relics.DisplayCase.BronzeScales import BronzeScales
 from CombatSim.Items.Relics.DisplayCase.CentennialPuzzle import CentennialPuzzle
 from CombatSim.Items.Relics.DisplayCase.HappyFlower import HappyFlower
 from CombatSim.Items.Relics.DisplayCase.HolyWater import HolyWater
@@ -104,11 +105,11 @@ class RelicTest(unittest.TestCase):
         self.player.deck.hand.append(flurry)
 
         self.player.play_card(flurry, self.enemy, self.enemies, self.debug)
-        self.assertEqual(self.enemy.health, self.enemy_start_health - 5)
+        self.assertEqual(self.enemy.health, self.enemy_start_health - TheBoot.BOOT_DAMAGE)
 
         # Shouldnt care about the damage dealt modifier
         self.player.deck.hand.append(flurry)
-        self.player.damage_dealt_modifier = -2
+        self.player.damage_dealt_modifier = -2 # give us -2 strength
 
         self.player.play_card(flurry, self.enemy, self.enemies, self.debug)
         self.assertEqual(self.enemy.health, self.enemy_start_health - 10)
@@ -258,3 +259,16 @@ class RelicTest(unittest.TestCase):
         self.player.start_turn(self.enemies, self.debug)
         self.assertEqual(self.player.max_energy, self.player.energy)
 
+    def test_bronze_scales(self):
+        # Start each combat with 3 Thorns.
+        relic = BronzeScales(self.player)
+        self.player.add_relic(relic)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.enemy.intent = self.enemy.intent_set[JawWorm.CHOMP] # player takes damage
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.enemy_start_health - BronzeScales.THORNS_AMOUNT, self.enemy.health) # check thorns dmg
+
+        self.enemy.intent = self.enemy.intent_set[JawWorm.BELLOW] # player won't take damage
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.enemy_start_health - BronzeScales.THORNS_AMOUNT, self.enemy.health) # check thorns didn't trigger again

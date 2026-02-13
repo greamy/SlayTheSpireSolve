@@ -45,10 +45,11 @@ class SpikeSlimeLarge(Enemy):
         return True
 
     def take_damage(self, amount):
-        super().take_damage(amount)
-        if self.health <= self.start_health and not self.split:
+        lost_health = super().take_damage(amount)
+        if self.health <= self.start_health / 2 and not self.split:
             self.intent = self.intent_set[self.SPLIT]
             self.split = True
+        return lost_health
 
     class FlameTackle(Intent):
         def __init__(self, ascension: int):

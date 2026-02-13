@@ -37,13 +37,15 @@ class Byrd(Enemy):
         self.ground_pattern_index = 0
 
     def take_damage(self, amount):
-        while self.flying:
+        lost_health = False
+        if self.flying:
             amount = amount/2
-            super().take_damage(amount)
+            lost_health = super().take_damage(amount)
             self.flying_amount -= 1
             if self.flying_amount <= 0:
                 self.flying = False
                 self.intent = self.intent_set[self.STUNNED]
+        return lost_health
 
     def choose_intent(self):
         if self.num_turns == 0:

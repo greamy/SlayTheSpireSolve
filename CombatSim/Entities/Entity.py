@@ -37,17 +37,22 @@ class Entity:
     def end_turn(self, opponents, debug):
         pass
 
-    def take_damage(self, amount):
+    def take_damage(self, amount) -> bool:
+        lost_health = False
         if self.block > 0:
             self.block -= math.floor(amount*self.damage_taken_multiplier)
             if self.block < 0:
                 self.health -= abs(self.block)
+                lost_health = True
                 self.block = 0
         else:
             self.health -= math.floor(amount*self.damage_taken_multiplier)
+            lost_health = True
 
         if self.health <= 0:
             self.health = 0
+
+        return lost_health
 
     def gain_block(self, amount, enemies, debug):
         self.block += math.floor((amount + self.block_modifier) * self.block_multiplier)
@@ -61,14 +66,14 @@ class Entity:
     def remove_listener(self, listener):
         self.listeners.remove(listener)
 
-    def notify_listeners(self, event_type, player, enemies, debug):
+    def notify_listeners(self, event_type, primary_entity, target_entities, debug):
         if debug:
             pass
             # print("Triggering listeners!")
         for listener in self.listeners:
             if event_type in listener.event_types:
-                enemy = random.choice(enemies) if len(enemies) > 0 else None
-                listener.notify(player, enemy, enemies, debug)
+                target_entity = random.choice(target_entities) if len(target_entities) > 0 else None
+                listener.notify(primary_entity, target_entity, target_entities, debug)
 
     def render(self, screen, font, text_size=20):
         health_text = font.render("HEALTH:" + str(self.health), True, "green")

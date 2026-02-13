@@ -18,7 +18,9 @@ class Blasphemy(Card):
         return True
 
     def do_power(self, player, enemy, enemies, debug):
-        player.take_damage(999_999)
+        lost_health = player.take_damage(999_999)
+        if lost_health:
+            player.notify_listeners(Listener.Event.TAKEN_DAMAGE, enemy, enemies, debug)
 
     def upgrade(self):
         super().upgrade()

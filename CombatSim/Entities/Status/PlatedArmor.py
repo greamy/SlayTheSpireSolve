@@ -7,10 +7,7 @@ class PlatedArmor(Status):
     ID = 5
 
     def __init__(self, duration, entity: Entity):
-        super().__init__(duration, entity)
-        self.apply()
-        self.listener = Listener(Listener.Event.TAKEN_DAMAGE, self.decrement)
-        entity.add_listener(self.listener)
+        super().__init__(duration, entity, Listener(Listener.Event.TAKEN_DAMAGE, self.decrement, duration))
 
         self.block_listener = Listener(Listener.Event.END_TURN, self.do_block)
         entity.add_listener(self.block_listener)
@@ -23,6 +20,7 @@ class PlatedArmor(Status):
 
     def remove(self):
         self.entity.listeners.remove(self.block_listener)
+        super().remove()
 
     def remove_listener(self):
         self.entity.remove_listener(self.block_listener)

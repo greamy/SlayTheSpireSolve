@@ -35,10 +35,11 @@ class Lagavulin(Enemy):
         self.block = self.metallicize_amount
 
     def take_damage(self, amount):
-        super().take_damage(amount)
+        lost_health = super().take_damage(amount)
         if self.health < self.start_health :
             self.sleeping = False
             self.metallicize.remove()
+        return lost_health
 
     def choose_intent(self):
         if self.num_turns < 3 and self.sleeping:

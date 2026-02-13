@@ -105,13 +105,17 @@ class Player(Entity):
         self.notify_listeners(Listener.Event.END_COMBAT, self, enemies, debug)
         for card in self.deck.draw_pile:
             card.remove_listeners(self)
+
+        for status in self.status_list:
+            status.remove()
+
         self.mantra = 0
         self.set_stance(self.Stance.NONE)
 
     def take_damage(self, amount):
         if amount > self.block + self.health:
             self.final_stance = self.stance
-        super().take_damage(amount)
+        return super().take_damage(amount)
 
     def start_turn(self, enemies, debug):
         super().start_turn(enemies, debug)

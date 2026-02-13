@@ -1,12 +1,14 @@
 
 class Status:
-    NUM_STATUSES = 6
+    NUM_STATUSES = 7
     ID = -1
 
     def __init__(self, duration, entity, listener=None):
         self.duration = duration
         self.entity = entity
         self.listener = listener
+        self.removed = False
+        self.apply()
 
     def decrement(self, player, enemy, enemies, debug):
         self.duration -= 1
@@ -27,7 +29,8 @@ class Status:
         return True
 
     def remove(self):
-        if self.listener is not None:
+        if self.listener is not None and not self.removed:
+            self.removed = True
             self.entity.remove_listener(self.listener)
 
     def remove_listener(self):

@@ -22,6 +22,8 @@ class Burn(Card):
         self.description = "Unplayable. At the end of your turn take 4 damage."
         self.end_of_turn_damage = 4
 
-    def eot_take_damage(self, player, enemy, enemies, debug):
+    def eot_take_damage(self, player: Player, enemy: Enemy, enemies: list[Enemy], debug: bool):
         if self in player.deck.hand:
-            player.take_damage(self.end_of_turn_damage)
+            lost_health = player.take_damage(self.end_of_turn_damage)
+            if lost_health:
+                player.notify_listeners(Listener.Event.TAKEN_DAMAGE, enemy, enemies, debug)

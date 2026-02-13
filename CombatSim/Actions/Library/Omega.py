@@ -20,7 +20,9 @@ class Omega(Card):
 
     def do_power(self, player, enemy, enemies, debug):
         for enemy in enemies:
-            enemy.take_damage(self.damage)
+            lost_health = enemy.take_damage(self.damage)
+            if lost_health:
+                enemy.notify_listeners(Listener.Event.TAKEN_DAMAGE, player, enemies, debug)
 
     def upgrade(self):
         super().upgrade()

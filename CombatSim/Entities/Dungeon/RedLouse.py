@@ -46,10 +46,11 @@ class RedLouse(Enemy):
             return True
 
     def take_damage(self, amount):
-        super().take_damage(amount)
-        if not self.curl_up_used:
+        lost_health = super().take_damage(amount)
+        if not self.curl_up_used and lost_health:
             self.block += self.curl_up
             self.curl_up_used = True
+        return lost_health
 
     class Bite(Intent):
         def __init__(self, ascension):
