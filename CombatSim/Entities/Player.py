@@ -37,7 +37,7 @@ class Player(Entity):
 
         self.final_stance = None
 
-        self.controller = controller
+        self.controller: PlayerController = controller
 
         # self.bot = QBot()
 
@@ -53,11 +53,28 @@ class Player(Entity):
                 my_cards[card_name] = module
         return my_cards
 
+    def add_card(self, card_name: str):
+        self.notify_listeners(Listener.Event.CARD_ADDED_TO_DECK, self, None, False)
+        if card_name in self.implemented_cards.keys():
+            class_ = getattr(self.implemented_cards[card_name], card_name)
+            card = class_(self)
+            self.deck.draw_pile.append(card)
+            if card.card_type.value == 4: # CURSE CARD
+                self.notify_listeners(Listener.Event.CURSE_ADDED, self, None, False)
+        else:
+            raise Exception(f"No implemented card named {card_name}")
+
     def heal(self, amt):
         self.health = int(min(self.health + amt, self.start_health))
 
+    def shop(self):
+        # TODO: Implement shop room, this should not replace the room system.
+        self.notify_listeners(Listener.Event.ENTER_SHOP, self, None, False)
+        self.notify_listeners(Listener.Event.BUY_FROM_SHOP, self, None, False)
+
     def do_rest(self):
         self.health = int(min(self.health + (self.start_health * self.REST_FACTOR), self.start_health))
+        self.notify_listeners(Listener.Event.REST_SITE, self, None, False)
 
     def add_relic(self, relic: Relic):
         self.relics.append(relic)
@@ -359,6 +376,18 @@ class Player(Entity):
             self.exhaust_pile = []
             self.used_powers = []
 
+        def remove_card(self, card):
+            if card in self.hand:
+                self.hand.remove(card)
+            elif card in self.draw_pile:
+                self.draw_pile.remove(card)
+            elif card in self.discard_pile:
+                self.discard_pile.remove(card)
+            elif card in self.exhaust_pile:
+                self.exhaust_pile.remove(card)
+            elif card in self.used_powers:
+                self.used_powers.remove(card)
+
         def shuffle(self):
             random.shuffle(self.draw_pile)
 
@@ -438,3 +467,6 @@ class Player(Entity):
                     "\nHand: " + str([str(card) for card in self.hand]) +
                     "\nDiscard: " + str([str(card) for card in self.discard_pile]) +
                     "\nExhaust: " + str([str(card) for card in self.exhaust_pile]))
+
+        def __iter__(self):
+            return iter(self.get_deck())

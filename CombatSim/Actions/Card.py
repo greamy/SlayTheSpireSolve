@@ -128,3 +128,4 @@ class Card(Playable):
         SKILL = 1
         POWER = 2
         STATUS = 3
+        CURSE = 4

@@ -39,3 +39,9 @@ class Listener:
         START_COMBAT = 12
         END_COMBAT = 13
         IS_ATTACKED = 14 # Need to make this work for TTLH
+        CARD_ADDED_TO_DECK = 15
+        CURSE_ADDED = 16
+        REST_SITE = 17
+        ENTER_SHOP = 18
+        BUY_FROM_SHOP = 19
+        CLIMB_FLOOR = 20

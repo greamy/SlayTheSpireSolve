@@ -9,15 +9,26 @@ from CombatSim.Entities.Dungeon.JawWorm import JawWorm
 from CombatSim.Entities.Player import Player
 from CombatSim.Items.Relics.DisplayCase.Akabeko import Akabeko
 from CombatSim.Items.Relics.DisplayCase.Anchor import Anchor
+from CombatSim.Items.Relics.DisplayCase.AncientTeaSet import AncientTeaSet
 from CombatSim.Items.Relics.DisplayCase.ArtOfWar import ArtOfWar
 from CombatSim.Items.Relics.DisplayCase.BagOfMarbles import BagOfMarbles
 from CombatSim.Items.Relics.DisplayCase.BagOfPreparation import BagOfPreparation
 from CombatSim.Items.Relics.DisplayCase.BloodVial import BloodVial
 from CombatSim.Items.Relics.DisplayCase.BronzeScales import BronzeScales
+from CombatSim.Items.Relics.DisplayCase.CeramicFish import CeramicFish
 from CombatSim.Items.Relics.DisplayCase.CentennialPuzzle import CentennialPuzzle
+from CombatSim.Items.Relics.DisplayCase.DreamCatcher import DreamCatcher
 from CombatSim.Items.Relics.DisplayCase.HappyFlower import HappyFlower
 from CombatSim.Items.Relics.DisplayCase.HolyWater import HolyWater
+from CombatSim.Items.Relics.DisplayCase.JuzuBracelet import JuzuBracelet
+from CombatSim.Items.Relics.DisplayCase.Lantern import Lantern
+from CombatSim.Items.Relics.DisplayCase.MawBank import MawBank
+from CombatSim.Items.Relics.DisplayCase.MealTicket import MealTicket
+from CombatSim.Items.Relics.DisplayCase.Nunchaku import Nunchaku
+from CombatSim.Items.Relics.DisplayCase.OddlySmoothStone import OddlySmoothStone
+from CombatSim.Items.Relics.DisplayCase.Omamori import Omamori
 from CombatSim.Items.Relics.DisplayCase.Orichalcum import Orichalcum
+from CombatSim.Items.Relics.DisplayCase.PenNib import PenNib
 from CombatSim.Items.Relics.DisplayCase.TheBoot import TheBoot
 from GameSim.Input.RandomPlayerController import RandomPlayerController
 
@@ -272,3 +283,150 @@ class RelicTest(unittest.TestCase):
         self.enemy.intent = self.enemy.intent_set[JawWorm.BELLOW] # player won't take damage
         self.enemy.do_turn(self.player, self.debug)
         self.assertEqual(self.enemy_start_health - BronzeScales.THORNS_AMOUNT, self.enemy.health) # check thorns didn't trigger again
+
+    def test_ceramic_fish(self):
+        # Whenever you add a card to your deck, gain 9 gold.
+        relic = CeramicFish(self.player)
+        self.player.add_relic(relic)
+
+        start_gold = self.player.gold
+        self.player.add_card("Strike")
+        self.assertEqual(self.player.gold, start_gold + CeramicFish.GOLD_AMOUNT)
+
+    def test_dream_catcher(self):
+        # Whenever you rest, you may add a card to your deck.
+        relic = DreamCatcher(self.player)
+        self.player.add_relic(relic)
+
+        num_in_deck = len(self.player.deck.draw_pile)
+        self.player.do_rest()
+        self.assertEqual(len(self.player.deck.draw_pile), num_in_deck + 1)
+
+    def test_ancient_tea_set(self):
+        # Whenever you enter a Rest Site, start the next combat with 2 extra Energy.
+        relic = AncientTeaSet(self.player)
+        self.player.add_relic(relic)
+        self.player.begin_combat(self.enemies, self.debug)
+        self.assertEqual(self.player.energy, self.player.max_energy)
+        # self.player.end_combat(self.enemies, self.debug)
+
+        self.player.do_rest()
+        self.player.begin_combat(self.enemies, self.debug)
+        self.assertEqual(self.player.energy, self.player.max_energy + AncientTeaSet.ENERGY_AMOUNT)
+
+    @unittest.skip("TODO: Implement ? rooms")
+    def test_juzu_bracelet(self):
+        # Regular enemy combats are no longer encountered in ? rooms.
+        relic = JuzuBracelet(self.player)
+        self.player.add_relic(relic)
+
+        #TODO: Implement ? rooms!!!
+
+    def test_Lantern(self):
+        # Gain 1 energy on the first turn of each combat
+        relic = Lantern(self.player)
+        self.player.add_relic(relic)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertEqual(self.player.energy, self.player.max_energy + 1)
+        self.player.end_turn(self.enemies, self.debug)
+
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertEqual(self.player.energy, self.player.max_energy)
+
+    @unittest.skip("TODO: Implement shop and gold spending")
+    def test_maw_bank(self):
+        # Whenever you climb a floor, gain 12 Gold. No longer works when you spend any Gold at the shop.
+        relic = MawBank(self.player)
+        self.player.add_relic(relic)
+
+        start_gold = self.player.gold
+        self.player.climb_floor()
+        self.assertEqual(self.player.gold, start_gold + MawBank.GOLD_AMT)
+
+        self.player.shop()
+        self.assertEqual(relic.active, False)
+
+    def test_meal_ticket(self):
+        # Whenever you enter a shop room, heal 15 HP.
+        relic = MealTicket(self.player)
+        self.player.add_relic(relic)
+
+        self.player.health -= 20
+        start_health = self.player.health
+        self.player.shop()
+        self.assertEqual(start_health + MealTicket.HEAL_AMOUNT, self.player.health)
+
+        self.player.shop()
+        self.assertEqual(relic.active, False)
+
+    def test_nunchaku(self):
+        # Whenever you play 10 Attacks in a single turn, gain 1 energy
+        relic = Nunchaku(self.player)
+        self.player.add_relic(relic)
+
+        self.enemy.health = 1000
+        self.enemy_start_health = 1000
+
+        for i in range(10):
+            self.player.add_card("FlurryofBlows")
+
+        self.player.start_turn(self.enemies, self.debug)
+        for i in range(self.player.draw_amount):
+            self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+            self.assertEqual(self.player.max_energy, self.player.energy)
+
+        self.player.end_turn(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        for i in range(self.player.draw_amount):
+            self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+
+        self.assertEqual(self.player.max_energy + 1, self.player.energy)
+
+    def test_oddly_smooth_stone(self):
+        # At the start of each combat, gain 1 Dexterity.
+        relic = OddlySmoothStone(self.player)
+        self.player.add_relic(relic)
+
+        self.player.deck.draw_pile = [Defend(self.player) for _ in range(10)]
+        self.player.begin_combat(self.enemies, self.debug)
+        self.assertEqual(self.player.block_modifier, OddlySmoothStone.DEXTERITY_AMOUNT)
+        self.player.start_turn(self.enemies, self.debug)
+        self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+        self.assertEqual(5 + OddlySmoothStone.DEXTERITY_AMOUNT, self.player.block)
+
+    def test_Omamori(self):
+        # Negate the next 2 Curses you obtain.
+        relic = Omamori(self.player)
+        self.player.add_relic(relic)
+
+        self.player.add_card("CurseoftheBell")
+        self.assertEqual(len(self.player.deck.draw_pile), 0)
+
+    def test_pen_nib(self):
+        # Whenever you play 10 Attacks in a single turn, gain 1 energy
+        relic = PenNib(self.player)
+        self.player.add_relic(relic)
+
+        self.enemy.health = 1000
+        self.enemy_start_health = 1000
+
+        for i in range(10):
+            self.player.add_card("FlurryofBlows")
+
+        self.player.start_turn(self.enemies, self.debug)
+        for i in range(self.player.draw_amount):
+            self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+            self.assertEqual(self.player.max_energy, self.player.energy)
+
+        self.player.end_turn(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        for i in range(self.player.draw_amount-1):
+            self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+
+        enemy_cur_health = self.enemy.health
+        card_to_play = self.player.deck.hand[0]
+        self.player.play_card(card_to_play, self.enemy, self.enemies, self.debug)
+
+        self.assertEqual(enemy_cur_health - (card_to_play.damage * 2), self.enemy.health)

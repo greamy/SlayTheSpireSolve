@@ -3,6 +3,7 @@ from CombatSim.Entities.Player import Player
 from CombatSim.Items.Relics.Relic import Relic
 
 class Orichalcum(Relic):
+    # If you end your turn without Icon Block Block, gain 6 Icon Block Block.
     def __init__(self, player):
         super().__init__("Orichalcum", "common", player)
         self.listener = Listener(Listener.Event.END_TURN, self.block_check)
