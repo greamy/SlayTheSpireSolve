@@ -11,9 +11,11 @@ from CombatSim.Actions.Library.Defend import Defend
 from CombatSim.Actions.Library.Strike import Strike
 from CombatSim.Actions.Library.Wound import Wound
 from CombatSim.Entities.Dungeon.Cultist import Cultist
+from CombatSim.Entities.Dungeon.FungiBeast import FungiBeast
 from CombatSim.Entities.Dungeon.GreenLouse import GreenLouse
 from CombatSim.Entities.Dungeon.GremlinNob import GremlinNob
 from CombatSim.Entities.Dungeon.Lagavulin import Lagavulin
+from CombatSim.Entities.Dungeon.Looter import Looter
 from CombatSim.Entities.Dungeon.RedLouse import RedLouse
 from CombatSim.Entities.Dungeon.Sentry import Sentry
 from CombatSim.Entities.Dungeon.Taskmaster import Taskmaster
@@ -35,7 +37,7 @@ class IndividualEnemyTest(unittest.TestCase):
         # self.player = Player(self.health, self.energy, self.gold, [], [], [],
         #                      RandomPlayerController(), library_path="/home/grant/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library")
         # test Lucas Library path -> 'C:/Users/Owner/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library'
-        self.player = createPlayer(lib_path='CombatSim/Actions/Library', max_health=self.health, health=self.health)
+        self.player = createPlayer(lib_path='../CombatSim/Actions/Library', max_health=self.health, health=self.health)
         self.ascension = 20
         self.act = 1
         # self.enemy = JawWorm(self.ascension, self.act)
@@ -86,7 +88,7 @@ class IndividualEnemyTest(unittest.TestCase):
                 self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.enrage)
                 self.enemy.damage_dealt_modifier -= self.enemy.enrage
             elif self.last_intent.name == 'SkullBash':
-                self.assertEqual(self.player.damage_taken_multiplier, Vulnerable.MULT)
+                self.assertEqual(self.player.damage_taken_multiplier, Vulnerable.DAMAGE_TAKEN_MULTIPLIER)
                 self.assertEqual(self.player.health,
                                  current_health - (self.last_intent.damage))
             else:
@@ -180,7 +182,7 @@ class IndividualEnemyTest(unittest.TestCase):
     def test_greenlouse(self):
         for _ in range(100):
             self.enemy = GreenLouse(self.ascension, self.act)
-            self.player = createPlayer(lib_path='CombatSim/Actions/Library', max_health=self.health)
+            self.player = createPlayer(lib_path='../CombatSim/Actions/Library', max_health=self.health)
             for intent in self.enemy.intent_set:
                 if intent.name == "Bite":
                     start_health = self.player.health
@@ -201,7 +203,7 @@ class IndividualEnemyTest(unittest.TestCase):
     def test_redlouse(self):
         for _ in range(100):
             self.enemy = RedLouse(self.ascension, self.act)
-            self.player = createPlayer(lib_path='CombatSim/Actions/Library', max_health=self.health)
+            self.player = createPlayer(lib_path='../CombatSim/Actions/Library', max_health=self.health)
             for intent in self.enemy.intent_set:
                 if intent.name == "Bite":
                     start_health = self.player.health
@@ -214,5 +216,75 @@ class IndividualEnemyTest(unittest.TestCase):
                     self.enemy.do_turn(self.player, self.debug)
                     self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.GROW].strength_gain)
                     self.enemy.damage_dealt_modifier -= self.enemy.intent_set[self.enemy.GROW].strength_gain
+
+
+    def test_looter(self):
+        self.enemy = Looter(self.ascension, self.act)
+        for intent in self.enemy.intent_set:
+            if intent.name == "Mug":
+                self.enemy.intent = intent
+                self.player.health = self.player.start_health
+                self.player.gold = 25
+                gold_start = 25
+                start_health = self.player.health
+                self.enemy.do_turn(self.player, self.debug)
+                self.assertEqual(self.player.health, start_health - self.enemy.intent_set[self.enemy.MUG].damage)
+                self.assertEqual(self.player.gold, gold_start - self.enemy.thievery)
+            if intent.name == "Lunge":
+                self.enemy.intent = intent
+                self.player.health = self.player.start_health
+                self.player.gold = 25
+                gold_start = 25
+                start_health = self.player.health
+                self.enemy.do_turn(self.player, self.debug)
+                self.assertEqual(self.player.health, start_health - self.enemy.intent_set[self.enemy.LUNGE].damage)
+                self.assertEqual(self.player.gold, gold_start - self.enemy.thievery)
+            if intent.name == "SmokeBomb":
+                self.enemy.intent = intent
+                self.enemy.do_turn(self.player, self.debug)
+                self.assertEqual(self.enemy.block, self.enemy.intent_set[self.enemy.SMOKEBOMB].block)
+            if intent.name == "Escape":
+                self.enemy.intent = intent
+                self.enemy.do_turn(self.player, self.debug)
+
+
+        # new combat
+        self.player = createPlayer(lib_path='../CombatSim/Actions/Library', max_health=self.health)
+        self.player.gold = 25
+        self.enemy = Looter(self.ascension, self.act)
+        self.enemy.intent = self.enemy.intent_set[self.enemy.MUG]
+        self.enemy.do_turn(self.player, self.debug)
+        self.assertEqual(self.player.gold, 25 - self.enemy.thievery)
+        self.player.damage_dealt_multiplier += 50
+        strike = Strike(self.player)
+        self.player.deck.hand.append(strike)
+        self.player.play_card(strike, self.enemy, [self.enemy], self.debug)
+        print(strike.damage * self.player.damage_dealt_multiplier)
+        print(self.enemy.health)
+        self.assertEqual(self.player.gold, 25)
+
+
+    def test_fungibeast(self):
+        self.enemy = FungiBeast(self.ascension, self.act)
+        for intent in self.enemy.intent_set:
+            if intent.name == "Bite":
+                self.enemy.intent = intent
+                self.enemy.do_turn(self.player, self.debug)
+                self.assertEqual(self.player.health, self.player.start_health - self.enemy.intent_set[self.enemy.BITE].damage)
+            if intent.name =="Grow":
+                self.enemy.intent = intent
+                self.enemy.do_turn(self.player, self.debug)
+                self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.GROW].strength)
+                self.enemy.damage_dealt_modifier = 0
+
+
+
+
+
+
+
+
+
+
 
 

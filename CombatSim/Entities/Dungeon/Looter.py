@@ -9,16 +9,18 @@ from CombatSim.Entities.Enemy import Enemy
 
 class Looter(Enemy):
     MUG = 0
-    LUNGE = 1
-    SMOKEBOMB = 2
-    ESCAPE = 3
+    ESCAPE = 1
+    LUNGE = 2
+    SMOKEBOMB = 3
+
 
     def __init__(self, ascension: int, act: int):
 
         intent_set = [self.Mug(ascension),
+                      self.Escape(ascension),
                       self.Lunge(ascension),
                       self.SmokeBomb(ascension),
-                      self.Escape(ascension)]
+                      ]
 
         self.next_intent = None
 
@@ -65,7 +67,7 @@ class Looter(Enemy):
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
-            player.gold += enemy.thievery
+            player.gold -= enemy.thievery
             enemy.gold_stolen += enemy.thievery
 
     class Lunge(Intent):
@@ -78,7 +80,7 @@ class Looter(Enemy):
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             super().play(enemy, enemy_list, player, player_list, debug)
-            player.gold += enemy.thievery
+            player.gold -= enemy.thievery
             enemy.gold_stolen += enemy.thievery
 
     class SmokeBomb(Intent):

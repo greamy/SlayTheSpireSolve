@@ -3,7 +3,9 @@ import random
 import spirecomm.spire.character as char
 
 from CombatSim.Actions.Intent import Intent
+from CombatSim.Actions.Listener import Listener
 from CombatSim.Entities.Enemy import Enemy
+from CombatSim.Entities.Status.Vulnerable import Vulnerable
 
 
 class FungiBeast(Enemy):
@@ -19,6 +21,12 @@ class FungiBeast(Enemy):
             super().__init__(random.randint(22, 28), intent_set, ascension, minion=False)
         else:
             super().__init__(random.randint(24, 26), intent_set, ascension, minion=False)
+
+        self.listener = Listener(Listener.Event.TAKEN_DAMAGE, self.death_vuln)
+        self.vuln_duration = 2
+    def death_vuln(self, enemy, player, player_list, debug):
+        if enemy.health <= 0:
+            Vulnerable(player, enemy.vuln_duration )
 
     def choose_intent(self):
         if self.intent == self.intent_set[self.BITE] and self.num_consecutive == 3:
