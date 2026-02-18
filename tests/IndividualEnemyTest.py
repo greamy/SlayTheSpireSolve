@@ -277,6 +277,12 @@ class IndividualEnemyTest(unittest.TestCase):
                 self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.GROW].strength)
                 self.enemy.damage_dealt_modifier = 0
 
+        strike = Strike(self.player)
+        self.player.damage_dealt_multiplier += 50
+        self.player.deck.hand.append(strike)
+        self.player.play_card(strike, self.enemy, [self.enemy], self.debug)
+        self.assertTrue(self.player.damage_taken_multiplier == Vulnerable.DAMAGE_TAKEN_MULTIPLIER)
+
 
 
 

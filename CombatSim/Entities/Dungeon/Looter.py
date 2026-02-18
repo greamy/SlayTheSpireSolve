@@ -35,7 +35,7 @@ class Looter(Enemy):
             self.thievery = 20
 
         self.listener = Listener(Listener.Event.TAKEN_DAMAGE, self.return_gold)
-
+        self.add_listener(self.listener)
     def return_gold(self, enemy, player, player_list, debug):
         if enemy.health <= 0:
             player.gold += enemy.gold_stolen
