@@ -197,7 +197,7 @@ class Player(Entity):
             return True
         return False
 
-    def do_turn(self, enemies, debug):
+    def do_turn(self, players: list[Player], enemies: list, debug):
         # TODO: Make player play potions
         playable_cards = self.get_playable_cards()
         while len(playable_cards) > 0 and not self.turn_over:

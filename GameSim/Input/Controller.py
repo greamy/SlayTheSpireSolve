@@ -41,5 +41,5 @@ class PlayerController:
     def begin_combat(self, player, enemies, debug):
         pass
 
-    def select_cards_from_zone(self, player, zone, enemies, num_cards, debug):
+    def select_cards_from_zone(self, player, zone, enemies, num_cards, debug, condition=None):
         pass

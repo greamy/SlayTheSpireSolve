@@ -57,6 +57,7 @@ class EnemyTest(unittest.TestCase):
                     for act in range(1, 4):
                         print("Creating " + enemy_file + " on Ascension " + str(ascension) + " during act " + str(act))
                         enemy = class_(ascension, act)
+                        enemy_list = [enemy]
                         self.player = self.createPlayer()
                         self.addCards(self.cards)
 
@@ -70,7 +71,7 @@ class EnemyTest(unittest.TestCase):
 
                         end_listener = Listener(Listener.Event.END_TURN, lambda enemy, player, player_list, debug: self.setFlag(enemy, player, player_list, debug))
                         enemy.add_listener(end_listener)
-                        enemy.do_turn(self.player, self.debug)
+                        enemy.do_turn(enemy_list, [self.player], self.debug)
                         self.assertTrue(self.flag)
                         self.assertEqual(enemy.num_turns, 1)
                         enemy.listeners.remove(end_listener)

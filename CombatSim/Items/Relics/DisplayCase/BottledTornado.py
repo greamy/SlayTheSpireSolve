@@ -4,10 +4,10 @@ from CombatSim.Entities.Player import Player
 from CombatSim.Items.Relics.Relic import Relic
 
 
-class BottledFlame(Relic):
-    # Upon pick up, choose an Attack. Start each combat with this card in your hand.
+class BottledTornado(Relic):
+    # Upon pick up, choose a Power. Start each combat with this card in your hand.
     def __init__(self, player):
-        super().__init__("Bottled Flame", "Common", player)
+        super().__init__("Bottled Tornado", "Common", player)
 
 
     def on_pickup(self):
@@ -21,7 +21,7 @@ class BottledFlame(Relic):
         self.player.deck.draw_pile[card_idx].innate = True
 
     def is_valid_card(self, card: Card):
-        return card.card_type == Card.Type.ATTACK
+        return card.card_type == Card.Type.POWER
 
     def on_drop(self):
         pass

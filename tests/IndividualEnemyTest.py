@@ -19,6 +19,8 @@ from CombatSim.Entities.Dungeon.Lagavulin import Lagavulin
 from CombatSim.Entities.Dungeon.Looter import Looter
 from CombatSim.Entities.Dungeon.RedLouse import RedLouse
 from CombatSim.Entities.Dungeon.Sentry import Sentry
+from CombatSim.Entities.Dungeon.ShieldGremlin import ShieldGremlin
+from CombatSim.Entities.Dungeon.SneakyGremlin import SneakyGremlin
 from CombatSim.Entities.Dungeon.Taskmaster import Taskmaster
 from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Status.Frail import Frail
@@ -39,7 +41,8 @@ class IndividualEnemyTest(unittest.TestCase):
         # self.player = Player(self.health, self.energy, self.gold, [], [], [],
         #                      RandomPlayerController(), library_path="/home/grant/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library")
         # test Lucas Library path -> 'C:/Users/Owner/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library'
-        self.player = createPlayer(lib_path='../CombatSim/Actions/Library', max_health=self.health, health=self.health)
+        self.lib_path = 'CombatSim/Actions/Library'
+        self.player = createPlayer(lib_path=self.lib_path, max_health=self.health, health=self.health)
         self.ascension = 20
         self.act = 1
         # self.enemy = JawWorm(self.ascension, self.act)
@@ -54,7 +57,7 @@ class IndividualEnemyTest(unittest.TestCase):
             self.enemy.intent = intent
             current_health = self.player.health
             self.last_intent = self.enemy.intent
-            self.enemy.do_turn(self.player, self.debug) # chooses new intent
+            self.enemy.do_turn([self.enemy], [self.player], self.debug) # chooses new intent
             self.assertEqual(self.enemy.block, self.last_intent.block)
             self.enemy.start_turn([self.player], self.debug)
             self.assertEqual(self.player.health, current_health - self.last_intent.damage)
@@ -66,7 +69,7 @@ class IndividualEnemyTest(unittest.TestCase):
     def test_Taskmaster(self):
         self.enemy = Taskmaster(self.ascension, self.act)
         self.assertTrue(self.enemy.intent, self.enemy.intent_set[self.enemy.SCOURINGWHIP])
-        self.enemy.do_turn(self.player,self.debug)
+        self.enemy.do_turn([self.enemy], [self.player],self.debug)
         self.assertTrue(self.player.health, self.player.start_health - self.enemy.intent_set[self.enemy.SCOURINGWHIP].damage)
         self.assertEqual(len(self.player.deck.discard_pile), self.enemy.intent_set[self.enemy.SCOURINGWHIP].wounds_added)
         self.assertIn('Wound', [card.name for card in self.player.deck.discard_pile])
@@ -81,7 +84,7 @@ class IndividualEnemyTest(unittest.TestCase):
             self.enemy.intent = intent
             current_health = self.player.health
             self.last_intent = self.enemy.intent
-            self.enemy.do_turn(self.player, self.debug)  # chooses new intent
+            self.enemy.do_turn([self.enemy], [self.player], self.debug)  # chooses new intent
             if self.last_intent.name == 'Bellow':
                 card = Defend(self.player)
                 self.player.deck.hand.append(card)
@@ -106,7 +109,7 @@ class IndividualEnemyTest(unittest.TestCase):
             self.enemy.intent = intent
             current_health = self.player.health
             self.last_intent = self.enemy.intent
-            self.enemy.do_turn(self.player, self.debug)  # chooses new intent
+            self.enemy.do_turn([self.enemy], [self.player], self.debug)  # chooses new intent
             if self.last_intent.name == 'Bolt':
                 self.assertIn('Dazed', [card.name for card in self.player.deck.discard_pile])
             else:
@@ -118,32 +121,32 @@ class IndividualEnemyTest(unittest.TestCase):
         self.assertEqual(self.enemy.block, 8)
         self.last_intent = self.enemy.intent
         self.enemy.start_turn([self.player], self.debug)
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.enemy.block, self.enemy.metallicize_amount)
 
         # Turn 2 and Turn 3 - Asleep
         self.enemy.start_turn([self.player], self.debug)
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.enemy.start_turn([self.player], self.debug)
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
 
         # Turn 4 - Should wake up and attack
         self.enemy.start_turn([self.player], self.debug)
         self.assertTrue(self.enemy.intent == self.enemy.intent_set[Lagavulin.ATTACK])
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.player.health, self.player.start_health - self.enemy.intent_set[Lagavulin.ATTACK].damage)
 
         # Turn 5 - Should wake up and attack
         current_health = self.player.health
         self.enemy.start_turn([self.player], self.debug)
         self.assertTrue(self.enemy.intent == self.enemy.intent_set[Lagavulin.ATTACK])
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.player.health, current_health - self.enemy.intent_set[Lagavulin.ATTACK].damage)
 
         # Turn 6 - DEBUFF
         self.enemy.start_turn([self.player], self.debug)
         self.assertTrue(self.enemy.intent == self.enemy.intent_set[Lagavulin.SIPHONSOUL])
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.player.damage_dealt_modifier, -self.enemy.intent_set[Lagavulin.SIPHONSOUL].debuff)
         card = Defend(self.player)
         self.player.deck.hand.append(card)
@@ -163,7 +166,7 @@ class IndividualEnemyTest(unittest.TestCase):
         self.player.play_card(card, self.enemy2, self.enemy2, self.debug)
         # print([self.enemy2.health, self.enemy2.start_health])
         self.assertEqual(self.enemy2.health, self.enemy2.start_health + self.enemy2.metallicize_amount - card.damage)
-        self.enemy2.do_turn(self.player, self.debug)
+        self.enemy2.do_turn([self.enemy2], [self.player], self.debug)
         self.assertFalse(self.enemy2.sleeping)
         self.assertTrue(self.enemy2.intent == self.enemy2.intent_set[Lagavulin.ATTACK])
 
@@ -171,11 +174,11 @@ class IndividualEnemyTest(unittest.TestCase):
         self.enemy = Cultist(self.ascension, self.act)
 
         self.assertEqual(self.enemy.intent, self.enemy.intent_set[self.enemy.INCANTATION])
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.enemy.damage_dealt_modifier, 0)
         self.assertEqual(self.enemy.intent, self.enemy.intent_set[self.enemy.DARKSTRIKE])
         self.assertEqual(self.enemy.intent_set[self.enemy.INCANTATION].ritual, 5) # 5 is A20 number
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.player.health,
                          self.player.start_health - self.enemy.intent_set[self.enemy.DARKSTRIKE].damage)
         self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.INCANTATION].ritual)
@@ -184,18 +187,18 @@ class IndividualEnemyTest(unittest.TestCase):
     def test_greenlouse(self):
         for _ in range(100):
             self.enemy = GreenLouse(self.ascension, self.act)
-            self.player = createPlayer(lib_path='../CombatSim/Actions/Library', max_health=self.health)
+            self.player = createPlayer(lib_path=self.lib_path, max_health=self.health)
             for intent in self.enemy.intent_set:
                 if intent.name == "Bite":
                     start_health = self.player.health
                     self.enemy.intent = intent
-                    self.enemy.do_turn(self.player, self.debug)
+                    self.enemy.do_turn([self.enemy], [self.player], self.debug)
                     self.assertEqual(start_health - self.player.health, self.enemy.D)
                     self.player.health = self.player.start_health
                 if intent.name == "SpitWeb":
                     self.enemy.intent = intent
                     start_health = self.enemy.health
-                    self.enemy.do_turn(self.player, self.debug)
+                    self.enemy.do_turn([self.enemy], [self.player], self.debug)
                     card = Strike(self.player)
                     strike1 = self.player.add_card("Strike")
                     strike2 = self.player.add_card("Strike")
@@ -217,12 +220,12 @@ class IndividualEnemyTest(unittest.TestCase):
     def test_redlouse(self):
         for _ in range(100):
             self.enemy = RedLouse(self.ascension, self.act)
-            self.player = createPlayer(lib_path='../CombatSim/Actions/Library', max_health=self.health)
+            self.player = createPlayer(lib_path=self.lib_path, max_health=self.health)
             for intent in self.enemy.intent_set:
                 if intent.name == "Bite":
                     start_health = self.player.health
                     self.enemy.intent = intent
-                    self.enemy.do_turn(self.player, self.debug)
+                    self.enemy.do_turn([self.enemy], [self.player], self.debug)
                     self.assertEqual(start_health - self.player.health, self.enemy.D)
                     self.player.health = self.player.start_health
                     
@@ -240,7 +243,7 @@ class IndividualEnemyTest(unittest.TestCase):
                     self.assertEqual(self.enemy.block, block - math.floor(strike2.damage * self.player.damage_dealt_multiplier))
                 if intent.name == "Grow":
                     self.enemy.intent = intent
-                    self.enemy.do_turn(self.player, self.debug)
+                    self.enemy.do_turn([self.enemy], [self.player], self.debug)
                     self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.GROW].strength_gain)
                     self.enemy.damage_dealt_modifier -= self.enemy.intent_set[self.enemy.GROW].strength_gain
 
@@ -248,7 +251,7 @@ class IndividualEnemyTest(unittest.TestCase):
         self.enemy = FatGremlin(self.ascension, self.act)
         self.enemy.choose_intent()
 
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
 
         self.assertTrue(self.player.health == self.player.start_health - self.enemy.intent_set[self.enemy.SMASH].damage)
 
@@ -258,10 +261,9 @@ class IndividualEnemyTest(unittest.TestCase):
         self.assertIn(Weak.ID, status_ids)
 
 
-
-
     def test_looter(self):
         self.enemy = Looter(self.ascension, self.act)
+        enemies = [self.enemy]
         for intent in self.enemy.intent_set:
             if intent.name == "Mug":
                 self.enemy.intent = intent
@@ -269,7 +271,7 @@ class IndividualEnemyTest(unittest.TestCase):
                 self.player.gold = 25
                 gold_start = 25
                 start_health = self.player.health
-                self.enemy.do_turn(self.player, self.debug)
+                self.enemy.do_turn(enemies, [self.player], self.debug)
                 self.assertEqual(self.player.health, start_health - self.enemy.intent_set[self.enemy.MUG].damage)
                 self.assertEqual(self.player.gold, gold_start - self.enemy.thievery)
             if intent.name == "Lunge":
@@ -278,24 +280,26 @@ class IndividualEnemyTest(unittest.TestCase):
                 self.player.gold = 25
                 gold_start = 25
                 start_health = self.player.health
-                self.enemy.do_turn(self.player, self.debug)
+                self.enemy.do_turn(enemies, [self.player], self.debug)
                 self.assertEqual(self.player.health, start_health - self.enemy.intent_set[self.enemy.LUNGE].damage)
                 self.assertEqual(self.player.gold, gold_start - self.enemy.thievery)
             if intent.name == "SmokeBomb":
                 self.enemy.intent = intent
-                self.enemy.do_turn(self.player, self.debug)
+                self.enemy.do_turn(enemies, [self.player], self.debug)
                 self.assertEqual(self.enemy.block, self.enemy.intent_set[self.enemy.SMOKEBOMB].block)
             if intent.name == "Escape":
                 self.enemy.intent = intent
-                self.enemy.do_turn(self.player, self.debug)
+                self.enemy.do_turn(enemies, [self.player], self.debug)
+                self.assertNotIn(self.enemy, enemies)
+
 
 
         # new combat
-        self.player = createPlayer(lib_path='../CombatSim/Actions/Library', max_health=self.health)
+        self.player = createPlayer(lib_path=self.lib_path, max_health=self.health)
         self.player.gold = 25
         self.enemy = Looter(self.ascension, self.act)
         self.enemy.intent = self.enemy.intent_set[self.enemy.MUG]
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.player.gold, 25 - self.enemy.thievery)
         self.player.damage_dealt_multiplier += 50
         strike = Strike(self.player)
@@ -311,11 +315,11 @@ class IndividualEnemyTest(unittest.TestCase):
         for intent in self.enemy.intent_set:
             if intent.name == "Bite":
                 self.enemy.intent = intent
-                self.enemy.do_turn(self.player, self.debug)
+                self.enemy.do_turn([self.enemy], [self.player], self.debug)
                 self.assertEqual(self.player.health, self.player.start_health - self.enemy.intent_set[self.enemy.BITE].damage)
             if intent.name =="Grow":
                 self.enemy.intent = intent
-                self.enemy.do_turn(self.player, self.debug)
+                self.enemy.do_turn([self.enemy], [self.player], self.debug)
                 self.assertEqual(self.enemy.damage_dealt_modifier, self.enemy.intent_set[self.enemy.GROW].strength)
                 self.enemy.damage_dealt_modifier = 0
 
@@ -323,8 +327,34 @@ class IndividualEnemyTest(unittest.TestCase):
         self.player.damage_dealt_multiplier += 50
         self.player.deck.hand.append(strike)
         self.player.play_card(strike, self.enemy, [self.enemy], self.debug)
-        self.assertTrue(self.player.damage_taken_multiplier == Vulnerable.DAMAGE_TAKEN_MULTIPLIER)
+        status_ids = [status.ID for status in self.player.status_list]
+        self.assertIn(Vulnerable.ID, status_ids)
 
+    def test_sneaky_gremlin(self):
+        self.enemy = SneakyGremlin(self.ascension, self.act)
+        for intent in self.enemy.intent_set:
+            if intent.name == "Puncture":
+                self.enemy.intent = intent
+                self.enemy.do_turn([self.enemy], [self.player], self.debug)
+                self.assertEqual(self.player.health, self.player.start_health - self.enemy.intent_set[self.enemy.PUNCTURE].damage)
+
+    def test_shield_gremlin(self):
+        self.enemy = ShieldGremlin(self.ascension, self.act)
+        other_enemy = SneakyGremlin(self.ascension, self.act)
+        enemies = [self.enemy, other_enemy]
+        self.enemy._set_intent(self.enemy.PROTECT)
+        for i in range(10):
+            self.enemy.do_turn(enemies, [self.player], self.debug) # guaranteed to choose protect every time while other enemy in combat
+            self.assertTrue(self.enemy.block == 0)
+            self.assertTrue(other_enemy.block == self.enemy._get_intent(self.enemy.PROTECT).block)
+            for e in enemies:
+                e.block = 0
+        enemies = [self.enemy]
+        self.enemy.do_turn(enemies, [self.player], self.debug)
+        self.assertTrue(self.enemy.block == self.enemy._get_intent(self.enemy.PROTECT).block)
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.SHIELDBASH))
+        self.enemy.do_turn(enemies, [self.player], self.debug)
+        self.assertTrue(self.player.health == self.player.start_health - self.enemy._get_intent(self.enemy.SHIELDBASH).damage)
 
 
 

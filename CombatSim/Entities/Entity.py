@@ -27,7 +27,7 @@ class Entity:
         self.width = width
         self.height = height
 
-    def do_turn(self, opponents, debug):
+    def do_turn(self, allies: list, opponents: list, debug):
         pass
 
     def start_turn(self, opponents, debug):

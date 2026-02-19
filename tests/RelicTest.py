@@ -16,10 +16,13 @@ from CombatSim.Items.Relics.DisplayCase.BagOfPreparation import BagOfPreparation
 from CombatSim.Items.Relics.DisplayCase.BloodVial import BloodVial
 from CombatSim.Items.Relics.DisplayCase.BlueCandle import BlueCandle
 from CombatSim.Items.Relics.DisplayCase.BottledFlame import BottledFlame
+from CombatSim.Items.Relics.DisplayCase.BottledLightning import BottledLightning
+from CombatSim.Items.Relics.DisplayCase.BottledTornado import BottledTornado
 from CombatSim.Items.Relics.DisplayCase.BronzeScales import BronzeScales
 from CombatSim.Items.Relics.DisplayCase.CeramicFish import CeramicFish
 from CombatSim.Items.Relics.DisplayCase.CentennialPuzzle import CentennialPuzzle
 from CombatSim.Items.Relics.DisplayCase.Damaru import Damaru
+from CombatSim.Items.Relics.DisplayCase.DarkstonePeriapt import DarkstonePeriapt
 from CombatSim.Items.Relics.DisplayCase.DreamCatcher import DreamCatcher
 from CombatSim.Items.Relics.DisplayCase.HappyFlower import HappyFlower
 from CombatSim.Items.Relics.DisplayCase.HolyWater import HolyWater
@@ -256,11 +259,11 @@ class RelicTest(unittest.TestCase):
         self.assertEqual(len(self.player.deck.hand), self.player.draw_amount)
 
         self.enemy.intent = self.enemy.intent_set[JawWorm.CHOMP]
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.player.draw_amount + CentennialPuzzle.DRAW_AMT, len(self.player.deck.hand))
 
         self.enemy.intent = self.enemy.intent_set[JawWorm.CHOMP]
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.player.draw_amount + CentennialPuzzle.DRAW_AMT, len(self.player.deck.hand))
 
     def test_happy_flower(self):
@@ -290,11 +293,11 @@ class RelicTest(unittest.TestCase):
 
         self.player.begin_combat(self.enemies, self.debug)
         self.enemy.intent = self.enemy.intent_set[JawWorm.CHOMP] # player takes damage
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.enemy_start_health - BronzeScales.THORNS_AMOUNT, self.enemy.health) # check thorns dmg
 
         self.enemy.intent = self.enemy.intent_set[JawWorm.BELLOW] # player won't take damage
-        self.enemy.do_turn(self.player, self.debug)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
         self.assertEqual(self.enemy_start_health - BronzeScales.THORNS_AMOUNT, self.enemy.health) # check thorns didn't trigger again
 
     def test_ceramic_fish(self):
@@ -577,14 +580,14 @@ class RelicTest(unittest.TestCase):
 
         # TODO: Make sure this only chooses attacks
         strike = self.player.add_card("Strike")
+        for i in range(10):
+            self.player.add_card("Defend")
 
         relic = BottledFlame(self.player)
         self.player.add_relic(relic)
 
         self.assertTrue(strike.innate)
 
-        for i in range(10):
-            self.player.add_card("Defend")
         self.player.begin_combat(self.enemies, self.debug)
         self.player.start_turn(self.enemies, self.debug)
         self.assertIn(strike, self.player.deck.hand)
@@ -592,3 +595,60 @@ class RelicTest(unittest.TestCase):
         self.player.begin_combat(self.enemies, self.debug)
         self.player.start_turn(self.enemies, self.debug)
         self.assertIn(strike, self.player.deck.hand)
+
+    def test_bottled_lightning(self):
+        # Upon pick up, choose a Skill. Start each combat with this card in your hand.
+        defend = self.player.add_card("Defend")
+        for i in range(10):
+            self.player.add_card("Strike")
+
+        relic = BottledLightning(self.player)
+        self.player.add_relic(relic)
+
+        self.assertTrue(defend.innate)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertIn(defend, self.player.deck.hand)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertIn(defend, self.player.deck.hand)
+
+    def test_bottled_tornado(self):
+        rushdown = self.player.add_card("Rushdown")
+        for i in range(10):
+            self.player.add_card("Strike")
+
+        relic = BottledTornado(self.player)
+        self.player.add_relic(relic)
+
+        self.assertTrue(rushdown.innate)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertIn(rushdown, self.player.deck.hand)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.assertIn(rushdown, self.player.deck.hand)
+
+    def test_bottles_no_target(self):
+        relic = BottledTornado(self.player)
+        self.player.add_relic(relic)
+
+        relic2 = BottledLightning(self.player)
+        self.player.add_relic(relic2)
+
+        relic3 = BottledFlame(self.player)
+        self.player.add_relic(relic3)
+
+    def test_darkstone_periapt(self):
+        # Whenever you obtain a Curse, increase your Max HP by 6.
+        relic = DarkstonePeriapt(self.player)
+        self.player.add_relic(relic)
+
+        self.player.add_card("CurseoftheBell")
+        self.assertEqual(self.player.start_health, self.health + DarkstonePeriapt.MAX_HP_GAIN)
+
+

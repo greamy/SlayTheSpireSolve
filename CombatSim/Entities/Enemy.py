@@ -7,6 +7,9 @@ from CombatSim.Entities.Entity import Entity
 import random
 import pygame
 
+from CombatSim.Entities.Player import Player
+
+
 class Enemy(Entity):
     def __init__(self, health, intent_set, ascension, minion=False):
         super().__init__(health, x=500)
@@ -70,13 +73,19 @@ class Enemy(Entity):
     def is_valid_intent(self, intent: Intent) -> bool:
         pass
 
-    def do_turn(self, player, debug):
-        self.intent.play(self, [self], player, [player], debug)
+    def _get_intent(self, intent_set_index) -> Intent:
+        return self.intent_set[intent_set_index]
+
+    def _set_intent(self, intent_set_index):
+        self.intent = self.intent_set[intent_set_index]
+
+    def do_turn(self, enemies: list[Enemy], players: list[Player], debug):
+        self.intent.play(self, enemies, players[0], players, debug)
         # intent_played = self.intent
         self.num_turns += 1
         self.choose_intent()
 
-        self.end_turn([player], debug)
+        self.end_turn(players, debug)
         # return intent_played
 
     def render(self, screen, font, font_size=20):

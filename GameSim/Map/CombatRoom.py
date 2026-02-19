@@ -74,7 +74,7 @@ class CombatRoom(Room):
             # Execute enemy turn after delay has passed
             for enemy in self.enemies:
                 enemy.start_turn([self.player], self.debug)
-                enemy.do_turn(self.player, self.debug)
+                enemy.do_turn(self.enemies, [self.player], self.debug)
             self.current_turn = self.PLAYER_TURN
             start_player = True
 
@@ -102,7 +102,7 @@ class CombatRoom(Room):
 
             for enemy in self.enemies:
                 enemy.start_turn([self.player], self.debug)
-                enemy.do_turn(self.player, self.debug)
+                enemy.do_turn(self.enemies, [self.player], self.debug)
 
             if self.debug:
                 print(self.player)
@@ -144,7 +144,7 @@ class CombatRoom(Room):
 
             for enemy in self.enemies:
                 enemy.start_turn([self.player], self.debug)
-                enemy.do_turn(self.player, self.debug)
+                enemy.do_turn(self.enemies, [self.player], self.debug)
 
             if self.player.health <= 0:
                 reward -= 20
