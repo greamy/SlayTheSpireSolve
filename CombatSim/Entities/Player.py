@@ -62,6 +62,10 @@ class Player(Entity):
             self.deck.draw_pile.append(card)
             if card.is_power():
                 self.notify_listeners(Listener.Event.POWER_ADDED, self, None, False)
+            if card.is_attack():
+                self.notify_listeners(Listener.Event.ATTACK_ADDED, self, None, False)
+            if card.is_skill():
+                self.notify_listeners(Listener.Event.SKILL_ADDED, self, None, False)
             if card.is_curse():
                 self.notify_listeners(Listener.Event.CURSE_ADDED, self, None, False)
         else:
@@ -111,7 +115,7 @@ class Player(Entity):
                 raise Exception(f"No implemented card named {card}")
         return deck
 
-    def begin_combat(self, enemies, debug):
+    def begin_combat(self, enemies, debug, boss=False):
         self.deck.reshuffle()
         num_innate = 0
         for idx, card in enumerate(self.deck.draw_pile):
@@ -120,6 +124,8 @@ class Player(Entity):
                 num_innate += 1
 
         self.notify_listeners(Listener.Event.START_COMBAT, self, enemies, debug)
+        if boss:
+            self.notify_listeners(Listener.Event.BOSS_START, self, enemies, debug)
 
     def end_combat(self, enemies, debug, episode_done=True):
         """

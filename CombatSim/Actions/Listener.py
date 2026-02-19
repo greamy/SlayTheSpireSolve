@@ -53,3 +53,4 @@ class Listener:
         CLIMB_FLOOR = 26
         ENTER_ELITE = 27
         ENEMY_DIED = 28
+        BOSS_START = 29

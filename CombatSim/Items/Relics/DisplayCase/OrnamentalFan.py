@@ -1,8 +1,10 @@
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Items.Relics.Relic import Relic
 
-class Kunai(Relic):
-    # Every time you play 3 Attacks in a single turn, gain 1 Dexterity.
+class OrnamentalFan(Relic):
+    # Every time you play 3 Attacks in a single turn, gain 4  Block.
+    BLOCK_AMOUNT = 4
+
     def __init__(self, player):
         super().__init__("Kunai", "Common", player)
         self.attack_listener = Listener(Listener.Event.ATTACK_PLAYED, self.on_attack_played)
@@ -12,7 +14,7 @@ class Kunai(Relic):
     def on_attack_played(self, player, enemy, enemies, debug):
         self.attack_count += 1
         if self.attack_count == 3:
-            player.block_modifier += 1
+            player.block += self.BLOCK_AMOUNT
             self.attack_count = 0
 
     def on_end_turn(self, player, enemy, enemies, debug):

@@ -39,19 +39,28 @@ from CombatSim.Items.Relics.DisplayCase.LetterOpener import LetterOpener
 from CombatSim.Items.Relics.DisplayCase.Matryoshka import Matryoshka
 from CombatSim.Items.Relics.DisplayCase.MawBank import MawBank
 from CombatSim.Items.Relics.DisplayCase.MealTicket import MealTicket
+from CombatSim.Items.Relics.DisplayCase.MeatOnTheBone import MeatOnTheBone
+from CombatSim.Items.Relics.DisplayCase.MercuryHourglass import MercuryHourglass
+from CombatSim.Items.Relics.DisplayCase.MoltenEgg import MoltenEgg
+from CombatSim.Items.Relics.DisplayCase.MummifiedHand import MummifiedHand
 from CombatSim.Items.Relics.DisplayCase.Nunchaku import Nunchaku
 from CombatSim.Items.Relics.DisplayCase.OddlySmoothStone import OddlySmoothStone
 from CombatSim.Items.Relics.DisplayCase.Omamori import Omamori
 from CombatSim.Items.Relics.DisplayCase.Orichalcum import Orichalcum
+from CombatSim.Items.Relics.DisplayCase.OrnamentalFan import OrnamentalFan
+from CombatSim.Items.Relics.DisplayCase.Pantograph import Pantograph
+from CombatSim.Items.Relics.DisplayCase.Pear import Pear
 from CombatSim.Items.Relics.DisplayCase.PenNib import PenNib
 from CombatSim.Items.Relics.DisplayCase.PotionBelt import PotionBelt
 from CombatSim.Items.Relics.DisplayCase.PreservedInsect import PreservedInsect
 from CombatSim.Items.Relics.DisplayCase.RegalPillow import RegalPillow
+from CombatSim.Items.Relics.DisplayCase.Shuriken import Shuriken
 from CombatSim.Items.Relics.DisplayCase.SmilingMask import SmilingMask
 from CombatSim.Items.Relics.DisplayCase.Strawberry import Strawberry
 from CombatSim.Items.Relics.DisplayCase.TheBoot import TheBoot
 from CombatSim.Items.Relics.DisplayCase.TinyChest import TinyChest
 from CombatSim.Items.Relics.DisplayCase.TinyOrnithopter import TinyOrnithopter
+from CombatSim.Items.Relics.DisplayCase.ToxicEgg import ToxicEgg
 from CombatSim.Items.Relics.DisplayCase.Vajra import Vajra
 from CombatSim.Items.Relics.DisplayCase.WarPaint import WarPaint
 from CombatSim.Items.Relics.DisplayCase.Whetstone import Whetstone
@@ -493,6 +502,13 @@ class RelicTest(unittest.TestCase):
         self.assertEqual(self.player.start_health, self.health + Strawberry.MAX_HP_AMOUNT)
         self.assertEqual(self.player.health, self.health + Strawberry.MAX_HP_AMOUNT)
 
+    def test_pear(self):
+        relic = Pear(self.player)
+        self.player.add_relic(relic)
+
+        self.assertEqual(self.player.start_health, self.health + Pear.MAX_HP_AMOUNT)
+        self.assertEqual(self.player.health, self.health + Pear.MAX_HP_AMOUNT)
+
     @unittest.skip("TODO: Implement ? rooms")
     def test_tiny_chest(self):
         # Every 4th ? room is a Treasure room.
@@ -708,6 +724,60 @@ class RelicTest(unittest.TestCase):
 
         self.assertFalse(battlehymn.upgraded)
 
+    def test_molten_egg(self):
+        # Whenever you add an Attack card to your deck, it is Upgraded.
+        bowlingbash = self.player.add_card("BowlingBash") #added before the relic, should never be upgraded.
+        self.assertFalse(bowlingbash.upgraded)
+
+        relic = MoltenEgg(self.player)
+        self.player.add_relic(relic)
+
+        strike = self.player.add_card("Strike")
+        self.assertTrue(strike.upgraded)
+        self.assertFalse(bowlingbash.upgraded)
+
+        for i in range(2):
+            strike = self.player.add_card("Rushdown")
+            self.assertFalse(strike.upgraded)
+        for j in range(2):
+            defend = self.player.add_card("Defend")
+            self.assertFalse(defend.upgraded)
+
+        strike_copy2 = self.player.add_card("Strike")
+        self.assertTrue(strike_copy2.upgraded)
+
+        bowlingbash_copy2 = self.player.add_card("BowlingBash")
+        self.assertTrue(bowlingbash_copy2.upgraded)
+
+        self.assertFalse(bowlingbash.upgraded)
+
+    def test_toxic_egg(self):
+        # Whenever you add a Skill card to your deck, it is Upgraded.
+        prostrate = self.player.add_card("Prostrate")  # added before the relic, should never be upgraded.
+        self.assertFalse(prostrate.upgraded)
+
+        relic = ToxicEgg(self.player)
+        self.player.add_relic(relic)
+
+        defend = self.player.add_card("Defend")
+        self.assertTrue(defend.upgraded)
+        self.assertFalse(prostrate.upgraded)
+
+        for i in range(2):
+            strike = self.player.add_card("Rushdown")
+            self.assertFalse(strike.upgraded)
+        for j in range(2):
+            defend = self.player.add_card("Strike")
+            self.assertFalse(defend.upgraded)
+
+        defend_copy2 = self.player.add_card("Defend")
+        self.assertTrue(defend_copy2.upgraded)
+
+        prostrate_copy2 = self.player.add_card("Prostrate")
+        self.assertTrue(prostrate_copy2.upgraded)
+
+        self.assertFalse(prostrate.upgraded)
+
     def test_gremlin_horn(self):
         # Whenever an enemy dies, gain 1 Energy and draw 1 card.
         relic = GremlinHorn(self.player)
@@ -811,6 +881,70 @@ class RelicTest(unittest.TestCase):
         self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
         self.assertEqual(self.player.block_modifier, 0)
 
+    def test_ornamental_fan(self):
+        # Every time you play 3 Attacks in a single turn, gain 4 block.
+        relic = OrnamentalFan(self.player)
+        self.player.add_relic(relic)
+
+        self.enemy.health = 1000
+        self.enemy_start_health = 1000
+
+        for i in range(5):
+            self.player.add_card("FlurryofBlows")
+
+        for j in range(2):
+            self.player.start_turn(self.enemies, self.debug)
+            for i in range(2):
+                self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+
+            self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+            self.assertEqual(self.player.block, OrnamentalFan.BLOCK_AMOUNT)
+            self.player.end_turn(self.enemies, self.debug)
+
+        self.player.block = 0
+
+        self.player.start_turn(self.enemies, self.debug)
+        self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+        self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+        self.assertEqual(self.player.block, 0)
+
+        self.player.end_turn(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+        self.assertEqual(self.player.block, 0)
+
+    def test_shuriken(self):
+        # Every time you play 3 Attacks in a single turn, gain 1 strength.
+        relic = Shuriken(self.player)
+        self.player.add_relic(relic)
+
+        self.enemy.health = 1000
+        self.enemy_start_health = 1000
+
+        for i in range(3):
+            self.player.add_card("FlurryofBlows")
+
+        for j in range(2):
+            self.player.start_turn(self.enemies, self.debug)
+            for i in range(2):
+                self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+
+            self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+            self.assertEqual(self.player.damage_dealt_modifier, j + 1)
+            self.player.end_turn(self.enemies, self.debug)
+
+        self.player.damage_dealt_modifier = 0
+
+        self.player.start_turn(self.enemies, self.debug)
+        self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+        self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+        self.assertEqual(self.player.damage_dealt_modifier, 0)
+
+        self.player.end_turn(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.player.play_card(self.player.deck.hand[0], self.enemy, self.enemies, self.debug)
+        self.assertEqual(self.player.damage_dealt_modifier, 0)
+
     def test_letter_opener(self):
         # Every time you play 3 Skills in a single turn, deal 5 damage to ALL enemies.
         relic = LetterOpener(self.player)
@@ -846,4 +980,87 @@ class RelicTest(unittest.TestCase):
         relic = Matryoshka(self.player)
         self.player.add_relic(relic)
 
+    def test_meat_on_the_bone(self):
+        # If your HP is at or below 50% at the end of combat, heal 12 HP.
+        relic = MeatOnTheBone(self.player)
+        self.player.add_relic(relic)
 
+        self.player.begin_combat(self.enemies, self.debug)
+        damage_taken = 10
+        self.player.take_damage(damage_taken)
+        self.player.end_combat(self.enemies, self.debug)
+
+        self.assertEqual(self.player.start_health-damage_taken, self.player.health)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        new_damage = self.player.start_health//2
+        damage_taken = new_damage + damage_taken
+        self.player.take_damage(new_damage)
+        self.player.end_combat(self.enemies, self.debug)
+
+        self.assertEqual(self.player.start_health - damage_taken + MeatOnTheBone.HEAL_AMOUNT, self.player.health)
+
+
+    def test_mercury_hourglass(self):
+        # At the start of your turn, deal 3 damage to ALL enemies.
+        relic = MercuryHourglass(self.player)
+        self.player.add_relic(relic)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+
+        self.assertEqual(self.enemy.start_health - MercuryHourglass.DAMAGE_AMOUNT, self.enemy.health)
+        self.player.end_turn(self.enemies, self.debug)
+
+        self.player.start_turn(self.enemies, self.debug)
+
+        self.assertEqual(self.enemy.start_health - (MercuryHourglass.DAMAGE_AMOUNT*2), self.enemy.health)
+
+    def test_mummified_hand(self):
+        for i in range(10):
+        # Whenever you play a Power, a random card in your hand costs 0 for the turn.
+            relic = MummifiedHand(self.player)
+            self.player.add_relic(relic)
+
+            rushdown = self.player.add_card("Rushdown")
+            strike = self.player.add_card("Strike")
+            defend = self.player.add_card("Defend")
+            battle_hymn = self.player.add_card("BattleHymn")
+
+            self.player.begin_combat(self.enemies, self.debug)
+            self.player.start_turn(self.enemies, self.debug)
+            self.player.play_card(rushdown, self.enemy, self.enemies, self.debug)
+            self.assertTrue(strike.energy == 0 or defend.energy == 0 or battle_hymn.energy == 0)
+            self.player.end_turn(self.enemies, self.debug)
+            self.assertFalse(strike.energy == 0 or defend.energy == 0 or battle_hymn.energy == 0)
+
+            rushdown2 = self.player.add_card("Rushdown")
+
+            self.player.start_turn(self.enemies, self.debug)
+            self.player.play_card(rushdown2, self.enemy, self.enemies, self.debug)
+            self.assertTrue(strike.energy == 0 or defend.energy == 0 or battle_hymn.energy == 0)
+
+            self.player.play_card(battle_hymn, self.enemy, self.enemies, self.debug)
+            self.assertTrue(
+                (strike.energy == 0 and defend.energy == 0) or
+                (strike.energy == 0 and battle_hymn.energy == 0) or
+                (defend.energy == 0 and battle_hymn.energy == 0)
+            )
+            self.setUp()
+
+    def test_Pantograph(self):
+        # At the start of boss combats, heal 25 HP.
+        relic = Pantograph(self.player)
+        self.player.add_relic(relic)
+
+        self.player.health = 10
+        self.health = 10
+
+        self.player.begin_combat(self.enemies, self.debug, boss=True)
+        self.assertEqual(self.player.health, self.health + Pantograph.HEAL_AMOUNT)
+
+        self.player.health = self.health
+
+        self.player.end_combat(self.enemies, self.debug)
+        self.player.begin_combat(self.enemies, self.debug)
+        self.assertEqual(self.player.health, self.health)

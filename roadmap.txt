@@ -8,7 +8,7 @@ Act 4 enemies - 0%
 Finish unit tests for every enemy - 5%
 Finish map generation overview - 80%
 **EVENTS** - 0%
-**RELICS** - 33% 48/147
+**RELICS** - 39% 57/147
 **POTIONS** - 0%
 **SHOP** - 0%
 ** Card Rewards /
