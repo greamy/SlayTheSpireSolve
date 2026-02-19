@@ -17,6 +17,8 @@ class Playable:
             target_entity.take_damage(self.one_attack_damage)
             if target_entity.health < start_health:
                 target_entity.notify_listeners(Listener.Event.TAKEN_DAMAGE, target_entity, [primary_entity], debug)
+                if not target_entity.is_alive():
+                    primary_entity.notify_listeners(Listener.Event.ENEMY_DIED, primary_entity, [target_entity], debug)
 
             start_health = target_entity.health
         primary_entity.gain_block(self.block, target_list, debug)

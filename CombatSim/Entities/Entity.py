@@ -37,6 +37,13 @@ class Entity:
     def end_turn(self, opponents, debug):
         pass
 
+    def end_combat(self, opponents, debug):
+        self.block_modifier = 0
+        self.block_multiplier = 1.0
+        self.damage_dealt_modifier = 0
+        self.damage_dealt_multiplier = 1.0
+        self.damage_taken_multiplier = 1.0
+
     def take_damage(self, amount) -> bool:
         lost_health = False
         if self.block > 0:

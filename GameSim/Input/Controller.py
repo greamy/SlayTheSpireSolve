@@ -35,7 +35,7 @@ class PlayerController:
     def start_turn(self, player, enemies):
         pass
 
-    def end_combat(self, player, enemies, debug):
+    def end_combat(self, player, enemies, debug, episode_done=True):
         pass
 
     def begin_combat(self, player, enemies, debug):

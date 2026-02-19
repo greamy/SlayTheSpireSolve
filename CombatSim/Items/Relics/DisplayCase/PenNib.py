@@ -16,6 +16,7 @@ class PenNib(Relic):
         if self.current_attack_count == 10:
             health_lost = self.enemy_hps[enemy] - enemy.health + enemy.block
             enemy.take_damage(health_lost)
+            self.current_attack_count = 0
 
         self.enemy_hps = {}
         for enemy in enemies:

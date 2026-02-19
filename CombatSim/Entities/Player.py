@@ -60,7 +60,9 @@ class Player(Entity):
             class_ = getattr(self.implemented_cards[card_name], card_name)
             card = class_(self)
             self.deck.draw_pile.append(card)
-            if card.card_type.value == 4: # CURSE CARD
+            if card.is_power():
+                self.notify_listeners(Listener.Event.POWER_ADDED, self, None, False)
+            if card.is_curse():
                 self.notify_listeners(Listener.Event.CURSE_ADDED, self, None, False)
         else:
             raise Exception(f"No implemented card named {card_name}")
@@ -78,6 +80,10 @@ class Player(Entity):
         # TODO: Implement shop room, this should not replace the room system.
         self.notify_listeners(Listener.Event.ENTER_SHOP, self, None, False)
         self.notify_listeners(Listener.Event.BUY_FROM_SHOP, self, None, False)
+
+    def enter_rest(self):
+        self.notify_listeners(Listener.Event.ENTER_REST, self, None, False)
+        # TODO: Use controller to decide between rest site options...? Or actually rest site room should probably do that...
 
     def do_rest(self):
         amt_to_heal =  self.start_health * self.REST_FACTOR
@@ -137,6 +143,7 @@ class Player(Entity):
 
         self.mantra = 0
         self.set_stance(self.Stance.NONE)
+        super().end_combat(enemies, debug)
 
     def take_damage(self, amount):
         if amount > self.block + self.health:
@@ -197,7 +204,7 @@ class Player(Entity):
             return True
         return False
 
-    def do_turn(self, players: list[Player], enemies: list, debug):
+    def do_turn(self, players: list, enemies: list, debug):
         # TODO: Make player play potions
         playable_cards = self.get_playable_cards()
         while len(playable_cards) > 0 and not self.turn_over:
@@ -255,7 +262,7 @@ class Player(Entity):
         self.energy -= card.energy
         self.deck.hand.remove(card)
         ret = card.play(self, [self], enemy, enemies, debug)
-
+        self.notify_listeners(Listener.Event.CARD_PLAYED, self, enemies, debug)
         if card.is_attack():
             self.notify_listeners(Listener.Event.ATTACK_PLAYED, self, enemies, debug)
         elif card.is_skill():
