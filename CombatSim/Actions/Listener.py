@@ -54,3 +54,4 @@ class Listener:
         ENTER_ELITE = 27
         ENEMY_DIED = 28
         BOSS_START = 29
+        SHUFFLE = 30

@@ -12,7 +12,6 @@ class Establishment(Card):
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         # ({{Innate}}.) Whenever a card is {{Retained}}, lower its cost by 1.
         player.add_listener(self.listener)
 

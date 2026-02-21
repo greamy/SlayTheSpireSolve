@@ -74,9 +74,6 @@ class Entity:
         self.listeners.remove(listener)
 
     def notify_listeners(self, event_type, primary_entity, target_entities, debug):
-        if debug:
-            pass
-            # print("Triggering listeners!")
         for listener in self.listeners:
             if event_type in listener.event_types:
                 target_entity = random.choice(target_entities) if target_entities is not None and len(target_entities) > 0 else None

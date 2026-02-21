@@ -55,11 +55,12 @@ class Player(Entity):
 
     def add_card(self, card_name: str):
         card = None
-        self.notify_listeners(Listener.Event.CARD_ADDED_TO_DECK, self, None, False)
         if card_name in self.implemented_cards.keys():
             class_ = getattr(self.implemented_cards[card_name], card_name)
             card = class_(self)
             self.deck.draw_pile.append(card)
+
+            self.notify_listeners(Listener.Event.CARD_ADDED_TO_DECK, self, None, False)
             if card.is_power():
                 self.notify_listeners(Listener.Event.POWER_ADDED, self, None, False)
             if card.is_attack():
@@ -245,8 +246,17 @@ class Player(Entity):
         self.turn_over = False
 
     def draw_cards(self, amount, enemies, debug):
-        self.deck.draw_cards(amount)
+        shuffled = self.deck.draw_cards(amount)
+        if shuffled:
+            self.notify_listeners(Listener.Event.SHUFFLE, self, enemies, debug)
         self.notify_listeners(Listener.Event.HAND_CHANGED,self, enemies, debug)
+
+    def shuffle_discard(self, enemies, debug):
+        self.deck.draw_pile.extend(self.deck.discard_pile)
+        self.deck.discard_pile.clear()
+        self.deck.shuffle()
+
+        self.notify_listeners(Listener.Event.SHUFFLE, self, enemies, debug)
 
     def discard(self, card, enemies, debug):
         self.deck.discard(card)
@@ -324,9 +334,7 @@ class Player(Entity):
         if amount > len(self.deck.draw_pile):
             cards = self.deck.draw_pile
             amount -= len(self.deck.draw_pile)
-            self.deck.draw_pile.extend(self.deck.discard_pile)
-            self.deck.discard_pile.clear()
-            self.deck.shuffle()
+            self.shuffle_discard(enemies, debug)
         cards.extend(self.deck.draw_pile[0:amount])
         # to_scry = self.bot.scry(cards, enemies, None)
 
@@ -400,6 +408,8 @@ class Player(Entity):
             self.exhaust_pile = []
             self.used_powers = []
 
+            self.listeners = []
+
         def remove_card(self, card):
             if card in self.hand:
                 self.hand.remove(card)
@@ -422,11 +432,13 @@ class Player(Entity):
 
         # Return a list of length num of cards
         def draw_cards(self, num):
+            shuffled = False
             if len(self.hand) + num > self.MAX_HAND_SIZE:
                 num -= (len(self.hand) + num) - self.MAX_HAND_SIZE
             if num > (len(self.draw_pile) + len(self.discard_pile)):
                 num = len(self.draw_pile) + len(self.discard_pile)
             if num > len(self.draw_pile):
+                shuffled = True
                 self.hand.extend(self.draw_pile)
                 num -= len(self.draw_pile)
                 self.draw_pile.clear()
@@ -435,6 +447,7 @@ class Player(Entity):
                 self.shuffle()
             for i in range(num):
                 self.hand.append(self.draw_pile.pop(0))
+            return shuffled
 
         def reshuffle(self):
             self.draw_pile.extend(self.discard_pile)

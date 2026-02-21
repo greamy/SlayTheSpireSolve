@@ -53,17 +53,23 @@ from CombatSim.Items.Relics.DisplayCase.Pear import Pear
 from CombatSim.Items.Relics.DisplayCase.PenNib import PenNib
 from CombatSim.Items.Relics.DisplayCase.PotionBelt import PotionBelt
 from CombatSim.Items.Relics.DisplayCase.PreservedInsect import PreservedInsect
+from CombatSim.Items.Relics.DisplayCase.QuestionCard import QuestionCard
 from CombatSim.Items.Relics.DisplayCase.RegalPillow import RegalPillow
 from CombatSim.Items.Relics.DisplayCase.Shuriken import Shuriken
+from CombatSim.Items.Relics.DisplayCase.SingingBowl import SingingBowl
 from CombatSim.Items.Relics.DisplayCase.SmilingMask import SmilingMask
 from CombatSim.Items.Relics.DisplayCase.Strawberry import Strawberry
+from CombatSim.Items.Relics.DisplayCase.StrikeDummy import StrikeDummy
+from CombatSim.Items.Relics.DisplayCase.Sundial import Sundial
 from CombatSim.Items.Relics.DisplayCase.TheBoot import TheBoot
+from CombatSim.Items.Relics.DisplayCase.TheCourier import TheCourier
 from CombatSim.Items.Relics.DisplayCase.TinyChest import TinyChest
 from CombatSim.Items.Relics.DisplayCase.TinyOrnithopter import TinyOrnithopter
 from CombatSim.Items.Relics.DisplayCase.ToxicEgg import ToxicEgg
 from CombatSim.Items.Relics.DisplayCase.Vajra import Vajra
 from CombatSim.Items.Relics.DisplayCase.WarPaint import WarPaint
 from CombatSim.Items.Relics.DisplayCase.Whetstone import Whetstone
+from CombatSim.Items.Relics.DisplayCase.WhiteBeastStatue import WhiteBestStatue
 from GameSim.Input.RandomPlayerController import RandomPlayerController
 
 
@@ -1064,3 +1070,80 @@ class RelicTest(unittest.TestCase):
         self.player.end_combat(self.enemies, self.debug)
         self.player.begin_combat(self.enemies, self.debug)
         self.assertEqual(self.player.health, self.health)
+
+    @unittest.skip("TODO: Implement Card Rewards")
+    def test_question_card(self):
+        # On future Card Reward screens you have 1 additional card to choose from.
+        relic = QuestionCard(self.player)
+        self.player.add_relic(relic)
+
+    @unittest.skip("TODO: Implement Card Rewards")
+    def test_singing_bowl(self):
+        # When adding cards to your deck, you may gain +2 Max HP instead.
+        relic = SingingBowl(self.player)
+        self.player.add_relic(relic)
+
+    def test_strike_dummy(self):
+        # Cards containing "Strike" deal 3 additional damage.
+        relic = StrikeDummy(self.player)
+        self.player.add_relic(relic)
+
+        strike = self.player.add_card("Strike")
+        self.assertEqual(strike.damage, 6 + StrikeDummy.DAMAGE_INCREASE)
+
+        strike2 = self.player.add_card("Strike")
+        self.assertEqual(strike2.damage, 6 + StrikeDummy.DAMAGE_INCREASE)
+        self.assertEqual(strike.damage, 6 + StrikeDummy.DAMAGE_INCREASE)
+
+        self.player.begin_combat(self.enemies, self.debug)
+        self.player.start_turn(self.enemies, self.debug)
+        self.player.play_card(strike, self.enemy, self.enemies, self.debug)
+        self.assertEqual(self.enemy.start_health - strike.damage, self.enemy.health)
+
+        followup = self.player.add_card("FollowUp")
+        self.assertEqual(followup.damage, 7) # unchanged
+        self.assertEqual(strike2.damage, 6 + StrikeDummy.DAMAGE_INCREASE) # increased only once
+        self.assertEqual(strike.damage, 6 + StrikeDummy.DAMAGE_INCREASE) # increased only once
+
+    def test_sundial(self):
+        # Every 3 times you shuffle your draw pile, gain 2 Energy.
+        relic = Sundial(self.player)
+        self.player.add_relic(relic)
+
+        self.player.add_card("Strike")
+        self.player.add_card("Defend")
+
+        # shuffle 1 and 2 times make sure energy stays the same
+        self.player.begin_combat(self.enemies, self.debug)
+
+        self.player.start_turn(self.enemies, self.debug)
+        self.player.end_turn(self.enemies, self.debug)
+        self.player.shuffle_discard(self.enemies, self.debug)
+        self.assertEqual(self.energy, self.player.energy)
+
+        self.player.start_turn(self.enemies, self.debug)
+        self.player.end_turn(self.enemies, self.debug)
+        self.player.shuffle_discard(self.enemies, self.debug)
+        self.assertEqual(self.energy, self.player.energy)
+
+        # then shuffle third time and check energy increased.
+        self.player.start_turn(self.enemies, self.debug)
+        self.player.end_turn(self.enemies, self.debug)
+        self.player.shuffle_discard(self.enemies, self.debug)
+        self.assertEqual(self.energy + Sundial.ENERGY_AMOUNT, self.player.energy)
+
+        self.player.energy = self.energy
+
+    @unittest.skip("TODO: Implement combat rewards")
+    def test_white_best_statue(self):
+        # Potions always drop after combat.
+        relic = WhiteBestStatue(self.player)
+        self.player.add_relic(relic)
+
+    @unittest.skip("TODO: Implement shops")
+    def test_the_courier(self):
+        # The merchant no longer runs out of cards, relics, or potions and his prices are reduced by 20%.
+        relic = TheCourier(self.player)
+        self.player.add_relic(relic)
+
+
