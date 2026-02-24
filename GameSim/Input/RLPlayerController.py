@@ -1,4 +1,5 @@
 import random
+from builtins import function
 from collections import deque
 
 import numpy as np
@@ -345,7 +346,7 @@ class RLPlayerController(PlayerController):
         else:
             raise Exception("Invalid output from PPOAgent. Invalid action: " + card_index + ": " + str(self.turn_stable_hand))
 
-    def select_cards_from_zone(self, player: Player, zone: Player.Deck.Zone, enemies: list[Enemy], num_cards: int, debug: bool):
+    def select_cards_from_zone(self, player: Player, zone: Player.Deck.Zone, enemies: list[Enemy], num_cards: int, debug: bool, condition: function = None):
         if not self.wait_for_counter():
             return None
         selected_indices = set()

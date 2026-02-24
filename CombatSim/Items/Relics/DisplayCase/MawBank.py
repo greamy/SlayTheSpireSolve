@@ -8,14 +8,13 @@ class MawBank(Relic):
         super().__init__("Maw Bank", "Common", player)
         self.listener = Listener(Listener.Event.CLIMB_FLOOR, self.on_climb_floor)
         self.shop_listener = Listener(Listener.Event.BUY_FROM_SHOP, self.on_buy_shop)
-        self.active = False
 
     def on_climb_floor(self, player, enemy, enemies, debug):
-        if self.active:
-            player.gold += self.GOLD_AMT
+        player.gold += self.GOLD_AMT
 
     def on_buy_shop(self, player, enemy, enemies, debug):
-        self.active = False
+        player.remove_listener(self.listener)
+        player.remove_listener(self.shop_listener)
 
     def on_pickup(self):
         self.player.add_listener(self.listener)

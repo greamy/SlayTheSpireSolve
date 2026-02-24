@@ -41,7 +41,7 @@ class ShieldGremlin(Enemy):
 
         def play(self, enemy, enemy_list, player, player_list, debug):
             if len(enemy_list) > 1:
-                not_self_enemy_list = enemy_list.remove(enemy)
+                not_self_enemy_list = [e for e in enemy_list if e is not enemy]
                 super().play(random.choice(not_self_enemy_list), enemy_list, player, player_list, debug)
             else:
                 super().play(enemy, enemy_list, player, player_list, debug)

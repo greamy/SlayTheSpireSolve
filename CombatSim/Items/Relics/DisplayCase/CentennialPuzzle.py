@@ -8,6 +8,7 @@ class CentennialPuzzle(Relic):
         super().__init__("Centennial Puzzle", "Common", player)
         self.start_combat_listener = Listener(Listener.Event.START_COMBAT, self.start_combat)
         self.lose_hp_listener = Listener(Listener.Event.TAKEN_DAMAGE, self.lose_hp)
+        self.end_combat_reset_listener = Listener(Listener.Event.END_COMBAT, self.on_end_combat)
         self.lost_hp_yet = False
 
     def start_combat(self, player, enemy, enemies, debug):
@@ -19,10 +20,15 @@ class CentennialPuzzle(Relic):
 
         self.lost_hp_yet = True
 
+    def on_end_combat(self, player, enemy, enemies, debug):
+        self.lost_hp_yet = False
+
     def on_pickup(self):
         self.player.add_listener(self.start_combat_listener)
         self.player.add_listener(self.lose_hp_listener)
+        self.player.add_listener(self.end_combat_reset_listener)
 
     def on_drop(self):
         self.player.remove_listener(self.start_combat_listener)
         self.player.remove_listener(self.lose_hp_listener)
+        self.player.remove_listener(self.end_combat_reset_listener)

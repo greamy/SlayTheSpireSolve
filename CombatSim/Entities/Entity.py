@@ -27,7 +27,7 @@ class Entity:
         self.width = width
         self.height = height
 
-    def do_turn(self, opponents, debug):
+    def do_turn(self, allies: list, opponents: list, debug):
         pass
 
     def start_turn(self, opponents, debug):
@@ -36,6 +36,13 @@ class Entity:
 
     def end_turn(self, opponents, debug):
         pass
+
+    def end_combat(self, opponents, debug):
+        self.block_modifier = 0
+        self.block_multiplier = 1.0
+        self.damage_dealt_modifier = 0
+        self.damage_dealt_multiplier = 1.0
+        self.damage_taken_multiplier = 1.0
 
     def take_damage(self, amount) -> bool:
         lost_health = False
@@ -67,9 +74,6 @@ class Entity:
         self.listeners.remove(listener)
 
     def notify_listeners(self, event_type, primary_entity, target_entities, debug):
-        if debug:
-            pass
-            # print("Triggering listeners!")
         for listener in self.listeners:
             if event_type in listener.event_types:
                 target_entity = random.choice(target_entities) if target_entities is not None and len(target_entities) > 0 else None

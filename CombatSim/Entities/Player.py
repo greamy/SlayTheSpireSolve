@@ -54,15 +54,25 @@ class Player(Entity):
         return my_cards
 
     def add_card(self, card_name: str):
-        self.notify_listeners(Listener.Event.CARD_ADDED_TO_DECK, self, None, False)
+        card = None
         if card_name in self.implemented_cards.keys():
             class_ = getattr(self.implemented_cards[card_name], card_name)
             card = class_(self)
             self.deck.draw_pile.append(card)
-            if card.card_type.value == 4: # CURSE CARD
+
+            self.notify_listeners(Listener.Event.CARD_ADDED_TO_DECK, self, None, False)
+            if card.is_power():
+                self.notify_listeners(Listener.Event.POWER_ADDED, self, None, False)
+            if card.is_attack():
+                self.notify_listeners(Listener.Event.ATTACK_ADDED, self, None, False)
+            if card.is_skill():
+                self.notify_listeners(Listener.Event.SKILL_ADDED, self, None, False)
+            if card.is_curse():
                 self.notify_listeners(Listener.Event.CURSE_ADDED, self, None, False)
         else:
             raise Exception(f"No implemented card named {card_name}")
+
+        return card
 
     def heal(self, amt):
         self.health = int(min(self.health + amt, self.start_health))
@@ -75,6 +85,10 @@ class Player(Entity):
         # TODO: Implement shop room, this should not replace the room system.
         self.notify_listeners(Listener.Event.ENTER_SHOP, self, None, False)
         self.notify_listeners(Listener.Event.BUY_FROM_SHOP, self, None, False)
+
+    def enter_rest(self):
+        self.notify_listeners(Listener.Event.ENTER_REST, self, None, False)
+        # TODO: Use controller to decide between rest site options...? Or actually rest site room should probably do that...
 
     def do_rest(self):
         amt_to_heal =  self.start_health * self.REST_FACTOR
@@ -102,7 +116,7 @@ class Player(Entity):
                 raise Exception(f"No implemented card named {card}")
         return deck
 
-    def begin_combat(self, enemies, debug):
+    def begin_combat(self, enemies, debug, boss=False):
         self.deck.reshuffle()
         num_innate = 0
         for idx, card in enumerate(self.deck.draw_pile):
@@ -111,6 +125,8 @@ class Player(Entity):
                 num_innate += 1
 
         self.notify_listeners(Listener.Event.START_COMBAT, self, enemies, debug)
+        if boss:
+            self.notify_listeners(Listener.Event.BOSS_START, self, enemies, debug)
 
     def end_combat(self, enemies, debug, episode_done=True):
         """
@@ -134,6 +150,7 @@ class Player(Entity):
 
         self.mantra = 0
         self.set_stance(self.Stance.NONE)
+        super().end_combat(enemies, debug)
 
     def take_damage(self, amount):
         if amount > self.block + self.health:
@@ -194,7 +211,7 @@ class Player(Entity):
             return True
         return False
 
-    def do_turn(self, enemies, debug):
+    def do_turn(self, players: list, enemies: list, debug):
         # TODO: Make player play potions
         playable_cards = self.get_playable_cards()
         while len(playable_cards) > 0 and not self.turn_over:
@@ -229,8 +246,17 @@ class Player(Entity):
         self.turn_over = False
 
     def draw_cards(self, amount, enemies, debug):
-        self.deck.draw_cards(amount)
+        shuffled = self.deck.draw_cards(amount)
+        if shuffled:
+            self.notify_listeners(Listener.Event.SHUFFLE, self, enemies, debug)
         self.notify_listeners(Listener.Event.HAND_CHANGED,self, enemies, debug)
+
+    def shuffle_discard(self, enemies, debug):
+        self.deck.draw_pile.extend(self.deck.discard_pile)
+        self.deck.discard_pile.clear()
+        self.deck.shuffle()
+
+        self.notify_listeners(Listener.Event.SHUFFLE, self, enemies, debug)
 
     def discard(self, card, enemies, debug):
         self.deck.discard(card)
@@ -252,7 +278,7 @@ class Player(Entity):
         self.energy -= card.energy
         self.deck.hand.remove(card)
         ret = card.play(self, [self], enemy, enemies, debug)
-
+        self.notify_listeners(Listener.Event.CARD_PLAYED, self, enemies, debug)
         if card.is_attack():
             self.notify_listeners(Listener.Event.ATTACK_PLAYED, self, enemies, debug)
         elif card.is_skill():
@@ -260,6 +286,8 @@ class Player(Entity):
         elif card.is_power():
             self.deck.used_powers.append(card)
             self.notify_listeners(Listener.Event.POWER_PLAYED, self, enemies, debug)
+        elif card.is_curse():
+            self.notify_listeners(Listener.Event.CURSE_PLAYED, self, enemies, debug)
         if card.exhaust:
             self.deck.exhaust_pile.append(card)
         if card not in self.deck.get_deck():
@@ -306,9 +334,7 @@ class Player(Entity):
         if amount > len(self.deck.draw_pile):
             cards = self.deck.draw_pile
             amount -= len(self.deck.draw_pile)
-            self.deck.draw_pile.extend(self.deck.discard_pile)
-            self.deck.discard_pile.clear()
-            self.deck.shuffle()
+            self.shuffle_discard(enemies, debug)
         cards.extend(self.deck.draw_pile[0:amount])
         # to_scry = self.bot.scry(cards, enemies, None)
 
@@ -382,6 +408,8 @@ class Player(Entity):
             self.exhaust_pile = []
             self.used_powers = []
 
+            self.listeners = []
+
         def remove_card(self, card):
             if card in self.hand:
                 self.hand.remove(card)
@@ -404,11 +432,13 @@ class Player(Entity):
 
         # Return a list of length num of cards
         def draw_cards(self, num):
+            shuffled = False
             if len(self.hand) + num > self.MAX_HAND_SIZE:
                 num -= (len(self.hand) + num) - self.MAX_HAND_SIZE
             if num > (len(self.draw_pile) + len(self.discard_pile)):
                 num = len(self.draw_pile) + len(self.discard_pile)
             if num > len(self.draw_pile):
+                shuffled = True
                 self.hand.extend(self.draw_pile)
                 num -= len(self.draw_pile)
                 self.draw_pile.clear()
@@ -417,6 +447,7 @@ class Player(Entity):
                 self.shuffle()
             for i in range(num):
                 self.hand.append(self.draw_pile.pop(0))
+            return shuffled
 
         def reshuffle(self):
             self.draw_pile.extend(self.discard_pile)

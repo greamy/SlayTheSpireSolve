@@ -9,7 +9,7 @@ from enum import Enum
 
 class Card(Playable):
     def __init__(self, name, card_type, energy, damage, attacks, block, draw, discard, exhaust, retain, player,
-                 stance: Player.Stance = None, innate=False, temp_retain=False, id=-1):
+                 stance: Player.Stance=None, innate=False, temp_retain=False, id=-1):
         super().__init__(damage, attacks, block)
         self.name = name
         self.card_type = card_type
@@ -64,6 +64,9 @@ class Card(Playable):
 
     def is_attack(self):
         return self.card_type == self.Type.ATTACK
+
+    def is_curse(self):
+        return self.card_type == self.Type.CURSE
 
     def set_text_embedding(self, embedding):
         self.text_embedding = embedding

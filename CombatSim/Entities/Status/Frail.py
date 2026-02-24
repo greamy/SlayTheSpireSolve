@@ -9,6 +9,7 @@ class Frail(Status):
 
     def __init__(self, duration, entity: Entity):
         super().__init__(duration, entity, Listener(Listener.Event.START_TURN, self.decrement, duration))
+        self.id = 3
 
     def apply(self):
         if super().apply():
