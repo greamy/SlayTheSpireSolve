@@ -1,7 +1,7 @@
 Slay the Spire Solver Roadmap:
 
 Combat and Game simulator tasks:
-Act 1 enemies - 100% , tests needed.
+Act 1 enemies - 100% , tests needed - 10 tests made :).
 Act 2 enemies -  40% - Tests needed
 Act 3 enemies - 0%
 Act 4 enemies - 0%
