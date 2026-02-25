@@ -7,9 +7,11 @@ import copy
 from numpy.ma.testutils import assert_not_equal
 
 from CombatSim.Actions.Library.Brilliance import Brilliance
+from CombatSim.Actions.Library.Dazed import Dazed
 from CombatSim.Actions.Library.Defend import Defend
 from CombatSim.Actions.Library.Strike import Strike
 from CombatSim.Actions.Library.Wound import Wound
+from CombatSim.Entities.Dungeon.AcidSlimeSmall import AcidSlimeSmall
 from CombatSim.Entities.Dungeon.Cultist import Cultist
 from CombatSim.Entities.Dungeon.FatGremlin import FatGremlin
 from CombatSim.Entities.Dungeon.FungiBeast import FungiBeast
@@ -21,7 +23,9 @@ from CombatSim.Entities.Dungeon.RedLouse import RedLouse
 from CombatSim.Entities.Dungeon.Sentry import Sentry
 from CombatSim.Entities.Dungeon.ShieldGremlin import ShieldGremlin
 from CombatSim.Entities.Dungeon.SneakyGremlin import SneakyGremlin
+from CombatSim.Entities.Dungeon.SpikeSlimeSmall import SpikeSlimeSmall
 from CombatSim.Entities.Dungeon.Taskmaster import Taskmaster
+from CombatSim.Entities.Dungeon.WizardGremlin import WizardGremlin
 from CombatSim.Entities.Player import Player
 from CombatSim.Entities.Status.Frail import Frail
 from CombatSim.Entities.Status.Weak import Weak
@@ -41,7 +45,7 @@ class IndividualEnemyTest(unittest.TestCase):
         # self.player = Player(self.health, self.energy, self.gold, [], [], [],
         #                      RandomPlayerController(), library_path="/home/grant/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library")
         # test Lucas Library path -> 'C:/Users/Owner/PycharmProjects/SlayTheSpireSolve/CombatSim/Actions/Library'
-        self.lib_path = 'CombatSim/Actions/Library'
+        self.lib_path = '../CombatSim/Actions/Library'
         self.player = createPlayer(lib_path=self.lib_path, max_health=self.health, health=self.health)
         self.ascension = 20
         self.act = 1
@@ -355,6 +359,71 @@ class IndividualEnemyTest(unittest.TestCase):
         self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.SHIELDBASH))
         self.enemy.do_turn(enemies, [self.player], self.debug)
         self.assertTrue(self.player.health == self.player.start_health - self.enemy._get_intent(self.enemy.SHIELDBASH).damage)
+
+    def test_wizardgremlin(self):
+        self.enemy = WizardGremlin(self.ascension, self.act)
+        # turn 1
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.CHARGING))
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        # turn 2
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.CHARGING))
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        #turn 3
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.ULTIMATE_BLAST))
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        self.assertTrue(self.player.health == self.player.start_health - self.enemy._get_intent(self.enemy.ULTIMATE_BLAST).damage)
+        for _ in range(10):
+            self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.ULTIMATE_BLAST))
+            self.enemy.do_turn([self.enemy], [self.player], self.debug)
+
+        self.ascension = 2
+
+        self.enemy = WizardGremlin(self.ascension, self.act)
+        # turn 1
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.CHARGING))
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        # turn 2
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.CHARGING))
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        # turn 3
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.ULTIMATE_BLAST))
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        # testing low ascension pattern
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.CHARGING))
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.CHARGING))
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.CHARGING))
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.ULTIMATE_BLAST))
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+
+
+    def test_AcidSlimeSmall(self):
+        self.enemy = AcidSlimeSmall(self.ascension, self.act)
+
+        self.enemy.intent = self.enemy._get_intent(self.enemy.LICK)
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        status_ids = [status.ID for status in self.player.status_list]
+        self.assertIn(Weak.ID, status_ids)
+
+        self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.TACKLE))
+        intent = self.enemy.intent
+        self.enemy.do_turn([self.enemy], [self.player], self.debug)
+        self.assertTrue(self.player.health == self.player.start_health - intent.damage)
+
+
+    def test_SpikeSlimeSmall(self):
+        self.enemy = SpikeSlimeSmall(self.ascension, self.act)
+
+        for _ in range(10):
+            self.assertTrue(self.enemy.intent == self.enemy._get_intent(self.enemy.TACKLE))
+            health = self.player.health
+            self.enemy.do_turn([self.enemy], [self.player], self.debug)
+            self.assertTrue(self.player.health == health - self.enemy.intent.damage)
+
+
+
 
 
 

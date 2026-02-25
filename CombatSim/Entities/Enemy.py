@@ -10,6 +10,8 @@ import pygame
 from CombatSim.Entities.Player import Player
 
 
+
+
 class Enemy(Entity):
     def __init__(self, health, intent_set, ascension, minion=False):
         super().__init__(health, x=500)
@@ -79,7 +81,7 @@ class Enemy(Entity):
     def _set_intent(self, intent_set_index):
         self.intent = self.intent_set[intent_set_index]
 
-    def do_turn(self, enemies: list, players: list[Player], debug):
+    def do_turn(self, enemies: list["Enemy"], players: list[Player], debug):
         self.intent.play(self, enemies, players[0], players, debug)
         # intent_played = self.intent
         self.num_turns += 1
