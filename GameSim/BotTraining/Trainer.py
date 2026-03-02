@@ -119,5 +119,3 @@ class Trainer:
         # Save model periodically
         if self.save and (idx+1) % 20_000 == 0:
             self.controller.save_agent(f"artifacts/models/first_fight/ppo_agent_{idx+1}.pt")
-
-

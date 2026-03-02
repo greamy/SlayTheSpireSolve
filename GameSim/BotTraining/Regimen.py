@@ -31,7 +31,6 @@ class Regimen:
         self.dungeon_path = dungeon_path
         self.library_path = library_path
 
-
     def get_player(self, controller):
         player = createPlayer(controller=controller, health=self.player_start_health, cards=self._get_deck_list(),
                               max_health=self.player_max_health, lib_path=self.library_path)

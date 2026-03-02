@@ -27,7 +27,7 @@ def main():
             possible_enemies=       ["Cultist", "JawWorm"],
             num_enemies=            [1,2],
             default_deck=           get_default_deck(),
-            num_additional_cards=   0,#
+            num_additional_cards=   0,
             additional_cards=       None,
             allow_repeat_enemies=   True,
             player_max_health=      70,
