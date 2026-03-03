@@ -29,7 +29,7 @@ def addCards(player, name_list: list[str]):
     player.deck = Player.Deck(cards)
 
 
-def createPlayer(lib_path='../CombatSim/Actions/Library', controller=RandomPlayerController(), max_health=70,
+def createPlayer(lib_path='../CombatSim/Actions/Library', relic_path="../CombatSim/Items/Relics/DisplayCase", controller=RandomPlayerController(), max_health=70,
                  health=70, energy=3, gold=50, potions=None, relics=None, cards=None):
     if relics is None:
         relics = []
@@ -37,7 +37,7 @@ def createPlayer(lib_path='../CombatSim/Actions/Library', controller=RandomPlaye
         potions = []
     if cards is None:
         cards = []
-    return Player(health, energy, gold, potions, relics, cards, controller, max_health, lib_path)
+    return Player(health, energy, gold, potions, relics, cards, controller, max_health, lib_path, relic_path)
 
 def createEnemy(name: str, ascension: int, act: int):
     module = importlib.import_module("CombatSim.Entities.Dungeon." + name)

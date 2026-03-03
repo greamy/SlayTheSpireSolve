@@ -22,6 +22,8 @@ class Map:
         self.act = act
         self.ascension = ascension
 
+        self.player_pos: tuple = (0, None) # (floor, room_idx) - floor is 0 indexed, room_idx is None if not set yet
+
         # rendering attributes:
         self.tile_size = 30
         self.tile_spacing = 15
@@ -135,3 +137,9 @@ class Map:
             pos = pygame.mouse.get_pos()
 
             self.player.controller.handle_map_event(pos, self.player, self, cur_floor, avail_floors)
+
+    def get_next_room(self, controller):
+        while self.player_pos[0] < self.grid_y - 1:
+            choice = controller.get_map_choice(self.player, self, self.player_pos[0], self.player_pos[1])
+            self.player_pos = (choice.floor, choice.x)
+            yield choice

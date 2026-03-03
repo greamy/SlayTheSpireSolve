@@ -16,7 +16,8 @@ from CombatSim.Items.Relics.Relic import Relic
 class Player(Entity):
     REST_FACTOR = 0.3
 
-    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], controller: PlayerController, max_health=None, library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"):
+    def __init__(self, health: int, energy: int, gold: int, potions: list, relics: list, cards: list[str], controller: PlayerController, max_health=None, library_path="C:\\Users\\grant\\PycharmProjects\\SlayTheSpireSolve\\CombatSim\\Actions\\Library"
+                 , relic_path="../CombatSim/Items/Relics/DisplayCase"):
         super().__init__(health, max_health)
         self.energy = energy
         self.gold = gold
@@ -30,6 +31,7 @@ class Player(Entity):
         self.innate_cards = []
         self.relics = []
         self.implemented_cards = self.get_implemented_cards(library_path)
+        self.implemented_relics = self.get_implemented_relics(relic_path)
         self.deck = self.Deck(self.create_deck(cards))
         self.card_played = None
         self.card_choice = None
@@ -53,6 +55,17 @@ class Player(Entity):
                 my_cards[card_name] = module
         return my_cards
 
+    def get_implemented_relics(self, relic_path: str):
+        my_relics = {}
+        relic_name_list = os.listdir(relic_path)
+        module_path = relic_path.replace("../", "").replace("/", ".") + "."
+        for relic_name in relic_name_list:
+            if relic_name.endswith(".py"):
+                relic_name = relic_name[:-3]
+                module = importlib.import_module(module_path + relic_name)
+                my_relics[relic_name] = module
+        return my_relics
+
     def add_card(self, card_name: str):
         card = None
         if card_name in self.implemented_cards.keys():
@@ -73,6 +86,14 @@ class Player(Entity):
             raise Exception(f"No implemented card named {card_name}")
 
         return card
+
+    def add_relic(self, relic_name: str):
+        relic = None
+        if relic_name in self.implemented_relics.keys():
+            class_ = getattr(self.implemented_relics[relic_name], relic_name)
+            relic = class_(self)
+            self.add_relic(relic)
+        return relic
 
     def heal(self, amt):
         self.health = int(min(self.health + amt, self.start_health))

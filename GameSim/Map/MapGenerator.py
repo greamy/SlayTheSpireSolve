@@ -5,6 +5,7 @@ import pygame
 from GameSim.Map.ChestRoom import ChestRoom
 from GameSim.Map.EliteRoom import EliteRoom
 from GameSim.Map.EventRoom import EventRoom
+from GameSim.Map.Map import Map
 from GameSim.Map.MonsterRoom import MonsterRoom
 from GameSim.Map.RestRoom import RestRoom
 from GameSim.Map.Room import Room
@@ -47,7 +48,7 @@ class MapGenerator:
     def clear_map(self):
         self.map = [[None for _ in range(self.grid_x)] for _ in range(self.grid_y)]
 
-    def generate_map(self):
+    def generate_map(self) -> Map:
         self.clear_map()
 
         paths = self.generate_paths()
@@ -104,7 +105,7 @@ class MapGenerator:
                         chosen_room.floor = floor
                         chosen_room.x = room_index
                         # self.map[floor][room_index].type = room_type
-        return self.map
+        return Map(self.player, self.act, self.ascension, self.map)
 
     def get_unallowed_room_types(self, floor, prev_rooms: list[Room], paths: list[list]):
         # Get a list of room types that are not allowed based on the previous rooms

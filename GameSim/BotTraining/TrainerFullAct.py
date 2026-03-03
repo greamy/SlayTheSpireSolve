@@ -1,16 +1,23 @@
+import copy
+import os
+import random
+
 import numpy as np
 
 from GameSim.BotTraining.Regimen import Regimen
 from GameSim.Input import Controller
 from GameSim.Input.RLPlayerController import RLPlayerController
 from GameSim.Map.Map import Map
+from GameSim.Map.MapGenerator import MapGenerator
 from GameSim.Render.Renderer import Renderer
 
 from CombatSim.util import createPlayer, addCards, get_default_deck
 
 class TrainerFullAct:
 
-    def __init__(self, renderer: Renderer, map: Map, agent_save_path="artifacts/images/model_results/first_fight/", train=True, save=True, delay=0):
+    def __init__(self, episodes: int, renderer: Renderer, agent_save_path="artifacts/images/model_results/first_fight/", train=True, save=True, delay=0,
+                 combat_sim_path="CombatSim/"):
+        self.episodes = episodes
         self.renderer = renderer
         self.controller = RLPlayerController(agent_save_path, delay=delay, train=train, save=save)
         # self.player = self.get_player(self.controller)
@@ -20,66 +27,81 @@ class TrainerFullAct:
         self.act = 1
         self.ascension = 20
 
-        self.map = map
+        self.player_start_health = 70
+        self.player_max_health = 70
+        self.library_path = os.path.join(combat_sim_path, "Actions/Library")
+        self.relic_path = os.path.join(combat_sim_path, "Items/Relics/DisplayCase")
+        self.dungeon_path = os.path.join(combat_sim_path, "Entities/Dungeon")
+
+        self.player = self.get_player(self.controller)
+        self.map_gen = MapGenerator(self.player, self.act, self.ascension)
+        self.cur_map = self.map_gen.generate_map()
+
+        self.random_floor_chance = 0.4
+
+    def get_player(self, controller):
+        player = createPlayer(controller=controller, health=self.player_start_health, cards=get_default_deck(),
+                              max_health=self.player_max_health, lib_path=self.library_path, relic_path=self.relic_path)
+        return player
+
+    def reset_episode(self):
+        new_player = self.get_player(self.controller)
+        self.map_gen.player = new_player
+        self.cur_map = self.map_gen.generate_map()
+
+        # randomize starting floor based on self.random_floor_chance
+        if np.random.rand() < self.random_floor_chance:
+            random_floor = np.random.randint(2, self.cur_map.grid_y-2)
+            available_rooms = self.cur_map.get_avail_floors(random_floor, None)
+            random_room = np.random.choice(available_rooms)
+            self.cur_map.player_pos = (random_floor, random_room)
+
+            # give player randomly selected good cards based on current floor:
+            additional_cards = []
+            additional_relics = []
+            if random_floor < 5:
+                # early floors 2-5
+                additional_cards += ["Eruption", "Vigilance", "BattleHymn"]
+                additional_relics += ["BurningBlood", "Vajra", "ToxicEgg"]
+            elif random_floor < 10:
+                # mid floors 6-10
+                additional_cards += ["CutThroughFate", "BowlingBash", "FollowUp", "TalktotheHand", "CarveReality", "Brilliance"]
+                additional_relics += ["BlackBlood", "Shuriken", "Orichalcum"]
+            else:
+                # later floors 11-15
+                additional_cards += ["FlurryofBlows", "Tantrum", "ReachHeaven", "Rushdown"]
+                additional_relics += ["Ginger", "MeatOnTheBone", "RunicPyramid"]
+            # random additional cards and relics within range of possible values
+            num_additional_cards = random.randint(max(random_floor-2), random_floor)
+            num_additional_relics = random.randint(0, random_floor // 3)
+            additional_cards = np.random.choice(additional_cards, size=num_additional_cards, replace=False)
+            addCards(new_player, additional_cards)
+
+            additional_relics = np.random.choice(additional_relics, size=num_additional_relics, replace=False)
+            for relic_name in additional_relics:
+                new_player.add_relic(relic_name)
 
     def run(self):
-        for reg in self.curriculum:
-            rooms = reg.get_rooms(self.controller)
-
+        for episode in range(self.episodes):
+            self.reset_episode()
             health_lost_per_combat = []
 
-            for idx, room in enumerate(rooms):
-                # Check if this is a new gauntlet (new player instance)
-                is_new_gauntlet = (room.player != previous_player)
-
-                if is_new_gauntlet:
-                    # New gauntlet starting - reset LSTM and begin episode
-                    self.controller.begin_episode()
-                    current_gauntlet_combats = 0
-                    gauntlet_active = True
-                    previous_player = room.player
-
-                # Store player health before combat
+            next_room = self.renderer.render_act_map(self.cur_map, self.cur_map.player_pos[0], self.cur_map.player_pos[1])
+            while next_room:
+                room = next_room
                 health_before = room.player.health
 
-                # Execute the combat
                 self.renderer.render_room(room)
 
-                # Increment gauntlet combat counter
-                current_gauntlet_combats += 1
-
-                # Check combat outcome
                 combat_won = room.player.is_alive()
-
-                # Determine if gauntlet/episode ends after this combat
-                gauntlet_ends = (
-                    not combat_won or  # Player died
-                    current_gauntlet_combats >= reg.max_gauntlet_length  # Reached max length
-                )
-
-                # Call end_combat with appropriate episode_done flag
-                if gauntlet_active:
-                    room.player.end_combat(room.enemies, False, episode_done=gauntlet_ends)
-
-                    # Apply rest site healing and bonus if applicable (based on gauntlet combat count)
-                    # Only apply if episode continues and we hit a rest milestone
-                    if not gauntlet_ends and current_gauntlet_combats % reg.rest_frequency == 0:
-                        # Heal the player
-                        heal_amount = int(room.player.start_health * 0.20)
-                        room.player.health = min(room.player.health + heal_amount, room.player.start_health)
-                        # Apply bonus reward
-                        self.controller.apply_episode_bonus(50, reason=f"rest_site")
-
-                    # Apply max gauntlet bonus if reached max length
-                    if gauntlet_ends and combat_won and current_gauntlet_combats >= reg.max_gauntlet_length:
-                        self.controller.apply_episode_bonus(25, reason="max_combats_reached")
-
-                    if gauntlet_ends:
-                        gauntlet_active = False
-
-                # Track health lost this combat
                 health_lost_per_combat.append(max(health_before - room.player.health, 0))
-                self.log_room(idx, health_lost_per_combat, reg.max_episodes)
+                if not combat_won:
+                    room.player.end_combat(room.enemies, False, episode_done=True)
+                    break
+                else:
+                    room.player.end_combat(room.enemies, False, episode_done=False)
+
+                next_room = self.renderer.render_act_map(self.cur_map, self.cur_map.player_pos[0], self.cur_map.player_pos[1])
 
     def log_room(self, idx, health_lost_per_combat, max_episodes):
 

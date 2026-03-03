@@ -58,7 +58,7 @@ class Renderer:
         time.sleep(4)
         pygame.quit()
 
-    def render_act_map(self, map_gen, cur_floor, cur_idx):
+    def render_act_map(self, map, cur_floor, cur_idx):
         self.running = True
         map_font = pygame.font.SysFont("Arial", 20)
 
@@ -68,11 +68,11 @@ class Renderer:
                     self.running = False
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    map_gen.handle_event(event, self.screen_size, cur_floor, cur_idx)
+                    map.handle_event(event, self.screen_size, cur_floor, cur_idx)
 
             self.screen.fill((0, 0, 0))
 
-            room_choice = map_gen.render(self.screen, self.screen_size, map_font, cur_floor, cur_idx, self.render_type)
+            room_choice = map.render(self.screen, self.screen_size, map_font, cur_floor, cur_idx, self.render_type)
 
             if room_choice is not None:
                 self.running = False
