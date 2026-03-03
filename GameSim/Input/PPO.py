@@ -82,6 +82,61 @@ class ActorCritic(nn.Module):
 
         return action, log_prob, value, dist.probs
 
+class AttentionStateEncoder(nn.Module):
+    def __init__(self, card_feature_dim, player_feature_dim, enemy_feature_dim, strategic_dim, embed_dim=256, num_heads=4):
+        super().__init__()
+        self.embed_dim = embed_dim
+
+        self.card_encoder = CardEncoder(card_feature_dim, embed_dim)
+
+        self.player_encoder = nn.Linear(player_feature_dim, embed_dim)
+        self.enemy_encoder = nn.Linear(enemy_feature_dim, embed_dim)
+        self.strategic_encoder = nn.Linear(strategic_dim, embed_dim)
+
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+
+        encoder_layer = nn.TransformerEncoderLayer(d_model=embed_dim, nhead=num_heads, dim_feedforward=embed_dim * 4, batch_first=True)
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=2)
+
+    def forward(self, deck_features, hand_features, player_features, strategic_features, enemy_features):
+        """
+        Takes batches of raw features, projects them, runs attention, and returns the [CLS] token.
+        """
+        batch_size = deck_features.shape[0]
+        # 1. Deck Token (average of card embeddings)
+        # Note: deck_features shape is [batch, num_cards_in_deck, card_feature_dim]
+        deck_embeds = self.card_encoder(deck_features)
+        deck_token = deck_embeds.mean(dim=1, keepdim=True) # [batch, 1, embed_dim]
+
+        # 2. Hand tokens - one token for each card in hand
+        hand_tokens = self.card_encoder(hand_features)
+
+        # 3. Projected tokens for Player, Enemy, and Strategic info
+        player_token = self.player_encoder(player_features).unsqueeze(1) # [batch_size, 1, embed_dim]
+        strategic_token = self.strategic_encoder(strategic_features).unsqueeze(1) # [batch_size, 1, embed_dim]
+        enemy_tokens = self.enemy_encoder(enemy_features) # [batch, num_enemies, embed_dim]
+
+        # CLS token for the batch
+        cls_tokens = self.cls_token.expand(batch_size, -1, -1)
+
+        sequence = torch.cat([
+            cls_tokens,
+            player_token,
+            strategic_token,
+            deck_token,
+            enemy_tokens,
+            hand_tokens
+        ], dim=1) # Shape: [batch, total_sequence_length, embed_dim]
+
+        # Apply attention
+        transformer_out = self.transformer(sequence)
+
+        # Pool out
+        # Extract only the [CLS] token
+        # This single token now contains the context of the entire board.
+        context_vector = transformer_out[:, 0, :]
+
+        return context_vector
 
 class CardEncoder(nn.Module):
     """
@@ -138,9 +193,9 @@ class PPOAgent:
 
     # def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=256, learning_enabled=True, lr=0.0005,
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
-    def __init__(self, num_actions, card_feature_length, enemy_feature_length, filepath, embedding_dim=32,
-                 learning_enabled=True, save_weights=True,
-                 lr=0.0003, gamma=0.99, epsilon=0.2, value_coef=0.25, entropy_coef=0.01, entropy_decay=0.999, learn_epochs=3):
+    def __init__(self, num_actions, card_feature_length, player_feature_length, enemy_feature_length, strategic_feature_length, filepath,
+                 embedding_dim=128, learning_enabled=True, save_weights=True, lr=0.0003, gamma=0.99, epsilon=0.2,
+                 value_coef=0.25, entropy_coef=0.01, entropy_decay=0.999, learn_epochs=3):
 
         # Hyperparameters
         self.gamma = gamma
@@ -167,17 +222,25 @@ class PPOAgent:
         print(f"Using device: {self.device}")
 
         # Card Embeddings
-        self.card_embed_dim = embedding_dim
-        self.card_embedding = CardEncoder(card_feature_length, embedding_dim).to(self.device)
+        self.embed_dim = embedding_dim
+        self.enemy_feature_dim = enemy_feature_length
+        self.player_features = player_feature_length
 
-        self.enemy_embed_dim = enemy_feature_length
+        # self.card_embedding = CardEncoder(card_feature_length, embedding_dim).to(self.device)
+        # self.player_embedding = nn.Linear(self.player_features, self.embed_dim).to(self.device)
+        # self.enemy_embedding = nn.Linear(self.enemy_feature_dim, self.embed_dim)
 
         self.max_cards, self.max_enemies, self.other_actions = num_actions["BT"]
         self.max_card_choices = num_actions["CB"]
 
         # Initialize actors and critics for each agent
-        self.state_dim = self.card_embed_dim + (self.card_embed_dim * self.max_cards)
-        self.state_dim += self.max_enemies * self.enemy_embed_dim + 13  # 13 Player features
+        self.state_dim = self.embed_dim
+
+        self.state_encoder = AttentionStateEncoder(card_feature_length, player_feature_length,
+                                                   enemy_feature_length, strategic_feature_length,
+                                                   embed_dim=self.embed_dim, num_heads=4)
+        # self.state_dim = self.embed_dim + (self.embed_dim * self.max_cards)
+        # self.state_dim += self.max_enemies * self.enemy_feature_dim + self.player_features
         self.actor_critic = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices).to(self.device)
         self.old_network = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices).to(self.device)
         # self.actor_critic = ActorCritic(self.state_dim, self.card_embed_dim, self.enemy_embed_dim, self.max_card_choices).to(self.device)
@@ -187,7 +250,7 @@ class PPOAgent:
         self.old_network.load_state_dict(self.actor_critic.state_dict())
 
         # Optimizers
-        params = list(self.actor_critic.parameters()) + list(self.card_embedding.parameters())
+        params = list(self.actor_critic.parameters()) + list(self.state_encoder.parameters())
         self.optimizer = optim.Adam(params, lr=lr)
         self.initial_lr = lr
         self.lr_scheduler = optim.lr_scheduler.LinearLR(
@@ -238,8 +301,8 @@ class PPOAgent:
 
     def remember(self, stage, state, action, reward, done, log_prob, value):
         """Store experience for multiple agents"""
-
-        self.memory['states'].append(state.detach().cpu().numpy())
+        state_np = tuple(s.detach().cpu().numpy() for s in state)
+        self.memory['states'].append(state_np)
         # self.memory['hand_embeds'].append(hand_embed.detach().cpu().numpy())
         # self.memory['choice_embeds'].append(choice_embed.detach().cpu().numpy())
         # self.memory['enemy_features'].append(enemy_features)
@@ -262,93 +325,35 @@ class PPOAgent:
 
     def embed_state(self, state):
         """
-        Embeds the raw state dictionary into a single flat tensor for the actor/critic.
+        Extracts stage and action mask info from current state, returns tuple of state which can be unpacked for
+        input into the encoder.
 
         Args:
             state (dict): A dictionary with 'deck' 'player' 'card_choices'.
                           - state['deck']: A tensor of card feature vectors.
                                            Shape: (num_cards_in_deck, card_feature_vector_dim)
-                          - state['features']: A flat tensor of other game state features.
+                          - state['hand']: A tensor of each card in hand
+                                        Shape: (num_cards_in_hand, card_feature_vector_dim)
+                          - state['player']: A tensor of player attributes
+                                        Shape: (player_features)
+                          - state['strategic']: A tensor of strategic attributes
+                                        Shape: (strategic_feature_vector_dim)
+                          - state['enemies']: A tensor of enemy features for each enemy
+                                        Shape: (num_enemies, enemy_feature_dim)
 
         Returns:
-            tuple: A tuple containing the state_tensor, action_mask, current game stage, hand_embeddings, enemy_features, and card_choice embeddings
+            tuple: A tuple containing a state tuple, action_mask, current game stage.
         """
         # Note: The input 'deck' should be the tensor of raw feature vectors, not embeddings yet.
-
-        # Grab features which are guaranteed to be in the state dictionary.
-        deck_card_features = state['deck'].to(self.device)
-        player = state['player'].to(self.device)
-        strategic = state['strategic'].to(self.device)
-
-        # Handle the edge case where the deck is empty
-        if deck_card_features.shape[0] == 0:
-            # If there are no cards, the deck's representation is just a zero vector.
-            deck_embed = torch.zeros(self.card_embed_dim, device=self.device)
-        else:
-            # 1. Get embeddings for all cards in the deck.
-            #    The CardEncoder handles the transformation from features to embeddings.
-            #    Input shape: (num_cards_in_deck, feature_dim)
-            #    Output shape: (num_cards_in_deck, card_embed_dim)
-            deck_card_embeddings = torch.tensor(np.array([0 for i in range(self.card_embed_dim)]), device=self.device)
-            deck_card_embeddings = self.card_embedding(deck_card_features)
-
-            # 2. Aggregate the embeddings into a single vector using mean.
-            #    We average across dimension 0 (the list of cards).
-            #    This will always result in a tensor of shape (card_embed_dim,).
-            deck_embed = torch.mean(deck_card_embeddings, dim=0)
-
-        # hand_embeddings = None
-        # enemies_embeddings = None
 
         # Now we will deal with features which may or may not be in the state dict depending on game stage.
         if 'card_choices' in state.keys():
             stage = self.GameStage.CARD_BUILD
-            choices_embed = state['card_choices'].to(self.device)
-            choices_embed = self.card_embedding(choices_embed)
-            choices_embed = torch.flatten(choices_embed)
-
-            # hand_embed = torch.zeros(self.card_embed_dim, device=self.device)
-            hand_embed = torch.zeros((self.max_cards, self.card_embed_dim), device=self.device).flatten()
-            enemies_embed = torch.zeros((self.max_enemies * self.enemy_embed_dim))
         else:
             stage = self.GameStage.BATTLE
-            choices_embed = torch.zeros((self.max_card_choices, self.card_embed_dim), device=self.device).flatten()
-            enemies_embed = state['enemies']
-
-            hand_card_features = state['hand'].to(self.device)
-            num_cards_in_hand = hand_card_features.shape[0]
-
-            if enemies_embed.shape[0] == 0:
-                enemies_embed = torch.zeros(self.max_enemies * self.enemy_embed_dim, device=self.device)
-                # enemies_embeddings = None
-            else:
-                padding_needed = self.max_enemies - enemies_embed.shape[0]
-
-                padded_enemy_embeddings = F.pad(enemies_embed, (0, 0, 0, padding_needed), "constant", 0)
-
-                # Flatten the final (max_cards, card_embed_dim) tensor into a single vector
-                enemies_embed = padded_enemy_embeddings.flatten()
-                # enemies_embed = torch.mean(enemies_embeddings, dim=0)
-            if num_cards_in_hand == 0:
-                # If hand is empty, create a zero tensor for the full hand embedding size
-                hand_embed = torch.zeros(self.max_cards * self.card_embed_dim, device=self.device)
-            else:
-                # Get embeddings for the cards currently in hand
-                hand_embeddings = self.card_embedding(hand_card_features)  # Shape: (num_cards_in_hand, embed_dim)
-                # Calculate how many empty card slots to pad
-                padding_needed = self.max_cards - num_cards_in_hand
-
-                # Pad the tensor with zeros to reach the max_cards length.
-                # The padding format is (pad_left, pad_right, pad_top, pad_bottom).
-                # We only pad the "bottom" of the card list dimension (dim 0).
-                padded_hand_embeddings = F.pad(hand_embeddings, (0, 0, 0, padding_needed), "constant", 0)
-
-                # Flatten the final (max_cards, card_embed_dim) tensor into a single vector
-                hand_embed = padded_hand_embeddings.flatten()
-                # hand_embed = torch.mean(hand_embeddings, dim=0)
 
         # 3. Concatenate the single deck embedding vector with the other state features.
-        return (torch.cat((deck_embed, player, strategic, hand_embed, enemies_embed)), stage, state['action_mask'])
+        return (state['deck'], state['hand'], state['player'], state['strategic'], state['enemies']), stage, state['action_mask']
 
     def choose_action(self, state_tensors):
         """Choose actions for agent"""
@@ -372,8 +377,8 @@ class PPOAgent:
 
         card_choices_tensor = torch.tensor(np.array(card_choices_vectors), dtype=torch.float32).to(self.device)
         comparison_cards_tensor = torch.tensor(np.array(comparison_cards), dtype=torch.float32).to(self.device)
-        card_choices_embed = self.card_embedding(card_choices_tensor)
-        comparison_cards_embed = self.card_embedding(comparison_cards_tensor)
+        card_choices_embed = self.state_encoder.card_encoder(card_choices_tensor)
+        comparison_cards_embed = self.state_encoder.card_encoder(comparison_cards_tensor)
         comparison_cards_vec = torch.mean(comparison_cards_embed, dim=0)
         similarities = F.cosine_similarity(card_choices_embed, comparison_cards_vec.unsqueeze(0), dim=1)
 
@@ -410,11 +415,13 @@ class PPOAgent:
         gae = 0
 
         for t in reversed(range(len(rewards))):
-            if dones[t]:
-                gae = 0  # Reset GAE at episode boundary
+            # if dones[t]:
+            #     gae = 0  # Reset GAE at episode boundary
 
-            if t == len(rewards) - 1:
-                next_value = 0
+            if t == len(rewards) - 1 and not dones[t]:
+                last_state, last_other = self.get_state_from_memory_by_idx(t)
+                last_state_embedded = self.state_encoder(last_state)
+                next_value = self.actor_critic(last_state_embedded, *last_other).item()
             else:
                 next_value = values[t + 1] * (1 - dones[t])
 
@@ -423,6 +430,9 @@ class PPOAgent:
             advantages[t] = gae
 
         return advantages
+
+    def get_state_from_memory_by_idx(self, idx):
+        return self.memory['states'][idx], (self.memory['stages'][idx])
 
     def _compute_vanilla_pg_advantage(self, rewards, values, dones):
         """
@@ -586,11 +596,11 @@ class PPOAgent:
             visualize_bot_history(self.losses, self.rewards, self.filepath + "rew_loss.png")
 
     def graph_embeddings(self, card_names, card_vectors):
-        self.card_embedding.eval()
+        self.state_encoder.eval()
         card_vectors = torch.tensor(np.array(card_vectors), dtype=torch.float32).to(self.device)
-        embeddings = self.card_embedding(card_vectors).detach().cpu().numpy()
+        embeddings = self.state_encoder(card_vectors).detach().cpu().numpy()
         visualize_embeddings(card_names, embeddings)
-        self.card_embedding.train()
+        self.state_encoder.train()
 
     def _compute_log_prob(self, stages, states, actions):
         """Compute log probabilities and entropy for an agent"""
@@ -686,7 +696,7 @@ class PPOAgent:
         """Save all model weights"""
         if self.save_weights:
             checkpoint = {
-                'card_embedding': self.card_embedding.state_dict(),
+                'state_encoder': self.state_encoder.state_dict(),
                 'actor_critic': self.actor_critic.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
             }
@@ -695,7 +705,7 @@ class PPOAgent:
     def load_models(self, filepath):
         """Load all model weights"""
         checkpoint = torch.load(filepath)
-        self.card_embedding.load_state_dict(checkpoint['card_embedding'])
+        self.state_encoder.load_state_dict(checkpoint['state_encoder'])
         self.actor_critic.load_state_dict(checkpoint['actor_critic'])
         self.old_network.load_state_dict(self.actor_critic.state_dict())
         self.optimizer.load_state_dict(checkpoint['optimizer'])

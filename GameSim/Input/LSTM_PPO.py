@@ -11,7 +11,7 @@ from torch.distributions import Categorical
 import torch.nn.functional as F
 import torch.optim as optim
 
-from GameSim.Input.PPO import PPOAgent
+from GameSim.Input.PPO import PPOAgent, CardEncoder
 
 
 class RunningMeanStd:
@@ -109,22 +109,22 @@ class ActorCriticLSTM(nn.Module):
     """
     An Actor-Critic network that uses an LSTM to process sequential battle states.
     """
-    def __init__(self, static_input_dim, dynamic_input_dim, lstm_hidden_dim, total_bt_actions, total_cb_actions):
+    def __init__(self, input_dim, lstm_hidden_dim, total_bt_actions, total_cb_actions):
         super().__init__()
 
-        # --- LSTM for Battle Stage ---
         # This layer processes the sequence of states within a battle.
         self.lstm_hidden_dim = lstm_hidden_dim
+        self.num_layers = 1
         self.lstm = nn.LSTM(
-            input_size=dynamic_input_dim,
+            input_size=input_dim,
             hidden_size=lstm_hidden_dim,
-            num_layers=1,
+            num_layers=self.num_layers,
             batch_first=True  # Important for handling single-item batches
         )
 
         # --- Shared Base Network ---
         # This network now processes the LSTM's output combined with static features (like the deck embedding).
-        combined_feature_dim = lstm_hidden_dim + static_input_dim
+        combined_feature_dim = lstm_hidden_dim
         leaky_relu_slope = 0.02
         network_size = 256
 
@@ -138,19 +138,16 @@ class ActorCriticLSTM(nn.Module):
             nn.LeakyReLU(leaky_relu_slope),
             second_layer,
             nn.LeakyReLU(leaky_relu_slope),
-            # third_layer,
-            # nn.LeakyReLU()
         )
 
         # --- Actor Heads ---
         self.actor_bt_head = nn.Linear(network_size // 2, total_bt_actions)
         nn.init.xavier_uniform_(self.actor_bt_head.weight, gain=xavier_gain)
         # The Card Build head does not use the LSTM, it uses a separate simple network.
-        cb_layer = nn.Linear(static_input_dim, network_size // 2)
+        cb_layer = nn.Linear(input_dim, network_size // 2)
         nn.init.xavier_uniform_(cb_layer.weight, gain=xavier_gain)
         self.cb_base_network = nn.Sequential(
             cb_layer, # Only sees static deck/player info
-            # nn.LayerNorm(network_size // 2),
             nn.LeakyReLU(leaky_relu_slope)
         )
         self.actor_cb_head = nn.Linear(network_size // 2, total_cb_actions)
@@ -160,32 +157,26 @@ class ActorCriticLSTM(nn.Module):
         self.critic_head = nn.Linear(network_size // 2, 1)
         nn.init.xavier_uniform_(self.critic_head.weight, gain=xavier_gain)
 
-    def forward(self, static_features, dynamic_features, hidden_state, stage):
+    def forward(self, features, hidden_state, stage):
         """
         Performs a forward pass. Note the new 'hidden_state' argument.
         """
         if stage == PPOAgent.GameStage.BATTLE:
             # Pass dynamic features and the previous hidden state through the LSTM.
             # We add a sequence dimension (1) to the input tensor.
-            # print(hidden_state[0].shape)
-            # print(hidden_state[1].shape)
-            dynamic_features = dynamic_features.unsqueeze(0).unsqueeze(0)
-            # print(dynamic_features.shape)
-            lstm_out, new_hidden_state = self.lstm(dynamic_features, hidden_state)
+            features = features.unsqueeze(0).unsqueeze(0)
+            lstm_out, new_hidden_state = self.lstm(features, hidden_state)
 
             # The output needs to be squeezed to remove the sequence dimension before concatenation.
             lstm_out = lstm_out.squeeze(0).squeeze(0)
 
-            # Combine the LSTM's output with the static features (e.g., deck embedding).
-            combined_features = torch.cat((lstm_out, static_features), dim=-1)
-
             # Pass the combined vector through the base network.
-            base_output = self.base_network(combined_features)
+            base_output = self.base_network(lstm_out)
 
         elif stage == PPOAgent.GameStage.CARD_BUILD:
             # Card building is not sequential, so we bypass the LSTM.
             # The new_hidden_state is None because we are not in a battle sequence.
-            base_output = self.cb_base_network(static_features)
+            base_output = self.cb_base_network(features)
             new_hidden_state = None
         else:
             raise ValueError(f"Unknown stage: {stage}")
@@ -199,50 +190,45 @@ class ActorCriticLSTM(nn.Module):
 
         return action_logits, state_value.squeeze(-1), new_hidden_state
 
-    def sample_action(self, stage, static_features, dynamic_features, hidden_state, action_mask):
+    def sample_action(self, stage, features, hidden_state, action_mask):
         # --- Get Action Logits and State Value ---
-        action_logits, state_value, new_hidden_state = self.forward(static_features, dynamic_features, hidden_state, stage)
+        action_logits, state_value, new_hidden_state = self.forward(features, hidden_state, stage)
 
-        masked_logits = action_logits.clone()  # Use clone to avoid in-place modification issues
-        masked_logits[~action_mask] = -1e9
+
+        masked_logits = torch.where(
+            action_mask,
+            action_logits,
+            torch.tensor(-1e9).to(self.device)
+        )
 
         # --- Sample Action ---
         action_dist = Categorical(logits=masked_logits)
         action = action_dist.sample()
-        # print(action_dist.probs)
-        #
+
         log_prob = action_dist.log_prob(action).unsqueeze(-1)
 
         return action, log_prob, state_value, new_hidden_state, action_dist.probs
 
 class LSTMPPOAgent(PPOAgent):
-    # class GameStage(Enum):
-    #     BATTLE = 0
-    #     CARD_BUILD = 1
 
-    def __init__(self, num_actions, card_feature_length, player_feature_length, enemy_feature_length, filepath, learning_enabled=True, save_model=True):
-        super().__init__(num_actions, card_feature_length, enemy_feature_length, filepath, learning_enabled=learning_enabled, save_weights=save_model)# (Keep your existing __init__ arguments)
+    def __init__(self, num_actions, card_feature_length, player_feature_length, enemy_feature_length, strategic_feature_length,
+                 filepath, learning_enabled=True, save_model=True):
+        super().__init__(num_actions, card_feature_length, player_feature_length, enemy_feature_length, strategic_feature_length, filepath, learning_enabled=learning_enabled, save_weights=save_model)# (Keep your existing __init__ arguments)
 
         self.best_avg_reward = -math.inf
         # Define the dimensions for the new network
         self.lstm_hidden_dim = 256
-        # Static features are things that don't change turn-to-turn (like the deck)
-        static_dim = self.card_embed_dim
-        # Dynamic features are turn-specific (player stats, hand, enemies)
-        dynamic_dim = player_feature_length + (self.card_embed_dim * self.max_cards) + (self.max_enemies * self.enemy_embed_dim)
 
         # --- Initialize the New Network ---
         self.actor_critic = ActorCriticLSTM(
-            static_input_dim=static_dim,
-            dynamic_input_dim=dynamic_dim,
+            input_dim=self.embed_dim,
             lstm_hidden_dim=self.lstm_hidden_dim,
             total_bt_actions=(self.max_cards * self.max_enemies) + self.other_actions,
             total_cb_actions=self.max_card_choices
         ).to(self.device)
 
         self.old_network = ActorCriticLSTM(
-            static_input_dim=static_dim,
-            dynamic_input_dim=dynamic_dim,
+            input_dim=self.embed_dim,
             lstm_hidden_dim=self.lstm_hidden_dim,
             total_bt_actions=(self.max_cards * self.max_enemies) + self.other_actions,
             total_cb_actions=self.max_card_choices
@@ -250,7 +236,7 @@ class LSTMPPOAgent(PPOAgent):
 
         self.old_network.load_state_dict(self.actor_critic.state_dict())
 
-        self.params = list(self.actor_critic.parameters()) + list(self.card_embedding.parameters())
+        self.params = list(self.actor_critic.parameters()) + list(self.state_encoder.parameters())
         self.optimizer = optim.Adam(self.params, lr=self.lr)
         self.initial_lr = self.lr
         # self.lr_scheduler = optim.lr_scheduler.CyclicLR(self.optimizer,
@@ -272,9 +258,7 @@ class LSTMPPOAgent(PPOAgent):
         self.sequence_length = 64
 
         # --- Observation Normalization ---
-        # Separate normalizers for static and dynamic features
-        self.obs_norm_static = RunningMeanStd(shape=static_dim)
-        self.obs_norm_dynamic = RunningMeanStd(shape=dynamic_dim)
+        self.obs_norm = RunningMeanStd(shape=self.embed_dim)
 
     def reset_hidden_state(self):
         """Call this at the beginning of each battle."""
@@ -293,22 +277,26 @@ class LSTMPPOAgent(PPOAgent):
         self.memory['hidden_states'].append(h.detach().cpu().numpy())
         self.memory['cell_states'].append(c.detach().cpu().numpy())
 
-    def choose_action(self, state_tensors):
-        """Choose action, now passing the hidden state."""
+    def get_state_from_memory_by_idx(self, idx):
+        return self.memory['states'][idx], ((self.memory['hidden_states'][idx], self.memory['cell_states']) ,self.memory['stages'][idx])
 
-        full_state, stage, action_mask = self.embed_state(state_tensors)
-        static_features = full_state[:self.card_embed_dim]
-        dynamic_features = full_state[self.card_embed_dim:]
+    def choose_action(self, state_tensors):
+        """
+        Choose action, now passing the hidden state.
+        :param state_tensors: A single state dictionary with values of the dictionary converted to tensors.
+        """
+        normalized_state_tensors = self.obs_norm.normalize(state_tensors, update=self.learning_enabled)
+        state_tuple, stage, action_mask = self.embed_state(normalized_state_tensors)
+        embedded_state = self.state_encoder(*state_tuple)
 
         # Normalize observations (update statistics during training)
-        static_features = self.obs_norm_static.normalize(static_features, update=self.learning_enabled)
-        dynamic_features = self.obs_norm_dynamic.normalize(dynamic_features, update=self.learning_enabled)
+        normalized_state = self.obs_norm.normalize(embedded_state, update=self.learning_enabled)
 
         self.actor_critic.eval()
         with torch.no_grad():
             # Pass the current hidden state to the network
             action_choice, log_prob, value, new_hidden_state, action_probs = self.actor_critic.sample_action(
-                stage, static_features, dynamic_features, self.hidden_state, action_mask
+                stage, normalized_state, self.hidden_state, action_mask
             )
             # Update the agent's hidden state for the next step
             if stage == self.GameStage.BATTLE:
@@ -320,7 +308,6 @@ class LSTMPPOAgent(PPOAgent):
     def _learn(self):
         # self.device = "mps"
         # --- Retrieve all data from memory ---
-        states_arr = np.array(self.memory['states'])
         actions_arr = np.array(self.memory['actions'])
         rewards_arr = np.array(self.memory['rewards'])
         dones_arr = np.array(self.memory['dones'])
@@ -346,7 +333,7 @@ class LSTMPPOAgent(PPOAgent):
         #     print("WARNING: NaN in advantages, skipping this batch")
         #     continue
 
-        value_targets_all = advantages_all + torch.tensor(values_arr, dtype=torch.float32).to(self.device)
+        value_targets_all = advantages + torch.tensor(values_arr, dtype=torch.float32).to(self.device)
 
         episode_indices = []
         current_episode_start = 0
@@ -367,8 +354,17 @@ class LSTMPPOAgent(PPOAgent):
                 if episode_len == 0:
                     continue
 
+                raw_seq = [self.memory['states'][i] for i in episode]
+
+                batch_deck = torch.tensor(np.stack([s[0] for s in raw_seq]), dtype=torch.float32).to(self.device)
+                batch_hand = torch.tensor(np.stack([s[1] for s in raw_seq]), dtype=torch.float32).to(self.device)
+                batch_player = torch.tensor(np.stack([s[2] for s in raw_seq]), dtype=torch.float32).to(self.device)
+                batch_strategic = torch.tensor(np.stack([s[3] for s in raw_seq]), dtype=torch.float32).to(self.device)
+                batch_enemies = torch.tensor(np.stack([s[4] for s in raw_seq]), dtype=torch.float32).to(self.device)
+
+                batch_states = self.state_encoder(batch_deck, batch_hand, batch_player, batch_strategic, batch_enemies)
+
                 # Get the mini-batch of sequences
-                batch_states = torch.tensor(states_arr[episode], dtype=torch.float32).to(self.device)
                 batch_actions = torch.tensor(actions_arr[episode], dtype=torch.long).to(self.device)
                 batch_old_log_probs = torch.tensor(old_log_probs_arr[episode], dtype=torch.float32).to(
                     self.device)
@@ -380,8 +376,8 @@ class LSTMPPOAgent(PPOAgent):
                 batch_value_targets = value_targets_all[episode].to(self.device)
                 batch_stages = [stages_arr[i] for i in episode]
                 initial_hidden_state = (
-                    torch.zeros(1, self.lstm_hidden_dim).to(self.device),
-                    torch.zeros(1, self.lstm_hidden_dim).to(self.device)
+                    torch.zeros(self.actor_critic.lstm.num_layers, 1, self.lstm_hidden_dim).to(self.device),
+                    torch.zeros(self.actor_critic.lstm.num_layers, 1, self.lstm_hidden_dim).to(self.device)
                 )
 
                 # --- Recompute log probabilities using initial hidden states ---
@@ -465,46 +461,32 @@ class LSTMPPOAgent(PPOAgent):
 
         # Get batch dimensions
         episode_length, _ = batch_states.shape
-        # batch_size, episode_length, _ = batch_states.shape
 
         # Reshape the initial hidden states to the format expected by the LSTM:
         # (num_layers, batch_size, hidden_dim)
         # The squeeze removes the dimensions of size 1, and transpose swaps episode and layer dims.
-        # h_0 = h_initial.squeeze(1).transpose(0, 1)
-        # c_0 = c_initial.squeeze(1).transpose(0, 1)
-        # print(h_initial.shape)
         initial_hidden_state = (h_initial, c_initial)
-
-        # Separate state into static and dynamic parts for the model across the whole batch
-        # static_features = batch_states[:, :, :self.card_embed_dim]
-        # dynamic_features = batch_states[:, :, self.card_embed_dim:]
-        static_features = batch_states[:, :self.card_embed_dim]
-        dynamic_features = batch_states[:, self.card_embed_dim:]
 
         # Normalize observations during training (don't update stats, just use existing)
         # We normalize each observation in the batch
-        static_features_normalized = torch.stack([
-            self.obs_norm_static.normalize(static_features[i], update=False)
-            for i in range(static_features.shape[0])
+        features_normalized = torch.stack([
+            self.obs_norm.normalize(batch_states[i], update=False)
+            for i in range(batch_states.shape[0])
         ])
-        dynamic_features_normalized = torch.stack([
-            self.obs_norm_dynamic.normalize(dynamic_features[i], update=False)
-            for i in range(dynamic_features.shape[0])
-        ])
+        features_normalized = features_normalized.unsqueeze(0)
 
         # --- 2. Vectorized Forward Pass ---
 
         # Process all battle sequences through the LSTM at once
-        # The LSTM will process the tensor of shape (batch_size, sequence_length, dynamic_dim)
+        # The LSTM will process the tensor of shape (batch_size, self.embed_dim)
 
-        lstm_out, _ = self.actor_critic.lstm(dynamic_features_normalized, initial_hidden_state)
+        lstm_out, _ = self.actor_critic.lstm(features_normalized, initial_hidden_state)
 
         # Combine LSTM output with static features
-        combined_features = torch.cat((lstm_out, static_features_normalized), dim=-1)
-        bt_base_out = self.actor_critic.base_network(combined_features)
+        bt_base_out = self.actor_critic.base_network(lstm_out)
 
         # Process all card build sequences through the non-LSTM path
-        cb_base_out = self.actor_critic.cb_base_network(static_features_normalized)
+        cb_base_out = self.actor_critic.cb_base_network(features_normalized)
 
         # Use a mask to select the correct output for each item in the batch based on its stage
 
@@ -582,32 +564,26 @@ class LSTMPPOAgent(PPOAgent):
     def save_models(self, filepath):
         """Save all model weights and observation normalization statistics"""
         checkpoint = {
-            'card_embedding': self.card_embedding.state_dict(),
+            'state_encoder': self.state_encoder.state_dict(),
             'actor_critic': self.actor_critic.state_dict(),
             'optimizer': self.optimizer.state_dict(),
-            'obs_norm_static_mean': self.obs_norm_static.mean,
-            'obs_norm_static_var': self.obs_norm_static.var,
-            'obs_norm_static_count': self.obs_norm_static.count,
-            'obs_norm_dynamic_mean': self.obs_norm_dynamic.mean,
-            'obs_norm_dynamic_var': self.obs_norm_dynamic.var,
-            'obs_norm_dynamic_count': self.obs_norm_dynamic.count,
+            'obs_norm_mean': self.obs_norm.mean,
+            'obs_norm_var': self.obs_norm.var,
+            'obs_norm_count': self.obs_norm.count,
         }
         torch.save(checkpoint, filepath)
 
     def load_models(self, filepath):
         """Load all model weights and observation normalization statistics"""
         checkpoint = torch.load(filepath, weights_only=False)
-        self.card_embedding.load_state_dict(checkpoint['card_embedding'])
+        self.state_encoder.load_state_dict(checkpoint['state_encoder'])
         self.actor_critic.load_state_dict(checkpoint['actor_critic'])
         self.old_network.load_state_dict(self.actor_critic.state_dict())
         self.optimizer.load_state_dict(checkpoint['optimizer'])
 
         # Load observation normalization statistics if they exist
         if 'obs_norm_static_mean' in checkpoint:
-            self.obs_norm_static.mean = checkpoint['obs_norm_static_mean']
-            self.obs_norm_static.var = checkpoint['obs_norm_static_var']
-            self.obs_norm_static.count = checkpoint['obs_norm_static_count']
-            self.obs_norm_dynamic.mean = checkpoint['obs_norm_dynamic_mean']
-            self.obs_norm_dynamic.var = checkpoint['obs_norm_dynamic_var']
-            self.obs_norm_dynamic.count = checkpoint['obs_norm_dynamic_count']
+            self.obs_norm.mean = checkpoint['obs_norm_mean']
+            self.obs_norm.var = checkpoint['obs_norm_var']
+            self.obs_norm.count = checkpoint['obs_norm_count']
 
