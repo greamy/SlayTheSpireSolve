@@ -1,5 +1,5 @@
+import copy
 import random
-from builtins import function
 from collections import deque
 
 import numpy as np
@@ -10,6 +10,8 @@ from CombatSim.Entities.Enemy import Enemy
 from CombatSim.Entities.Player import Player
 from GameSim.Input.Controller import PlayerController
 from GameSim.Input.LSTM_PPO import LSTMPPOAgent
+from GameSim.Map.Map import Map
+from GameSim.Map.Room import Room
 
 
 class RLPlayerController(PlayerController):
@@ -305,23 +307,6 @@ class RLPlayerController(PlayerController):
         self.action_choice, self.log_prob, self.value, action_probs = self.agent.step(prev_state=self.prev_obs, action_taken=self.action_choice,
                                                        log_prob=self.log_prob, reward=self.reward, done=False, new_state=state, value=self.value)
 
-        # Calculate per-card probabilities (sum across enemy targets)
-        # if action_probs is not None:
-        #     self.card_probabilities = {}
-        #     for card_idx in range(self.max_num_cards):
-        #         start_action = card_idx * self.max_num_enemies
-        #         end_action = start_action + self.max_num_enemies
-        #         card_prob = action_probs[start_action:end_action].sum()
-        #         self.card_probabilities[card_idx] = float(card_prob)
-        #
-        #     # End turn probability
-        #     self.end_turn_probability = float(action_probs[self.num_bt_actions-1])
-        #
-        #     # Calculate min/max for dynamic color scaling
-        #     all_probs = list(self.card_probabilities.values()) + [self.end_turn_probability]
-        #     self.min_probability = min(all_probs)
-        #     self.max_probability = max(all_probs)
-
         self.prev_obs = state
         self.reward = 0
 
@@ -346,7 +331,7 @@ class RLPlayerController(PlayerController):
         else:
             raise Exception("Invalid output from PPOAgent. Invalid action: " + card_index + ": " + str(self.turn_stable_hand))
 
-    def select_cards_from_zone(self, player: Player, zone: Player.Deck.Zone, enemies: list[Enemy], num_cards: int, debug: bool, condition: function = None):
+    def select_cards_from_zone(self, player: Player, zone: Player.Deck.Zone, enemies: list[Enemy], num_cards: int, debug: bool, condition = None):
         if not self.wait_for_counter():
             return None
         selected_indices = set()
@@ -480,11 +465,40 @@ class RLPlayerController(PlayerController):
         # if reason:
         #     print(f"  Bonus: +{bonus_reward} ({reason})")
 
-    def get_map_choice(self, player, map_gen, floor, room_idx):
+    def get_every_path(self, map: Map) -> list[list[Room]]:
+        # starter_floors = [room for room in map.map[0] if room is not None] # 5
+        final_list = [[room] for room in map.map[0] if room is not None]
+        for floor in range(14):
+            new_paths = []
+            for idx, path in enumerate(final_list):
+                avail_rooms_x_values = map.get_avail_floors(floor + 1, path[-1].x)
+                if len(avail_rooms_x_values) == 0:
+                    raise Exception("YOU FUCKED UP - no available rooms to choose on path")
+                elif len(avail_rooms_x_values) == 1:
+                    final_list[idx].append(map.map[floor + 1][avail_rooms_x_values[0]])
+                    continue
+                else:
+                    for j, next_x in enumerate(avail_rooms_x_values):
+                        if j == len(avail_rooms_x_values)-1: # first split gets joined to current path
+                            final_list[idx].append(map.map[floor + 1][next_x])
+                            continue
+                        new_path = list(path)
+                        new_paths.append(new_path)
+                        new_paths[-1].append(map.map[floor + 1][next_x])
+            final_list.extend(new_paths)
+        return final_list
+
+    def get_map_choice(self, player: Player, map: Map, floor: int, room_idx: int):
         if not self.wait_for_counter():
             return None
-        avail_rooms = map_gen.get_avail_floors(floor, room_idx)
-        return map_gen.map[floor][random.choice(avail_rooms)]
+        all_paths = self.get_every_path(map)
+        for path in all_paths:
+            for element in path:
+                print(element, end=" ")
+            print()
+
+        avail_rooms = map.get_avail_floors(floor, room_idx)
+        return map.map[floor][random.choice(avail_rooms)]
 
     def save_agent(self, filepath):
         self.agent.save_models(filepath)

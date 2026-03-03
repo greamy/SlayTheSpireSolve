@@ -423,15 +423,3 @@ class IndividualEnemyTest(unittest.TestCase):
             self.assertTrue(self.player.health == health - self.enemy.intent.damage)
 
 
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,5 +1,7 @@
 import pygame
 
+from GameSim.Map.Room import Room
+
 
 class Map:
     ROOM_TYPE_CHEST = 'C'
@@ -32,13 +34,13 @@ class Map:
                 (screen_size[1] - self.tile_size - self.tile_spacing) - (
                             floor_idx * self.tile_size + floor_idx * self.tile_spacing))
 
-    def get_avail_floors(self, floor, room_idx):
+    def get_avail_floors(self, floor, room_idx) -> list[int]:
         if room_idx is None:
             avail_floors = self.map[floor]
             avail_floors = [floor.x for floor in avail_floors if floor is not None]
         else:
-            floor = self.map[floor - 1][room_idx]
-            avail_floors = floor.next_rooms
+            cur_room = self.map[floor - 1][room_idx]
+            avail_floors = cur_room.next_rooms
         return list(avail_floors)
 
     def render(self, screen, screen_size, font, cur_floor, room_idx, render_type):

@@ -104,6 +104,7 @@ class MapGenerator:
                         chosen_room.floor = floor
                         chosen_room.x = room_index
                         # self.map[floor][room_index].type = room_type
+        return self.map
 
     def get_unallowed_room_types(self, floor, prev_rooms: list[Room], paths: list[list]):
         # Get a list of room types that are not allowed based on the previous rooms
