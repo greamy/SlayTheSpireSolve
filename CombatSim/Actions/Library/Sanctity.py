@@ -12,12 +12,10 @@ class Sanctity(Card):
         self.not_skill_listener = Listener([Listener.Event.ATTACK_PLAYED, Listener.Event.POWER_PLAYED], self.do_other)
         self.skill = False
         self.drawing = 2
-        player.add_listener(self.skill_listener)
-        player.add_listener(self.not_skill_listener)
+        self.add_listeners(player)
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
-        # TODO: Implement the following:
         if self.skill:
             player.draw_cards(self.drawing, enemies, debug)
 
@@ -36,6 +34,10 @@ class Sanctity(Card):
         super().upgrade()
         self.description = "Gain 9 Block. If the previous card played was a Skill, draw 2 cards."
         self.block = 9
+
+    def add_listeners(self, player: Player):
+        player.add_listener(self.skill_listener)
+        player.add_listener(self.not_skill_listener)
 
     def remove_listeners(self, player: Player):
         player.remove_listener(self.skill_listener)

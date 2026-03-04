@@ -37,7 +37,8 @@ class Transmogrifier(Event):
         # to check its type, then discard the instance.
         transform_options = []
         for name, module in player.implemented_cards.items():
-            if name in _BASIC_CARD_NAMES or name in _STARTER_CARDS:
+            NON_TRANSFORMABLE_CARDS = ["Miracle", "Expunger"]
+            if name in _BASIC_CARD_NAMES or name in _STARTER_CARDS or name in NON_TRANSFORMABLE_CARDS:
                 continue
             cls = getattr(module, name)
             test = cls(player)

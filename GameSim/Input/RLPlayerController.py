@@ -354,7 +354,10 @@ class RLPlayerController(PlayerController):
             return None
         selected_indices = set()
         card_choices = player.deck.get_zone(zone)
-        card_choices = [self.get_card_vector(card, player, enemies) for card in card_choices if condition(card)]
+        if condition is not None:
+            card_choices = [self.get_card_vector(card, player, enemies) for card in card_choices if condition(card)]
+        else:
+            card_choices = [self.get_card_vector(card, player, enemies) for card in card_choices]
 
         comparison_cards = player.deck.draw_pile + player.deck.hand
         comparison_cards = [self.get_card_vector(card, player, enemies) for card in comparison_cards]

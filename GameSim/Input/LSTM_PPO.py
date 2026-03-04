@@ -405,11 +405,26 @@ class LSTMPPOAgent(PPOAgent):
 
                 raw_seq = [self.memory['states'][i] for i in episode]
 
+                # Pad deck and hand to the max size in this episode before stacking.
+                # Deck grows between combats (card rewards), hand can vary with draw count.
+                deck_arrays = [s[0] for s in raw_seq]
+                max_deck = max(d.shape[0] for d in deck_arrays) if deck_arrays else 1
+                padded_decks = np.stack([
+                    np.pad(d, ((0, max_deck - d.shape[0]), (0, 0))) if d.shape[0] < max_deck else d
+                    for d in deck_arrays
+                ])
+                hand_arrays = [s[1] for s in raw_seq]
+                max_hand = max(h.shape[0] for h in hand_arrays) if hand_arrays else 1
+                padded_hands = np.stack([
+                    np.pad(h, ((0, max_hand - h.shape[0]), (0, 0))) if h.shape[0] < max_hand else h
+                    for h in hand_arrays
+                ])
+
                 # Normalize each component across the episode batch (update=False, stats already current)
                 batch_deck = torch.tensor(self.obs_norms['cards'].normalize(
-                    np.stack([s[0] for s in raw_seq]), update=False), dtype=torch.float32).to(self.device)
+                    padded_decks, update=False), dtype=torch.float32).to(self.device)
                 batch_hand = torch.tensor(self.obs_norms['cards'].normalize(
-                    np.stack([s[1] for s in raw_seq]), update=False), dtype=torch.float32).to(self.device)
+                    padded_hands, update=False), dtype=torch.float32).to(self.device)
                 batch_player = torch.tensor(self.obs_norms['player'].normalize(
                     np.stack([s[2] for s in raw_seq]), update=False), dtype=torch.float32).to(self.device)
                 batch_strategic = torch.tensor(self.obs_norms['strategic'].normalize(
@@ -514,7 +529,7 @@ class LSTMPPOAgent(PPOAgent):
 
         if avg_reward > self.best_avg_reward:
             self.best_avg_reward = avg_reward
-            self.save_models("artifacts/models/first_fight/ppo_agent_best.pt")
+            self.save_models("artifacts/models/first_act/ppo_agent_best.pt")
             print("New best reward found! saving to ppo_agent_beset.pt...")
 
         if self.learn_step_counter % 2 == 0:
