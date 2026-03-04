@@ -9,7 +9,7 @@ class WindmillStrike(Card):
         super().__init__("WindmillStrike", Card.Type.ATTACK, 2, 7, 1, 0, 0, 0, False, True, player, None, id=85)
         self.description = "Retain. Deal 7 damage. Whenever this card is Retained, increase its damage by 4."
         self.listener = Listener(Listener.Event.CARD_RETAINED, self.do_retain)
-        player.add_listener(self.listener)
+        self.add_listeners(player)
         self.damage_increase = 4
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
@@ -27,3 +27,11 @@ class WindmillStrike(Card):
         self.description = "Retain. Deal 10 damage. Whenever this card is Retained, increase its damage by 5."
         self.damage = 10
         self.damage_increase = 5
+
+    def add_listeners(self, player):
+        player.add_listener(self.listener)
+
+    def remove_listeners(self, player):
+        player.remove_listener(self.listener)
+
+

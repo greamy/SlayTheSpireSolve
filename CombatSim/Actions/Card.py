@@ -119,6 +119,9 @@ class Card(Playable):
         cost = font.render(str(self.energy), True, (0, 255, 0))
         screen.blit(cost, (self.x+(self.width - 20), y+10))
 
+    def add_listeners(self, player):
+        pass
+
     def remove_listeners(self, player: Player):
         if self.listener is not None and self.listener in player.listeners:
             player.remove_listener(self.listener)

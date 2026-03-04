@@ -11,7 +11,7 @@ class Pain(Card):
         self.playable = False
 
         self.listener = Listener(Listener.Event.CARD_PLAYED, self.on_card_play)
-        player.add_listener(player)
+        player.add_listener(self.listener)
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Unplayable. At the end of your turn, lose 1 HP for each card in your hand.
@@ -23,3 +23,8 @@ class Pain(Card):
         if self in player.deck.hand:
             player.health -= 1
             player.notify_listeners(Listener.Event.TAKEN_DAMAGE, player, enemy, debug)
+
+    def add_listeners(self, player: Player):
+        player.add_listener(self.listener)
+
+

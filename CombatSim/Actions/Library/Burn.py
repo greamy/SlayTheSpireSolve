@@ -10,7 +10,7 @@ class Burn(Card):
         self.description = "Unplayable. At the end of your turn take 2 damage."
         self.playable = False
         self.end_of_turn_damage = 2
-        player.add_listener(Listener(Listener.Event.END_TURN, self.eot_take_damage))
+        self.listener = Listener(Listener.Event.END_TURN, self.eot_take_damage)
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Unplayable. At the end of your turn take 2 (4) damage.

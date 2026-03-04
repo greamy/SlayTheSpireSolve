@@ -23,3 +23,6 @@ class Regret(Card):
         num_cards = len(player.deck.hand)
         player.health -= num_cards
         player.notify_listeners(Listener.Event.TAKEN_DAMAGE, player, enemy, debug)
+
+    def add_listeners(self, player):
+        player.add_listener(self.listener)
