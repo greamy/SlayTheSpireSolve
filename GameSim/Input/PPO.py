@@ -130,7 +130,11 @@ class AttentionStateEncoder(nn.Module):
         deck_token = deck_embeds.mean(dim=1, keepdim=True) # [batch, 1, embed_dim]
 
         # 2. Hand tokens - one token for each card in hand
-        hand_tokens = self.card_encoder(hand_features)
+        # Guard against empty hand (e.g. at end-of-combat terminal state): MPS crashes on empty tensors
+        if hand_features.shape[1] == 0:
+            hand_tokens = torch.zeros(batch_size, 0, deck_embeds.shape[-1], device=hand_features.device)
+        else:
+            hand_tokens = self.card_encoder(hand_features)
 
         # 3. Projected tokens for Player, Enemy, and Strategic info
         player_token = self.player_encoder(player_features).unsqueeze(1) # [batch_size, 1, embed_dim]
@@ -456,9 +460,8 @@ class PPOAgent:
             #     gae = 0  # Reset GAE at episode boundary
 
             if t == len(rewards) - 1 and not dones[t]:
-                last_state, last_other = self.get_state_from_memory_by_idx(t)
-                last_state_embedded = self.state_encoder(last_state)
-                next_value = self.actor_critic(last_state_embedded, *last_other).item()
+                # Bootstrap from stored value estimate for non-terminal cutoff
+                next_value = float(values[t])
             else:
                 next_value = values[t + 1] * (1 - dones[t])
 

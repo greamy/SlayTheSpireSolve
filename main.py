@@ -8,7 +8,7 @@ def main():
     save = True
     train = True
     load_model = False
-    delay = 1
+    delay = 0.5
     render_type = Renderer.RenderType.PYGAME
     episodes = 10_000
 

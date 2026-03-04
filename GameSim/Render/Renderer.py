@@ -11,7 +11,6 @@ class Renderer:
 
     def __init__(self, screen_size=(1280, 720), render_type=RenderType.PYGAME):
         self.render_type = render_type
-
         if self.do_render():
             pygame.init()
             self.screen = pygame.display.set_mode(screen_size)
@@ -60,17 +59,21 @@ class Renderer:
 
     def render_act_map(self, map, cur_floor, cur_idx):
         self.running = True
-        map_font = pygame.font.SysFont("Arial", 20)
+        if self.do_render():
+            map_font = pygame.font.SysFont("Arial", 20)
+        else:
+            map_font = None
 
         while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
+            if self.do_render():
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.running = False
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    map.handle_event(event, self.screen_size, cur_floor, cur_idx)
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        map.handle_event(event, self.screen_size, cur_floor, cur_idx)
 
-            self.screen.fill((0, 0, 0))
+                self.screen.fill((0, 0, 0))
 
             room_choice = map.render(self.screen, self.screen_size, map_font, cur_floor, cur_idx, self.render_type)
 
@@ -78,8 +81,9 @@ class Renderer:
                 self.running = False
                 return room_choice
 
-            pygame.display.flip()
-            self.clock.tick(60)
+            if self.do_render():
+                pygame.display.flip()
+                self.clock.tick(60)
 
     def render_room(self, room):
         self.running = True

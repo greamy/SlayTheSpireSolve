@@ -1,5 +1,3 @@
-import importlib
-import random
 import time
 
 import pygame
@@ -37,6 +35,10 @@ class CombatRoom(Room):
         self.enemy_turn_ready = False
 
     def start(self):
+        self.current_turn = self.PLAYER_TURN
+        self.player_won = None
+        self.enemy_turn_counter = 0
+        self.enemy_turn_ready = False
         self.enemies = self.create_enemies(self.act, self.ascension)
         self.player.begin_combat(self.enemies, self.debug)
         self.player.start_turn(self.enemies, self.debug)
@@ -44,25 +46,10 @@ class CombatRoom(Room):
         # return self.run()
 
     def create_enemies(self, act, ascension) -> list[Enemy]:
-        # TODO: implement real enemy fights here based on act, floor, and ascension.
-
-        enemy_choices = ["JawWorm"]
-        self.enemies = []
-        if self.floor < 5:
-            enemy_choices = ["JawWorm", "Looter", "Sentry"]
-        elif self.floor < 10:
-            enemy_choices = ["GremlinNob", "GremlinGang", "GremlinLeader"]
-        elif self.floor < 15:
-            enemy_choices = ["Cultist", "Sentry", "Chosen"]
-
-        num_enemies = random.randint(1, 3)
-        for i in range(num_enemies):
-            name = random.choice(enemy_choices)
-            module = importlib.import_module("CombatSim.Entities.Dungeon." + name)
-            class_ = getattr(module, name)
-            self.enemies.append(class_(ascension=20, act=1))
-
-        return self.enemies
+        if self.player.encounter_pool is None:
+            from GameSim.Map.Act1EncounterPool import Act1EncounterPool
+            self.player.encounter_pool = Act1EncounterPool()
+        return self.player.encounter_pool.get_next_encounter(ascension, act)
 
     def end_combat(self):
         pass
@@ -104,7 +91,7 @@ class CombatRoom(Room):
             return True
         else:
             if self.player.health > 0:
-                self.player_won = False
+                self.player_won = True
             else:
                 self.player_won = False
             # self.player.end_combat(self.enemies, self.debug)
