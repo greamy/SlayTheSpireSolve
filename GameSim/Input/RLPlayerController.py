@@ -69,7 +69,8 @@ class RLPlayerController(PlayerController):
                               # learning_enabled=self.train, filepath=filepath)
         self.agent = LSTMPPOAgent(self.action_space, self.card_vector_length,
                                   self.player_vector_length, self.enemy_vector_length, self.strategic_vector_length,
-                                  learning_enabled=self.train, filepath=filepath)
+                                  learning_enabled=self.train, filepath=filepath, save_model=self.save)
+
 
     def get_enum_value(self, stance):
         stance_val = -1  # Default value for no stance
@@ -257,13 +258,18 @@ class RLPlayerController(PlayerController):
         deck = np.array([self.get_card_vector(card, player, enemies) for card in deck_cards])
         hand = np.array([self.get_card_vector(card, player, enemies) if in_hand else self.get_card_vector(None, None, None) for card, in_hand in self.turn_stable_hand])
 
+        enemies_arr = np.array([self.get_enemy_vector(enemy) for enemy in enemies])
+        if len(enemies) < self.max_num_enemies:
+            pad = np.zeros((self.max_num_enemies - len(enemies), self.enemy_vector_length), dtype=np.float32)
+            enemies_arr = np.concatenate([enemies_arr, pad], axis=0)
+
         state_dict = {
             "deck": deck,
             "player": self.get_player_vector(player),
             "strategic": self.get_strategic_features(player, enemies),
             "action_mask": self.get_battle_action_mask(player, enemies, playable),
             "hand": hand,
-            "enemies": np.array([self.get_enemy_vector(enemy) for enemy in enemies])
+            "enemies": enemies_arr
         }
         return state_dict
 

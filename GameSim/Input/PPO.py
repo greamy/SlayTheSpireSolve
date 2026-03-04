@@ -135,13 +135,12 @@ class AttentionStateEncoder(nn.Module):
         # CLS token for the batch
         cls_tokens = self.cls_token.expand(batch_size, -1, -1)
 
-        #print shapes of all tokens
-        print(f"CLS token shape: {cls_tokens.shape}")
-        print(f"Player token shape: {player_token.shape}")
-        print(f"Strategic token shape: {strategic_token.shape}")
-        print(f"Deck token shape: {deck_token.shape}")
-        print(f"Enemy tokens shape: {enemy_tokens.shape}")
-        print(f"Hand tokens shape: {hand_tokens.shape}")
+        # print(f"CLS token shape: {cls_tokens.shape}")
+        # print(f"Player token shape: {player_token.shape}")
+        # print(f"Strategic token shape: {strategic_token.shape}")
+        # print(f"Deck token shape: {deck_token.shape}")
+        # print(f"Enemy tokens shape: {enemy_tokens.shape}")
+        # print(f"Hand tokens shape: {hand_tokens.shape}")
         sequence = torch.cat([
             cls_tokens,
             player_token,

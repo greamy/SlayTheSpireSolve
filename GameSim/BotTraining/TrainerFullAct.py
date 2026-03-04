@@ -72,7 +72,7 @@ class TrainerFullAct:
                 additional_cards += ["FlurryofBlows", "Tantrum", "ReachHeaven", "Rushdown"]
                 additional_relics += ["Ginger", "MeatOnTheBone", "RunicPyramid"]
             # random additional cards and relics within range of possible values
-            num_additional_cards = random.randint(max(random_floor-2), random_floor)
+            num_additional_cards = random.randint(random_floor-2, random_floor)
             num_additional_relics = random.randint(0, random_floor // 3)
             additional_cards = np.random.choice(additional_cards, size=num_additional_cards, replace=False)
             addCards(new_player, additional_cards)
@@ -84,6 +84,7 @@ class TrainerFullAct:
     def run(self):
         for episode in range(self.episodes):
             self.reset_episode()
+            self.controller.begin_episode()
             health_lost_per_combat = []
 
             next_room = self.renderer.render_act_map(self.cur_map, self.cur_map.player_pos[0], self.cur_map.player_pos[1])
@@ -93,15 +94,18 @@ class TrainerFullAct:
 
                 self.renderer.render_room(room)
 
+                next_room = self.renderer.render_act_map(self.cur_map, self.cur_map.player_pos[0],
+                                                         self.cur_map.player_pos[1])
+                episode_done = next_room is None
+
                 combat_won = room.player.is_alive()
                 health_lost_per_combat.append(max(health_before - room.player.health, 0))
+
                 if not combat_won:
-                    room.player.end_combat(room.enemies, False, episode_done=True)
+                    room.player.end_combat(room.enemies, False, episode_done=episode_done)
                     break
                 else:
-                    room.player.end_combat(room.enemies, False, episode_done=False)
-
-                next_room = self.renderer.render_act_map(self.cur_map, self.cur_map.player_pos[0], self.cur_map.player_pos[1])
+                    room.player.end_combat(room.enemies, False, episode_done=episode_done)
 
     def log_room(self, idx, health_lost_per_combat, max_episodes):
 

@@ -317,7 +317,7 @@ class LSTMPPOAgent(PPOAgent):
         self.memory['cell_states'].append(c.detach().cpu().numpy())
 
     def get_state_from_memory_by_idx(self, idx):
-        return self.memory['states'][idx], ((self.memory['hidden_states'][idx], self.memory['cell_states']) ,self.memory['stages'][idx])
+        return self.memory['states'][idx], ((self.memory['hidden_states'][idx], self.memory['cell_states'][idx]) ,self.memory['stages'][idx])
 
     def choose_action(self, state_tensors):
         """
@@ -469,7 +469,7 @@ class LSTMPPOAgent(PPOAgent):
         elif torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        avg_loss = sum(losses) / len(losses)
+        avg_loss = sum(losses) / (len(losses) + 0.000001) # prevent division by 0 if no full episodes
         avg_reward = (sum(rewards_arr) / len(rewards_arr))
         self.losses.append(avg_loss)
         self.rewards.append(avg_reward)
@@ -589,20 +589,19 @@ class LSTMPPOAgent(PPOAgent):
         episode_len, embed_dim = batch_states.shape
         # batch_states: (episode_len, embed_dim)
 
-        # --- 1. LSTM forward pass over the full episode sequence ---
-        # LSTM with batch_first=True expects input shape (batch, seq_len, input_size).
-        # We treat the episode as a single sequence, so batch=1.
-        lstm_input = batch_states.unsqueeze(0)
-        # lstm_input: (1, episode_len, embed_dim)
-
-        initial_hidden_state = (h_initial, c_initial)
-        # h_initial / c_initial: (num_layers, 1, lstm_hidden_dim)  — already the right shape
-
-        lstm_out, _ = self.actor_critic.lstm(lstm_input, initial_hidden_state)
-        # lstm_out: (1, episode_len, lstm_hidden_dim)
-
-        lstm_out = lstm_out.squeeze(0)
+        # --- 1. LSTM forward pass — battle steps only ---
+        # Card build steps must not update the hidden state (matches rollout behavior where
+        # self.hidden_state is only updated for BATTLE stage).  We step through the episode
+        # manually so we can skip LSTM updates for card build steps.
+        h, c = h_initial, c_initial
+        lstm_out = torch.zeros(episode_len, self.lstm_hidden_dim, device=self.device)
+        for i, stage in enumerate(batch_stages):
+            if stage == self.GameStage.BATTLE.value:
+                step_in = batch_states[i].unsqueeze(0).unsqueeze(0)  # (1, 1, embed_dim)
+                step_out, (h, c) = self.actor_critic.lstm(step_in, (h, c))
+                lstm_out[i] = step_out.squeeze(0).squeeze(0)
         # lstm_out: (episode_len, lstm_hidden_dim)
+        # Card build rows are zero — they are unused below (cb_base_network is used instead).
 
         # --- 2. Base network passes ---
         # Battle path: LSTM output → base_network
@@ -703,9 +702,10 @@ class LSTMPPOAgent(PPOAgent):
             'state_encoder': self.state_encoder.state_dict(),
             'actor_critic': self.actor_critic.state_dict(),
             'optimizer': self.optimizer.state_dict(),
-            'obs_norm_mean': self.obs_norm.mean,
-            'obs_norm_var': self.obs_norm.var,
-            'obs_norm_count': self.obs_norm.count,
+            'obs_norms': {
+                key: {'mean': rms.mean, 'var': rms.var, 'count': rms.count}
+                for key, rms in self.obs_norms.items()
+            },
         }
         torch.save(checkpoint, filepath)
 
@@ -717,9 +717,10 @@ class LSTMPPOAgent(PPOAgent):
         self.old_network.load_state_dict(self.actor_critic.state_dict())
         self.optimizer.load_state_dict(checkpoint['optimizer'])
 
-        # Load observation normalization statistics if they exist
-        if 'obs_norm_static_mean' in checkpoint:
-            self.obs_norm.mean = checkpoint['obs_norm_mean']
-            self.obs_norm.var = checkpoint['obs_norm_var']
-            self.obs_norm.count = checkpoint['obs_norm_count']
+        if 'obs_norms' in checkpoint:
+            for key, stats in checkpoint['obs_norms'].items():
+                if key in self.obs_norms:
+                    self.obs_norms[key].mean = stats['mean']
+                    self.obs_norms[key].var = stats['var']
+                    self.obs_norms[key].count = stats['count']
 
