@@ -16,8 +16,9 @@ from GameSim.Map.Room import Room
 
 class RLPlayerController(PlayerController):
 
-    def __init__(self, filepath, delay=0, train=True, save=True):
+    def __init__(self, filepath, delay=0, train=True, save=True, visualizer=None):
         super().__init__()
+        self.visualizer = visualizer
         self.delay = delay
         self.counter = 0
         self.framerate = 60
@@ -57,6 +58,8 @@ class RLPlayerController(PlayerController):
         self.health = 0
         self.start_health = 70
         self.enemy_health = 0
+        self.combat_start_health = 0
+        self.episode_count = 0
 
         # Current combat tracking
         self.current_turn_count = 0
@@ -69,7 +72,8 @@ class RLPlayerController(PlayerController):
                               # learning_enabled=self.train, filepath=filepath)
         self.agent = LSTMPPOAgent(self.action_space, self.card_vector_length,
                                   self.player_vector_length, self.enemy_vector_length, self.strategic_vector_length,
-                                  learning_enabled=self.train, filepath=filepath, save_model=self.save)
+                                  learning_enabled=self.train, filepath=filepath, save_model=self.save,
+                                  visualizer=self.visualizer)
 
 
     def get_enum_value(self, stance):
@@ -259,7 +263,10 @@ class RLPlayerController(PlayerController):
         hand = np.array([self.get_card_vector(card, player, enemies) if in_hand else self.get_card_vector(None, None, None) for card, in_hand in self.turn_stable_hand])
 
         num_enemies = len(enemies)
-        enemies_arr = np.array([self.get_enemy_vector(enemy) for enemy in enemies])
+        if num_enemies > 0:
+            enemies_arr = np.array([self.get_enemy_vector(enemy) for enemy in enemies])
+        else:
+            enemies_arr = np.zeros((0, self.enemy_vector_length), dtype=np.float32)
         if num_enemies < self.max_num_enemies:
             pad = np.zeros((self.max_num_enemies - num_enemies, self.enemy_vector_length), dtype=np.float32)
             enemies_arr = np.concatenate([enemies_arr, pad], axis=0)
@@ -379,6 +386,7 @@ class RLPlayerController(PlayerController):
     def begin_combat(self, player, enemies, debug):
         self.agent.reset_hidden_state()
         self.health = player.health
+        self.combat_start_health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
 
         # Reset combat-specific counters
@@ -454,6 +462,17 @@ class RLPlayerController(PlayerController):
             # Episode continues (done=False)
             self.agent.step(self.prev_obs, self.action_choice, self.log_prob, total_reward, False, state, self.value)
 
+        if self.visualizer:
+            won = player.health > 0
+            health_lost = max(self.combat_start_health - player.health, 0)
+            self.visualizer.log_combat(
+                win=won,
+                health_lost=health_lost,
+                turns=self.current_turn_count,
+                cards_played=self.current_cards_played,
+                episode=self.episode_count
+            )
+
         # Reset accumulated reward for next combat
         self.reward = 0
         self.prev_obs = state
@@ -465,6 +484,7 @@ class RLPlayerController(PlayerController):
         Called once at the start of each multi-combat episode.
         """
         self.agent.reset_hidden_state()
+        self.episode_count += 1
 
     def apply_episode_bonus(self, bonus_reward, reason=""):
         """

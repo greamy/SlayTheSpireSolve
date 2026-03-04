@@ -16,10 +16,11 @@ from CombatSim.util import createPlayer, addCards, get_default_deck
 class TrainerFullAct:
 
     def __init__(self, episodes: int, renderer: Renderer, agent_save_path="artifacts/images/model_results/first_fight/", train=True, save=True, delay=0,
-                 combat_sim_path="CombatSim/"):
+                 combat_sim_path="CombatSim/", visualizer=None):
         self.episodes = episodes
         self.renderer = renderer
-        self.controller = RLPlayerController(agent_save_path, delay=delay, train=train, save=save)
+        self.visualizer = visualizer
+        self.controller = RLPlayerController(agent_save_path, delay=delay, train=train, save=save, visualizer=visualizer)
         # self.player = self.get_player(self.controller)
         self.save = save
         self.train = train
@@ -50,7 +51,8 @@ class TrainerFullAct:
         self.cur_map = self.map_gen.generate_map()
 
         # randomize starting floor based on self.random_floor_chance
-        if np.random.rand() < self.random_floor_chance:
+        # if np.random.rand() < self.random_floor_chance:
+        if False:
             random_floor = np.random.randint(2, self.cur_map.grid_y-2)
             available_rooms = self.cur_map.get_avail_floors(random_floor, None)
             random_room = np.random.choice(available_rooms)
@@ -86,6 +88,8 @@ class TrainerFullAct:
             self.reset_episode()
             self.controller.begin_episode()
             health_lost_per_combat = []
+            combats_this_episode = 0
+            combats_won_this_episode = 0
 
             next_room = self.renderer.render_act_map(self.cur_map, self.cur_map.player_pos[0], self.cur_map.player_pos[1])
             while next_room:
@@ -100,12 +104,22 @@ class TrainerFullAct:
 
                 combat_won = room.player.is_alive()
                 health_lost_per_combat.append(max(health_before - room.player.health, 0))
+                combats_this_episode += 1
+                if combat_won:
+                    combats_won_this_episode += 1
 
                 if not combat_won:
                     room.player.end_combat(room.enemies, False, episode_done=episode_done)
                     break
                 else:
                     room.player.end_combat(room.enemies, False, episode_done=episode_done)
+
+            if self.visualizer:
+                self.visualizer.log_episode(
+                    combats=combats_this_episode,
+                    combats_won=combats_won_this_episode,
+                    episode=episode
+                )
 
     def log_room(self, idx, health_lost_per_combat, max_episodes):
 
