@@ -230,7 +230,9 @@ class PPOAgent:
     #              gamma=0.99, epsilon=0.2, value_coef=0.5, entropy_coef=0.001, entropy_decay=0.99, learn_epochs=5):
     def __init__(self, num_actions, card_feature_length, player_feature_length, enemy_feature_length, strategic_feature_length, filepath,
                  embedding_dim=128, learning_enabled=True, save_weights=True, lr=0.0003, gamma=0.99, epsilon=0.2,
-                 value_coef=0.25, entropy_coef=0.01, entropy_decay=0.999, learn_epochs=3):
+                 value_coef=0.25, entropy_coef=0.01, entropy_decay=0.999, learn_epochs=3, visualizer=None):
+
+        self.visualizer = visualizer
 
         # Hyperparameters
         self.gamma = gamma

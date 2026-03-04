@@ -213,8 +213,8 @@ class ActorCriticLSTM(nn.Module):
 class LSTMPPOAgent(PPOAgent):
     STATE_KEYS = ["player", 'strategic', 'deck', 'hand']
     def __init__(self, num_actions, card_feature_length, player_feature_length, enemy_feature_length, strategic_feature_length,
-                 filepath, learning_enabled=True, save_model=True):
-        super().__init__(num_actions, card_feature_length, player_feature_length, enemy_feature_length, strategic_feature_length, filepath, learning_enabled=learning_enabled, save_weights=save_model)# (Keep your existing __init__ arguments)
+                 filepath, learning_enabled=True, save_model=True, visualizer=None):
+        super().__init__(num_actions, card_feature_length, player_feature_length, enemy_feature_length, strategic_feature_length, filepath, learning_enabled=learning_enabled, save_weights=save_model, visualizer=visualizer)
 
         self.best_avg_reward = -math.inf
         # Define the dimensions for the new network
@@ -380,6 +380,8 @@ class LSTMPPOAgent(PPOAgent):
                 current_episode_start = i + 1
 
         losses = []
+        grad_norm = 0.0
+        clip_frac = 0.0
         for _ in range(self.learn_epochs):
             # Shuffle the sequences, NOT the individual steps
             random.shuffle(episode_indices)
@@ -443,19 +445,18 @@ class LSTMPPOAgent(PPOAgent):
 
                 self.optimizer.zero_grad()
                 total_loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.params, max_norm=0.5)
+                grad_norm = torch.nn.utils.clip_grad_norm_(self.params, max_norm=0.5).item()
                 self.optimizer.step()
+                clip_frac = (torch.abs(ratios - 1) > self.epsilon).float().mean().item()
 
             self.lr_scheduler.step()
             self.entropy_coef *= self.entropy_decay
 
-            if self.learn_step_counter % 2 == 0:
-
+            if self.learn_step_counter % 2 == 0 and isinstance(policy_loss, torch.Tensor):
                 print(f"Policy Loss: {policy_loss.item():.4f}")
                 print(f"Value Loss: {value_loss.item():.4f}")
                 print(f"Entropy: {-entropy_loss.item():.4f}")
-                # print(f"Approx KL: {approx_kl.item():.4f}")
-                print(f"Clip Fraction: {(torch.abs(ratios - 1) > self.epsilon).float().mean():.2%}")
+                print(f"Clip Fraction: {clip_frac:.2%}")
                 print(f"Advantage Std: {batch_advantages.std():.4f}")
 
 
@@ -475,6 +476,21 @@ class LSTMPPOAgent(PPOAgent):
         avg_reward = (sum(rewards_arr) / len(rewards_arr))
         self.losses.append(avg_loss)
         self.rewards.append(avg_reward)
+
+        if self.visualizer and isinstance(policy_loss, torch.Tensor):
+            self.visualizer.log_training_step(
+                policy_loss=policy_loss.item(),
+                value_loss=value_loss.item(),
+                entropy=-entropy_loss.item(),
+                clip_fraction=clip_frac,
+                advantage_std=batch_advantages.std().item() if isinstance(batch_advantages, torch.Tensor) else 0.0,
+                grad_norm=grad_norm,
+                total_loss=total_loss.item(),
+                avg_reward=float(avg_reward),
+                learn_rate=self.lr_scheduler.get_last_lr()[0],
+                entropy_coef=self.entropy_coef,
+                learn_step=self.learn_step_counter
+            )
 
         if avg_reward > self.best_avg_reward:
             self.best_avg_reward = avg_reward
