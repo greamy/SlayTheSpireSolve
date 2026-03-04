@@ -35,15 +35,15 @@ class IntegrationTest(unittest.TestCase):
         self.gold = 100
         self.controller = RandomPlayerController(delay=0)
         self.lib_path = "CombatSim/Actions/Library"
+        self.relic_path = "CombatSim/Items/Relics/DisplayCase"
         self.player = Player(self.health, self.energy, self.gold, [], [], [], self.controller,
-                             library_path=self.lib_path)
+                             library_path=self.lib_path, relic_path=self.relic_path)
 
         random.seed(42)
 
     def test_map_choices(self):
         self.controller = RLPlayerController("artifacts/images/model_results/tests/", delay=0)
         map_gen = MapGenerator(self.player, 1, 20, 42)
-        map_list = map_gen.generate_map()
-        map = Map(self.player, 1, 20, map_list)
+        map = map_gen.generate_map()
         # controller = RenderInputPlayerController(self.renderer.screen)
         self.controller.get_map_choice(self.player, map, 0, None)

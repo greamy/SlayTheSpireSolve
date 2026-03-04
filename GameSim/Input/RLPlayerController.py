@@ -29,11 +29,12 @@ class RLPlayerController(PlayerController):
         self.max_num_enemies = 5
         self.max_num_cards = 10
         self.card_vector_length = 19
-        self.player_vector_length = 12
+        self.player_vector_length = 11
         self.enemy_vector_length = 12
         self.strategic_vector_length = 10
 
         self.card_cache = []
+        self.path = None
 
         self.train = train
         self.save = save
@@ -67,8 +68,9 @@ class RLPlayerController(PlayerController):
         # self.agent = PPOAgent(self.action_space, self.card_vector_length, 13,
                               # learning_enabled=self.train, filepath=filepath)
         self.agent = LSTMPPOAgent(self.action_space, self.card_vector_length,
-                                  self.player_vector_length + self.strategic_vector_length, self.enemy_vector_length,
-                                  learning_enabled=self.train, filepath=filepath)
+                                  self.player_vector_length, self.enemy_vector_length, self.strategic_vector_length,
+                                  learning_enabled=self.train, filepath=filepath, save_model=self.save)
+
 
     def get_enum_value(self, stance):
         stance_val = -1  # Default value for no stance
@@ -148,7 +150,6 @@ class RLPlayerController(PlayerController):
             int(stance_val == Player.Stance.CALM),
             int(stance_val == Player.Stance.WRATH),
             int(stance_val == Player.Stance.DIVINITY),
-            player.energy,
             player.mantra
         ])
 
@@ -257,13 +258,22 @@ class RLPlayerController(PlayerController):
         deck = np.array([self.get_card_vector(card, player, enemies) for card in deck_cards])
         hand = np.array([self.get_card_vector(card, player, enemies) if in_hand else self.get_card_vector(None, None, None) for card, in_hand in self.turn_stable_hand])
 
+        num_enemies = len(enemies)
+        enemies_arr = np.array([self.get_enemy_vector(enemy) for enemy in enemies])
+        if num_enemies < self.max_num_enemies:
+            pad = np.zeros((self.max_num_enemies - num_enemies, self.enemy_vector_length), dtype=np.float32)
+            enemies_arr = np.concatenate([enemies_arr, pad], axis=0)
+
+        enemy_mask = np.array([i >= num_enemies for i in range(self.max_num_enemies)], dtype=bool)
+
         state_dict = {
             "deck": deck,
             "player": self.get_player_vector(player),
             "strategic": self.get_strategic_features(player, enemies),
             "action_mask": self.get_battle_action_mask(player, enemies, playable),
             "hand": hand,
-            "enemies": np.array([self.get_enemy_vector(enemy) for enemy in enemies])
+            "enemies": enemies_arr,
+            "enemy_mask": enemy_mask,
         }
         return state_dict
 
@@ -367,6 +377,7 @@ class RLPlayerController(PlayerController):
         self.enemy_health = sum([enemy.health for enemy in enemies])
 
     def begin_combat(self, player, enemies, debug):
+        self.agent.reset_hidden_state()
         self.health = player.health
         self.enemy_health = sum([enemy.health for enemy in enemies])
 
@@ -491,14 +502,51 @@ class RLPlayerController(PlayerController):
     def get_map_choice(self, player: Player, map: Map, floor: int, room_idx: int):
         if not self.wait_for_counter():
             return None
-        all_paths = self.get_every_path(map)
-        for path in all_paths:
-            for element in path:
-                print(element, end=" ")
-            print()
+        if self.path is None:
+            all_paths = self.get_every_path(map)
+            valid_paths = {i: path for i, path in enumerate(all_paths)}
+            # for path in all_paths:
+            #     for room_obj in path:
+            #         print(room_obj, end=" ")
+            #     print()
+            room_type_count = [{'M': 0, "S": 0, "?": 0, "R": 0, "E": 0, 'C': 0} for _ in range(len(all_paths))]
+            most_num_consecutive = [{'M': 0, "S": 0, "?": 0, "R": 0, "E": 0, 'C': 0} for _ in range(len(all_paths))]
+            cur_num_consecutive = [{'M': 0, "S": 0, "?": 0, "R": 0, "E": 0, 'C': 0} for _ in range(len(all_paths))]
+            for j, path in enumerate(all_paths):
+                last_room_type = ""
+                for idx, room in enumerate(path):
+                    room_type_count[j][room.type] += 1
+                    cur_num_consecutive[j][room.type] += 1
+                    if cur_num_consecutive[j][room.type] > most_num_consecutive[j][room.type]:
+                        most_num_consecutive[j][room.type] = cur_num_consecutive[j][room.type]
+                    if last_room_type != room.type:
+                        cur_num_consecutive[j][last_room_type] = 0
+                    last_room_type = room.type
 
-        avail_rooms = map.get_avail_floors(floor, room_idx)
-        return map.map[floor][random.choice(avail_rooms)]
+            for i in range(len(all_paths)):
+                if most_num_consecutive[i]['M'] > 4:
+                    valid_paths[i] = None
+                if room_type_count[i]['E'] < 1:
+                    valid_paths[i] = None
+                if room_type_count[i]['S'] > 2:
+                    valid_paths[i] = None
+                if room_type_count[i]['?'] > 5:
+                    valid_paths[i] = None
+
+            paths_to_choose = [path for path in valid_paths.values() if path is not None]
+            if len(paths_to_choose) > 0:
+                self.path = random.choice(paths_to_choose)
+            else:
+                self.path = random.choice(all_paths)
+
+        chosen_room = self.path[floor]
+        for room in self.path:
+            print(room.type, end=" ")
+        print(floor)
+        print(self.path[floor])
+        # print(self.path)
+
+        return chosen_room
 
     def save_agent(self, filepath):
         self.agent.save_models(filepath)
