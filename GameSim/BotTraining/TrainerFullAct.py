@@ -81,7 +81,9 @@ class TrainerFullAct:
 
             additional_relics = np.random.choice(additional_relics, size=num_additional_relics, replace=False)
             for relic_name in additional_relics:
-                new_player.add_relic(relic_name)
+                if relic_name in new_player.implemented_relics:
+                    cls = getattr(new_player.implemented_relics[relic_name], relic_name)
+                    new_player.add_relic(cls(new_player))
 
     def run(self):
         for episode in range(self.episodes):
@@ -97,6 +99,7 @@ class TrainerFullAct:
                 health_before = room.player.health
 
                 self.renderer.render_room(room)
+                self.cur_map.player_pos = (room.floor + 1, room.x)
 
                 next_room = self.renderer.render_act_map(self.cur_map, self.cur_map.player_pos[0],
                                                          self.cur_map.player_pos[1])
@@ -109,7 +112,7 @@ class TrainerFullAct:
                     combats_won_this_episode += 1
 
                 if not combat_won:
-                    room.player.end_combat(room.enemies, False, episode_done=episode_done)
+                    room.player.end_combat(room.enemies, False, episode_done=True)
                     break
                 else:
                     room.player.end_combat(room.enemies, False, episode_done=episode_done)

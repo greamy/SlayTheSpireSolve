@@ -5,6 +5,7 @@ import pygame
 from GameSim.Map.ChestRoom import ChestRoom
 from GameSim.Map.EliteRoom import EliteRoom
 from GameSim.Map.EventRoom import EventRoom
+import GameSim.Map.Events  # registers all events into EventRoom._event_pool
 from GameSim.Map.Map import Map
 from GameSim.Map.MonsterRoom import MonsterRoom
 from GameSim.Map.RestRoom import RestRoom

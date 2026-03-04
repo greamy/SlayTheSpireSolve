@@ -43,3 +43,7 @@ class PlayerController:
 
     def select_cards_from_zone(self, player, zone, enemies, num_cards, debug, condition=None):
         pass
+
+    def select_event_option(self, player, event) -> int:
+        import random
+        return random.randrange(len(event.options))

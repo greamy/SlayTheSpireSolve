@@ -36,8 +36,11 @@ class Player(Entity):
         self.card_played = None
         self.card_choice = None
         self.last_elite = None
+        self.encounter_pool = None
 
         self.final_stance = None
+        self.gold_combat_multiplier = 1.0
+        self.next_chest_empty = False
 
         self.controller: PlayerController = controller
 
@@ -86,14 +89,6 @@ class Player(Entity):
             raise Exception(f"No implemented card named {card_name}")
 
         return card
-
-    def add_relic(self, relic_name: str):
-        relic = None
-        if relic_name in self.implemented_relics.keys():
-            class_ = getattr(self.implemented_relics[relic_name], relic_name)
-            relic = class_(self)
-            self.add_relic(relic)
-        return relic
 
     def heal(self, amt):
         self.health = int(min(self.health + amt, self.start_health))
@@ -374,7 +369,7 @@ class Player(Entity):
         return len(index_discarded)
 
     def gain_gold(self, amount, enemies, debug):
-        self.gold += amount
+        self.gold += int(amount * self.gold_combat_multiplier)
         # TODO: Add gold gained listener notification
 
     def gain_block(self, amount, enemies, debug):

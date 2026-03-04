@@ -55,3 +55,4 @@ class Listener:
         ENEMY_DIED = 28
         BOSS_START = 29
         SHUFFLE = 30
+        ENTER_EVENT = 31
