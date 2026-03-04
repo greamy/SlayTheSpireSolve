@@ -89,6 +89,8 @@ class RunningMeanStd:
 
         if is_tensor:
             obs_np = obs.detach().cpu().numpy()
+        elif isinstance(obs, dict):
+            obs_np = np.array(obs)
         else:
             obs_np = obs
 
@@ -164,7 +166,7 @@ class ActorCriticLSTM(nn.Module):
         if stage == PPOAgent.GameStage.BATTLE:
             # Pass dynamic features and the previous hidden state through the LSTM.
             # We add a sequence dimension (1) to the input tensor.
-            features = features.unsqueeze(0).unsqueeze(0)
+            features = features.unsqueeze(0)
             lstm_out, new_hidden_state = self.lstm(features, hidden_state)
 
             # The output needs to be squeezed to remove the sequence dimension before concatenation.
@@ -194,11 +196,10 @@ class ActorCriticLSTM(nn.Module):
         # --- Get Action Logits and State Value ---
         action_logits, state_value, new_hidden_state = self.forward(features, hidden_state, stage)
 
-
         masked_logits = torch.where(
             action_mask,
             action_logits,
-            torch.tensor(-1e9).to(self.device)
+            torch.tensor(-1e9)
         )
 
         # --- Sample Action ---
@@ -210,7 +211,7 @@ class ActorCriticLSTM(nn.Module):
         return action, log_prob, state_value, new_hidden_state, action_dist.probs
 
 class LSTMPPOAgent(PPOAgent):
-
+    STATE_KEYS = ["player", 'strategic', 'deck', 'hand']
     def __init__(self, num_actions, card_feature_length, player_feature_length, enemy_feature_length, strategic_feature_length,
                  filepath, learning_enabled=True, save_model=True):
         super().__init__(num_actions, card_feature_length, player_feature_length, enemy_feature_length, strategic_feature_length, filepath, learning_enabled=learning_enabled, save_weights=save_model)# (Keep your existing __init__ arguments)
@@ -258,7 +259,13 @@ class LSTMPPOAgent(PPOAgent):
         self.sequence_length = 64
 
         # --- Observation Normalization ---
-        self.obs_norm = RunningMeanStd(shape=self.embed_dim)
+        self.obs_norms = {
+            'player': RunningMeanStd(shape=player_feature_length),
+            'strategic': RunningMeanStd(shape=strategic_feature_length),
+            'enemies': RunningMeanStd(shape=enemy_feature_length),  # normalizes per-enemy-feature
+            # deck and hand use the same card feature space
+            'cards': RunningMeanStd(shape=card_feature_length),
+        }
 
     def reset_hidden_state(self):
         """Call this at the beginning of each battle."""
@@ -267,6 +274,38 @@ class LSTMPPOAgent(PPOAgent):
             torch.zeros(1, 1, self.lstm_hidden_dim).to(self.device),
             torch.zeros(1, 1, self.lstm_hidden_dim).to(self.device)
         )
+
+    def _normalize_state_dict(self, state_tensors: dict, update: bool) -> dict:
+        """
+        Normalize each component of the state dictionary using its own RunningMeanStd.
+        Operates on a dict of tensors; returns a new dict with normalized tensors.
+        """
+        normalized = dict(state_tensors)  # shallow copy — we'll replace values
+
+        for key in self.STATE_KEYS:
+            if key not in state_tensors:
+                continue
+            if key == "deck" or key == "hand":
+                norm_key = "cards"
+            else:
+                norm_key = key
+
+            t = state_tensors[key]
+            normalized[key] = torch.tensor(
+                self.obs_norms[norm_key].normalize(t, update=update),
+                dtype=torch.float32, device=self.device
+            )
+
+        # Enemies: shape is (num_enemies, enemy_feature_dim) — normalize per feature across the enemy dim
+        if 'enemies' in state_tensors:
+            e = state_tensors['enemies']
+            normalized['enemies'] = torch.tensor(
+                self.obs_norms['enemies'].normalize(e, update=update),
+                dtype=torch.float32, device=self.device
+            )
+
+        # action_mask and card_choices are not normalized
+        return normalized
 
     def remember(self, stage, state, action, reward, done, log_prob, value, hidden_state):
         """Override the remember method to also store the hidden state."""
@@ -285,18 +324,15 @@ class LSTMPPOAgent(PPOAgent):
         Choose action, now passing the hidden state.
         :param state_tensors: A single state dictionary with values of the dictionary converted to tensors.
         """
-        normalized_state_tensors = self.obs_norm.normalize(state_tensors, update=self.learning_enabled)
+        normalized_state_tensors = self._normalize_state_dict(state_tensors, update=self.learning_enabled)
         state_tuple, stage, action_mask = self.embed_state(normalized_state_tensors)
         embedded_state = self.state_encoder(*state_tuple)
-
-        # Normalize observations (update statistics during training)
-        normalized_state = self.obs_norm.normalize(embedded_state, update=self.learning_enabled)
 
         self.actor_critic.eval()
         with torch.no_grad():
             # Pass the current hidden state to the network
             action_choice, log_prob, value, new_hidden_state, action_probs = self.actor_critic.sample_action(
-                stage, normalized_state, self.hidden_state, action_mask
+                stage, embedded_state, self.hidden_state, action_mask
             )
             # Update the agent's hidden state for the next step
             if stage == self.GameStage.BATTLE:
@@ -356,11 +392,17 @@ class LSTMPPOAgent(PPOAgent):
 
                 raw_seq = [self.memory['states'][i] for i in episode]
 
-                batch_deck = torch.tensor(np.stack([s[0] for s in raw_seq]), dtype=torch.float32).to(self.device)
-                batch_hand = torch.tensor(np.stack([s[1] for s in raw_seq]), dtype=torch.float32).to(self.device)
-                batch_player = torch.tensor(np.stack([s[2] for s in raw_seq]), dtype=torch.float32).to(self.device)
-                batch_strategic = torch.tensor(np.stack([s[3] for s in raw_seq]), dtype=torch.float32).to(self.device)
-                batch_enemies = torch.tensor(np.stack([s[4] for s in raw_seq]), dtype=torch.float32).to(self.device)
+                # Normalize each component across the episode batch (update=False, stats already current)
+                batch_deck = torch.tensor(self.obs_norms['cards'].normalize(
+                    np.stack([s[0] for s in raw_seq]), update=False), dtype=torch.float32).to(self.device)
+                batch_hand = torch.tensor(self.obs_norms['cards'].normalize(
+                    np.stack([s[1] for s in raw_seq]), update=False), dtype=torch.float32).to(self.device)
+                batch_player = torch.tensor(self.obs_norms['player'].normalize(
+                    np.stack([s[2] for s in raw_seq]), update=False), dtype=torch.float32).to(self.device)
+                batch_strategic = torch.tensor(self.obs_norms['strategic'].normalize(
+                    np.stack([s[3] for s in raw_seq]), update=False), dtype=torch.float32).to(self.device)
+                batch_enemies = torch.tensor(self.obs_norms['enemies'].normalize(
+                    np.stack([s[4] for s in raw_seq]), update=False), dtype=torch.float32).to(self.device)
 
                 batch_states = self.state_encoder(batch_deck, batch_hand, batch_player, batch_strategic, batch_enemies)
 
@@ -445,76 +487,170 @@ class LSTMPPOAgent(PPOAgent):
 
         self.learn_step_counter += 1
 
+    # def _compute_log_prob_lstm_batch(self, batch_stages, batch_states, batch_actions, h_initial, c_initial):
+    #     """
+    #     Compute log probs for a BATCH of SEQUENCES, using an initial hidden state for each sequence.
+    #     This version is vectorized and much more efficient.
+    #
+    #     Args:
+    #         batch_stages (Tensor): Shape (batch_size, sequence_length)
+    #         batch_states (Tensor): Shape (batch_size, sequence_length, state_dim)
+    #         batch_actions (Tensor): Shape (batch_size, sequence_length)
+    #         h_initial (Tensor): Initial hidden state, shape (batch_size, 1, 1, hidden_dim)
+    #         c_initial (Tensor): Initial cell state, shape (batch_size, 1, 1, hidden_dim)
+    #     """
+    #     # --- 1. Prepare Inputs and Hidden States ---
+    #
+    #     # Get batch dimensions
+    #     episode_length, _ = batch_states.shape
+    #
+    #     # Reshape the initial hidden states to the format expected by the LSTM:
+    #     # (num_layers, batch_size, hidden_dim)
+    #     # The squeeze removes the dimensions of size 1, and transpose swaps episode and layer dims.
+    #     initial_hidden_state = (h_initial, c_initial)
+    #
+    #     # Normalize observations during training (don't update stats, just use existing)
+    #     # We normalize each observation in the batch
+    #     features_normalized = torch.stack([
+    #         self.obs_norm.normalize(batch_states[i], update=False)
+    #         for i in range(batch_states.shape[0])
+    #     ])
+    #     features_normalized = features_normalized.unsqueeze(0)
+    #
+    #     # --- 2. Vectorized Forward Pass ---
+    #
+    #     # Process all battle sequences through the LSTM at once
+    #     # The LSTM will process the tensor of shape (batch_size, self.embed_dim)
+    #
+    #     lstm_out, _ = self.actor_critic.lstm(features_normalized, initial_hidden_state)
+    #
+    #     # Combine LSTM output with static features
+    #     bt_base_out = self.actor_critic.base_network(lstm_out)
+    #
+    #     # Process all card build sequences through the non-LSTM path
+    #     cb_base_out = self.actor_critic.cb_base_network(features_normalized)
+    #
+    #     # Use a mask to select the correct output for each item in the batch based on its stage
+    #
+    #     # is_battle_stage = (batch_stages == self.GameStage.BATTLE.value).to(self.device).squeeze(-1)
+    #     is_battle_stage = torch.tensor([stage == self.GameStage.BATTLE.value for stage in batch_stages]).to(self.device)
+    #     base_output = torch.where(is_battle_stage.unsqueeze(-1), bt_base_out, cb_base_out).to(self.device)
+    #
+    #     # --- 3. Get Logits, Values, and Entropy ---
+    #
+    #     # Get values from the critic head
+    #     values = self.actor_critic.critic_head(base_output).squeeze(-1)  # Shape: (batch_size, sequence_length)
+    #
+    #     # Get logits from the correct actor head using the same mask
+    #     bt_logits = self.actor_critic.actor_bt_head(base_output)
+    #     cb_logits = self.actor_critic.actor_cb_head(base_output)
+    #
+    #     # log_probs = torch.empty(batch_size, episode_length, device=self.device)
+    #     # entropy = torch.empty(batch_size, episode_length, device=self.device)
+    #     log_probs = torch.empty(episode_length, device=self.device)
+    #     entropy = torch.empty(episode_length, device=self.device)
+    #
+    #     bt_mask = is_battle_stage
+    #     if bt_mask.any():
+    #         bt_dist = torch.distributions.Categorical(logits=bt_logits[bt_mask])
+    #         log_probs[bt_mask] = bt_dist.log_prob(batch_actions[bt_mask])
+    #         entropy[bt_mask] = bt_dist.entropy()
+    #
+    #     cb_mask = ~is_battle_stage
+    #     if cb_mask.any():
+    #         cb_dist = torch.distributions.Categorical(logits=cb_logits[cb_mask])
+    #         log_probs[cb_mask] = cb_dist.log_prob(batch_actions[cb_mask])
+    #         entropy[cb_mask] = cb_dist.entropy()
+    #
+    #     return log_probs, entropy, values
+
     def _compute_log_prob_lstm_batch(self, batch_stages, batch_states, batch_actions, h_initial, c_initial):
         """
-        Compute log probs for a BATCH of SEQUENCES, using an initial hidden state for each sequence.
-        This version is vectorized and much more efficient.
+        Recomputes log probabilities, entropy, and values for a single episode's worth of steps.
+        Called during _learn() after batch_states has already been normalized and encoded.
 
         Args:
-            batch_stages (Tensor): Shape (batch_size, sequence_length)
-            batch_states (Tensor): Shape (batch_size, sequence_length, state_dim)
-            batch_actions (Tensor): Shape (batch_size, sequence_length)
-            h_initial (Tensor): Initial hidden state, shape (batch_size, 1, 1, hidden_dim)
-            c_initial (Tensor): Initial cell state, shape (batch_size, 1, 1, hidden_dim)
+            batch_stages  : list of int, length (episode_len,)
+                            Stage enum values (BATTLE=0, CARD_BUILD=1) for each step.
+            batch_states  : Tensor, shape (episode_len, embed_dim)
+                            Already-encoded, already-normalized state embeddings from state_encoder.
+            batch_actions : Tensor, shape (episode_len,)
+                            Actions taken during rollout, used to compute log probs.
+            h_initial     : Tensor, shape (num_layers, 1, lstm_hidden_dim)
+                            Initial LSTM hidden state — zeros for episode start.
+            c_initial     : Tensor, shape (num_layers, 1, lstm_hidden_dim)
+                            Initial LSTM cell state — zeros for episode start.
+
+        Returns:
+            log_probs : Tensor, shape (episode_len,)
+            entropy   : Tensor, shape (episode_len,)
+            values    : Tensor, shape (episode_len,)
         """
-        # --- 1. Prepare Inputs and Hidden States ---
+        episode_len, embed_dim = batch_states.shape
+        # batch_states: (episode_len, embed_dim)
 
-        # Get batch dimensions
-        episode_length, _ = batch_states.shape
+        # --- 1. LSTM forward pass over the full episode sequence ---
+        # LSTM with batch_first=True expects input shape (batch, seq_len, input_size).
+        # We treat the episode as a single sequence, so batch=1.
+        lstm_input = batch_states.unsqueeze(0)
+        # lstm_input: (1, episode_len, embed_dim)
 
-        # Reshape the initial hidden states to the format expected by the LSTM:
-        # (num_layers, batch_size, hidden_dim)
-        # The squeeze removes the dimensions of size 1, and transpose swaps episode and layer dims.
         initial_hidden_state = (h_initial, c_initial)
+        # h_initial / c_initial: (num_layers, 1, lstm_hidden_dim)  — already the right shape
 
-        # Normalize observations during training (don't update stats, just use existing)
-        # We normalize each observation in the batch
-        features_normalized = torch.stack([
-            self.obs_norm.normalize(batch_states[i], update=False)
-            for i in range(batch_states.shape[0])
-        ])
-        features_normalized = features_normalized.unsqueeze(0)
+        lstm_out, _ = self.actor_critic.lstm(lstm_input, initial_hidden_state)
+        # lstm_out: (1, episode_len, lstm_hidden_dim)
 
-        # --- 2. Vectorized Forward Pass ---
+        lstm_out = lstm_out.squeeze(0)
+        # lstm_out: (episode_len, lstm_hidden_dim)
 
-        # Process all battle sequences through the LSTM at once
-        # The LSTM will process the tensor of shape (batch_size, self.embed_dim)
-
-        lstm_out, _ = self.actor_critic.lstm(features_normalized, initial_hidden_state)
-
-        # Combine LSTM output with static features
+        # --- 2. Base network passes ---
+        # Battle path: LSTM output → base_network
         bt_base_out = self.actor_critic.base_network(lstm_out)
+        # bt_base_out: (episode_len, network_size // 2)
 
-        # Process all card build sequences through the non-LSTM path
-        cb_base_out = self.actor_critic.cb_base_network(features_normalized)
+        # Card build path: raw embedding → cb_base_network (bypasses LSTM entirely)
+        cb_base_out = self.actor_critic.cb_base_network(batch_states)
+        # cb_base_out: (episode_len, network_size // 2)
 
-        # Use a mask to select the correct output for each item in the batch based on its stage
+        # --- 3. Select correct base output per step based on game stage ---
+        is_battle_stage = torch.tensor(
+            [stage == self.GameStage.BATTLE.value for stage in batch_stages],
+            dtype=torch.bool, device=self.device
+        )
+        # is_battle_stage: (episode_len,)
 
-        # is_battle_stage = (batch_stages == self.GameStage.BATTLE.value).to(self.device).squeeze(-1)
-        is_battle_stage = torch.tensor([stage == self.GameStage.BATTLE.value for stage in batch_stages]).to(self.device)
-        base_output = torch.where(is_battle_stage.unsqueeze(-1), bt_base_out, cb_base_out).to(self.device)
+        # Expand to match feature dim for torch.where broadcasting
+        stage_mask = is_battle_stage.unsqueeze(-1).expand_as(bt_base_out)
+        # stage_mask: (episode_len, network_size // 2)
 
-        # --- 3. Get Logits, Values, and Entropy ---
+        base_output = torch.where(stage_mask, bt_base_out, cb_base_out)
+        # base_output: (episode_len, network_size // 2)
 
-        # Get values from the critic head
-        values = self.actor_critic.critic_head(base_output).squeeze(-1)  # Shape: (batch_size, sequence_length)
+        # --- 4. Critic values ---
+        values = self.actor_critic.critic_head(base_output).squeeze(-1)
+        # critic_head output: (episode_len, 1) → squeeze → (episode_len,)
 
-        # Get logits from the correct actor head using the same mask
+        # --- 5. Actor logits ---
         bt_logits = self.actor_critic.actor_bt_head(base_output)
-        cb_logits = self.actor_critic.actor_cb_head(base_output)
+        # bt_logits: (episode_len, total_bt_actions)
 
-        # log_probs = torch.empty(batch_size, episode_length, device=self.device)
-        # entropy = torch.empty(batch_size, episode_length, device=self.device)
-        log_probs = torch.empty(episode_length, device=self.device)
-        entropy = torch.empty(episode_length, device=self.device)
+        cb_logits = self.actor_critic.actor_cb_head(base_output)
+        # cb_logits: (episode_len, total_cb_actions)
+
+        # --- 6. Compute log probs and entropy, routing each step to the correct head ---
+        log_probs = torch.empty(episode_len, device=self.device)
+        entropy = torch.empty(episode_len, device=self.device)
 
         bt_mask = is_battle_stage
+        # bt_mask: (episode_len,) — True for battle steps
         if bt_mask.any():
             bt_dist = torch.distributions.Categorical(logits=bt_logits[bt_mask])
             log_probs[bt_mask] = bt_dist.log_prob(batch_actions[bt_mask])
             entropy[bt_mask] = bt_dist.entropy()
 
         cb_mask = ~is_battle_stage
+        # cb_mask: (episode_len,) — True for card build steps
         if cb_mask.any():
             cb_dist = torch.distributions.Categorical(logits=cb_logits[cb_mask])
             log_probs[cb_mask] = cb_dist.log_prob(batch_actions[cb_mask])

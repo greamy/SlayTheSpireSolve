@@ -100,8 +100,24 @@ class AttentionStateEncoder(nn.Module):
 
     def forward(self, deck_features, hand_features, player_features, strategic_features, enemy_features):
         """
-        Takes batches of raw features, projects them, runs attention, and returns the [CLS] token.
+        Takes raw features, projects them, runs attention, and returns the [CLS] token.
+
+        Supports both batched and unbatched inputs:
+          Batched:   deck_features shape [batch, num_cards, card_feature_dim]
+          Unbatched: deck_features shape [num_cards, card_feature_dim]
+
+        Always returns:
+          Batched:   [batch, embed_dim]
+          Unbatched: [embed_dim]
         """
+        unbatched = deck_features.dim() == 2
+        if unbatched:
+            deck_features = deck_features.unsqueeze(0)  # (num_cards, card_dim) -> (1, num_cards, card_dim)
+            hand_features = hand_features.unsqueeze(0)  # (num_hand, card_dim)  -> (1, num_hand, card_dim)
+            player_features = player_features.unsqueeze(0)  # (player_dim,)         -> (1, player_dim)
+            strategic_features = strategic_features.unsqueeze(0)  # (strategic_dim,)      -> (1, strategic_dim)
+            enemy_features = enemy_features.unsqueeze(0)  # (num_enemies, e_dim)  -> (1, num_enemies, e_dim)
+
         batch_size = deck_features.shape[0]
         # 1. Deck Token (average of card embeddings)
         # Note: deck_features shape is [batch, num_cards_in_deck, card_feature_dim]
@@ -119,6 +135,13 @@ class AttentionStateEncoder(nn.Module):
         # CLS token for the batch
         cls_tokens = self.cls_token.expand(batch_size, -1, -1)
 
+        #print shapes of all tokens
+        print(f"CLS token shape: {cls_tokens.shape}")
+        print(f"Player token shape: {player_token.shape}")
+        print(f"Strategic token shape: {strategic_token.shape}")
+        print(f"Deck token shape: {deck_token.shape}")
+        print(f"Enemy tokens shape: {enemy_tokens.shape}")
+        print(f"Hand tokens shape: {hand_tokens.shape}")
         sequence = torch.cat([
             cls_tokens,
             player_token,
@@ -238,7 +261,7 @@ class PPOAgent:
 
         self.state_encoder = AttentionStateEncoder(card_feature_length, player_feature_length,
                                                    enemy_feature_length, strategic_feature_length,
-                                                   embed_dim=self.embed_dim, num_heads=4)
+                                                   embed_dim=self.embed_dim, num_heads=4).to(self.device)
         # self.state_dim = self.embed_dim + (self.embed_dim * self.max_cards)
         # self.state_dim += self.max_enemies * self.enemy_feature_dim + self.player_features
         self.actor_critic = ActorCritic(self.state_dim, (self.max_cards * self.max_enemies) + self.other_actions, self.max_card_choices).to(self.device)
