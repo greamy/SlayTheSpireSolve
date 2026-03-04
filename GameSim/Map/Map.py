@@ -1,6 +1,7 @@
 import pygame
 
 from GameSim.Map.Room import Room
+from GameSim.Render.Renderer import Renderer
 
 
 class Map:
@@ -101,29 +102,31 @@ class Map:
                             x_pos += self.tile_size // 2
                             y_pos += self.tile_size
 
-                        pygame.draw.line(screen, (255, 255, 255), (prev_x, prev_y),(x_pos, y_pos),
+                        if render_type  == Renderer.RenderType.PYGAME:
+                            pygame.draw.line(screen, (255, 255, 255), (prev_x, prev_y),(x_pos, y_pos),
                                             2)
                 else:
                     # pygame.draw.rect(screen, (100, 100, 100), (x_pos, y_pos, tile_size, tile_size))
                     pass
-        # draw legend
-        legend_x = 10
-        legend_y = 10
-        legend_items = []
-        legend_items.append(font.render(self.ROOM_TYPE_SHOP + ": Shop", True, color_map[self.ROOM_TYPE_SHOP]))
-        legend_items.append(font.render(self.ROOM_TYPE_REST + ": Rest", True, color_map[self.ROOM_TYPE_REST]))
-        legend_items.append(font.render(self.ROOM_TYPE_EVENT + ": Event", True, color_map[self.ROOM_TYPE_EVENT]))
-        legend_items.append(font.render(self.ROOM_TYPE_ELITE + ": Elite", True, color_map[self.ROOM_TYPE_ELITE]))
-        legend_items.append(font.render(self.ROOM_TYPE_MONSTER + ": Monster", True, color_map[self.ROOM_TYPE_MONSTER]))
-        legend_items.append(font.render(self.ROOM_TYPE_CHEST + ": Chest", True, color_map[self.ROOM_TYPE_CHEST]))
+        if render_type == Renderer.RenderType.PYGAME:
+            # draw legend
+            legend_x = 10
+            legend_y = 10
+            legend_items = []
+            legend_items.append(font.render(self.ROOM_TYPE_SHOP + ": Shop", True, color_map[self.ROOM_TYPE_SHOP]))
+            legend_items.append(font.render(self.ROOM_TYPE_REST + ": Rest", True, color_map[self.ROOM_TYPE_REST]))
+            legend_items.append(font.render(self.ROOM_TYPE_EVENT + ": Event", True, color_map[self.ROOM_TYPE_EVENT]))
+            legend_items.append(font.render(self.ROOM_TYPE_ELITE + ": Elite", True, color_map[self.ROOM_TYPE_ELITE]))
+            legend_items.append(font.render(self.ROOM_TYPE_MONSTER + ": Monster", True, color_map[self.ROOM_TYPE_MONSTER]))
+            legend_items.append(font.render(self.ROOM_TYPE_CHEST + ": Chest", True, color_map[self.ROOM_TYPE_CHEST]))
 
-        for i, item in enumerate(legend_items):
-            screen.blit(item, (legend_x, legend_y + i * 20))
+            for i, item in enumerate(legend_items):
+                screen.blit(item, (legend_x, legend_y + i * 20))
 
-        health_x = 1000
-        health_y = 10
-        health_text = font.render("Health: " + str(self.player.health) + "/" + str(self.player.start_health), True, "red")
-        screen.blit(health_text, (health_x, health_y))
+            health_x = 1000
+            health_y = 10
+            health_text = font.render("Health: " + str(self.player.health) + "/" + str(self.player.start_health), True, "red")
+            screen.blit(health_text, (health_x, health_y))
 
         choice = self.player.controller.get_map_choice(self.player, self, cur_floor, room_idx)
         if choice is not None:

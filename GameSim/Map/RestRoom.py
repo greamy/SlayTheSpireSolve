@@ -2,7 +2,9 @@ from enum import Enum
 
 import pygame
 
+from CombatSim.Entities.Player import Player
 from GameSim.Map.Room import Room
+from GameSim.Render.Renderer import Renderer
 
 
 class RestRoom(Room):
@@ -47,6 +49,18 @@ class RestRoom(Room):
         super().render_map(screen, font, x, y, counter, tile_size, available)
 
     def render_room(self, screen, screen_size, font, render_type):
+        if render_type == Renderer.RenderType.NONE:
+            if self.player.health / self.player.start_health < 0.5:
+                self.player.do_rest()
+            else:
+                upgrade_choice = self.player.controller.select_cards_from_zone(self.player, Player.Deck.Zone.DRAW_PILE,
+                                                                               [], 1, False,                                                          lambda c: not c.upgraded)
+                upg_card = self.player.deck.draw_pile[upgrade_choice[0]]
+                upg_card.upgrade()
+                self.upgraded_card = upg_card
+                self.action = self.Actions.UPGRADED
+            return False
+
         img = pygame.image.load("../images/Rooms/campfire.png")
         img = pygame.transform.scale(img, screen_size, screen)
         if self.action is None:
@@ -69,7 +83,7 @@ class RestRoom(Room):
             # Player chose to upgrade. Display all cards in deck and allow choice of upgrade.
             title = font.render("Upgrade a Card.", True, 'white')
             screen.blit(title, (self.title_text_x, self.title_text_y))
-            for i, card in enumerate(self.player.deck.draw_pile):
+            for i, card in enumerate(self.player.deck):
                 if not card.upgraded:
                     card.render(screen, font, i % 8, self.card_start_y + (i // 8) * self.card_spacing)
 

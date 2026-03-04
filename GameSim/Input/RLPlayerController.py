@@ -75,7 +75,6 @@ class RLPlayerController(PlayerController):
                                   learning_enabled=self.train, filepath=filepath, save_model=self.save,
                                   visualizer=self.visualizer)
 
-
     def get_enum_value(self, stance):
         stance_val = -1  # Default value for no stance
         if stance is not None:
@@ -259,8 +258,10 @@ class RLPlayerController(PlayerController):
         """
 
         deck_cards = player.deck.get_deck()
-        deck = np.array([self.get_card_vector(card, player, enemies) for card in deck_cards])
-        hand = np.array([self.get_card_vector(card, player, enemies) if in_hand else self.get_card_vector(None, None, None) for card, in_hand in self.turn_stable_hand])
+        deck_list = [self.get_card_vector(card, player, enemies) for card in deck_cards]
+        deck = np.array(deck_list) if deck_list else np.zeros((0, self.card_vector_length), dtype=np.float32)
+        hand_list = [self.get_card_vector(card, player, enemies) if in_hand else self.get_card_vector(None, None, None) for card, in_hand in self.turn_stable_hand]
+        hand = np.array(hand_list) if hand_list else np.zeros((0, self.card_vector_length), dtype=np.float32)
 
         num_enemies = len(enemies)
         if num_enemies > 0:
@@ -353,7 +354,7 @@ class RLPlayerController(PlayerController):
             return None
         selected_indices = set()
         card_choices = player.deck.get_zone(zone)
-        card_choices = [self.get_card_vector(card, player, enemies) for card in card_choices]
+        card_choices = [self.get_card_vector(card, player, enemies) for card in card_choices if condition(card)]
 
         comparison_cards = player.deck.draw_pile + player.deck.hand
         comparison_cards = [self.get_card_vector(card, player, enemies) for card in comparison_cards]
@@ -485,6 +486,7 @@ class RLPlayerController(PlayerController):
         """
         self.agent.reset_hidden_state()
         self.episode_count += 1
+        self.path = None
 
     def apply_episode_bonus(self, bonus_reward, reason=""):
         """
@@ -560,10 +562,10 @@ class RLPlayerController(PlayerController):
                 self.path = random.choice(all_paths)
 
         chosen_room = self.path[floor]
-        for room in self.path:
-            print(room.type, end=" ")
-        print(floor)
-        print(self.path[floor])
+        # for room in self.path:
+        #     print(room.type, end=" ")
+        # print(floor)
+        # print(self.path[floor])
         # print(self.path)
 
         return chosen_room

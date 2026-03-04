@@ -12,6 +12,8 @@ class Room:
         self.act = act
         self.ascension = ascension
 
+        self.enemies = []
+
         self.x = x
         self.floor = floor
 
@@ -57,12 +59,13 @@ class Room:
                     next_room.prev_rooms.append(self)
 
     def render_map(self, screen, font, x, y, counter, tile_size, available: bool):
-        if available:
-            pygame.draw.rect(screen, self.color, (x-counter//24, y-counter//24, tile_size + counter // 12, tile_size + counter // 12))
-        else:
-            pygame.draw.rect(screen, self.color, (x, y, tile_size, tile_size))
-        text = font.render(self.type, True, (0, 0, 0))
-        screen.blit(text, (x + 5, y + 5))
+        if screen is not None:
+            if available:
+                pygame.draw.rect(screen, self.color, (x-counter//24, y-counter//24, tile_size + counter // 12, tile_size + counter // 12))
+            else:
+                pygame.draw.rect(screen, self.color, (x, y, tile_size, tile_size))
+            text = font.render(self.type, True, (0, 0, 0))
+            screen.blit(text, (x + 5, y + 5))
 
     def render_room(self, screen, screen_size, font, render_type):
         pass

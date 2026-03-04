@@ -45,9 +45,12 @@ class RunningMeanStd:
         if batch.ndim == 1:
             batch = batch.reshape(1, -1)
 
+        batch_count = batch.shape[0]
+        if batch_count == 0:
+            return
+
         batch_mean = np.mean(batch, axis=0)
         batch_var = np.var(batch, axis=0)
-        batch_count = batch.shape[0]
 
         self.update_from_moments(batch_mean, batch_var, batch_count)
 
@@ -382,6 +385,14 @@ class LSTMPPOAgent(PPOAgent):
         losses = []
         grad_norm = 0.0
         clip_frac = 0.0
+        sum_policy_loss = 0.0
+        sum_value_loss = 0.0
+        sum_entropy = 0.0
+        sum_clip_frac = 0.0
+        sum_grad_norm = 0.0
+        sum_adv_std = 0.0
+        sum_total_loss = 0.0
+        n_updates = 0
         for _ in range(self.learn_epochs):
             # Shuffle the sequences, NOT the individual steps
             random.shuffle(episode_indices)
@@ -449,6 +460,15 @@ class LSTMPPOAgent(PPOAgent):
                 self.optimizer.step()
                 clip_frac = (torch.abs(ratios - 1) > self.epsilon).float().mean().item()
 
+                sum_policy_loss += policy_loss.item()
+                sum_value_loss += value_loss.item()
+                sum_entropy += -entropy_loss.item()
+                sum_clip_frac += clip_frac
+                sum_grad_norm += grad_norm
+                sum_adv_std += batch_advantages.std().item()
+                sum_total_loss += total_loss.item()
+                n_updates += 1
+
             self.lr_scheduler.step()
             self.entropy_coef *= self.entropy_decay
 
@@ -477,15 +497,15 @@ class LSTMPPOAgent(PPOAgent):
         self.losses.append(avg_loss)
         self.rewards.append(avg_reward)
 
-        if self.visualizer and isinstance(policy_loss, torch.Tensor):
+        if self.visualizer and n_updates > 0:
             self.visualizer.log_training_step(
-                policy_loss=policy_loss.item(),
-                value_loss=value_loss.item(),
-                entropy=-entropy_loss.item(),
-                clip_fraction=clip_frac,
-                advantage_std=batch_advantages.std().item() if isinstance(batch_advantages, torch.Tensor) else 0.0,
-                grad_norm=grad_norm,
-                total_loss=total_loss.item(),
+                policy_loss=sum_policy_loss / n_updates,
+                value_loss=sum_value_loss / n_updates,
+                entropy=sum_entropy / n_updates,
+                clip_fraction=sum_clip_frac / n_updates,
+                advantage_std=sum_adv_std / n_updates,
+                grad_norm=sum_grad_norm / n_updates,
+                total_loss=sum_total_loss / n_updates,
                 avg_reward=float(avg_reward),
                 learn_rate=self.lr_scheduler.get_last_lr()[0],
                 entropy_coef=self.entropy_coef,
