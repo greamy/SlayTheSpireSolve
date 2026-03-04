@@ -41,7 +41,7 @@ class PlayerController:
     def begin_combat(self, player, enemies, debug):
         pass
 
-    def select_cards_from_zone(self, player, zone, enemies, num_cards, debug, condition=None):
+    def select_cards_from_zone(self, player, zone, enemies, num_cards, debug, condition=None, prefer_outlier=False):
         pass
 
     def select_event_option(self, player, event) -> int:

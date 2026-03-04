@@ -349,20 +349,28 @@ class RLPlayerController(PlayerController):
         else:
             raise Exception("Invalid output from PPOAgent. Invalid action: " + card_index + ": " + str(self.turn_stable_hand))
 
-    def select_cards_from_zone(self, player: Player, zone: Player.Deck.Zone, enemies: list[Enemy], num_cards: int, debug: bool, condition = None):
+    def select_cards_from_zone(self, player: Player, zone: Player.Deck.Zone, enemies: list[Enemy], num_cards: int, debug: bool, condition=None, prefer_outlier=False):
         if not self.wait_for_counter():
             return None
-        selected_indices = set()
-        card_choices = player.deck.get_zone(zone)
-        card_choices = [self.get_card_vector(card, player, enemies) for card in card_choices if condition(card)]
 
+        zone_cards = player.deck.get_zone(zone)
+
+        # Keep original zone indices so callers can index directly into the zone list
+        eligible = [(orig_idx, card) for orig_idx, card in enumerate(zone_cards)
+                    if condition is None or condition(card)]
+        if not eligible:
+            return []
+
+        eligible_vecs = [self.get_card_vector(card, player, enemies) for _, card in eligible]
         comparison_cards = player.deck.draw_pile + player.deck.hand
-        comparison_cards = [self.get_card_vector(card, player, enemies) for card in comparison_cards]
+        comparison_vecs = [self.get_card_vector(card, player, enemies) for card in comparison_cards]
 
-        while len(selected_indices) < num_cards:
-            choice = self.agent.choose_card_from_zone(comparison_cards, card_choices, selected_indices)
-            selected_indices.add(choice)
-        return list(selected_indices)
+        selected_local = set()
+        while len(selected_local) < min(num_cards, len(eligible)):
+            choice = self.agent.choose_card_from_zone(comparison_vecs, eligible_vecs, selected_local, prefer_outlier)
+            selected_local.add(choice)
+
+        return [eligible[i][0] for i in selected_local]
 
     def start_turn(self, player, enemies):
         """

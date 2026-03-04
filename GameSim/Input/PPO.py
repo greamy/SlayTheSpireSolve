@@ -412,9 +412,9 @@ class PPOAgent:
 
         return agent_action, agent_log_prob, value, action_probs
 
-    def choose_card_from_zone(self, comparison_cards, card_choices_vectors, selected_indices: set):
-        # for now we will try to choose the card most similar to the cards in hand/draw pile
-        # idea is this will provide highest synergy with existing deck and should be decent for cards like Meditate.
+    def choose_card_from_zone(self, comparison_cards, card_choices_vectors, selected_indices: set, prefer_outlier=False):
+        # Choose the card most similar (or least similar when prefer_outlier=True) to the mean
+        # of comparison_cards (hand + draw pile) using the neural card encoder.
 
         card_choices_tensor = torch.tensor(np.array(card_choices_vectors), dtype=torch.float32).to(self.device)
         comparison_cards_tensor = torch.tensor(np.array(comparison_cards), dtype=torch.float32).to(self.device)
@@ -423,14 +423,17 @@ class PPOAgent:
         comparison_cards_vec = torch.mean(comparison_cards_embed, dim=0)
         similarities = F.cosine_similarity(card_choices_embed, comparison_cards_vec.unsqueeze(0), dim=1)
 
-        # get best card, ensure it is not in selected indices:
         best_index = -1
-        best_similarity = -1.0
+        best_similarity = float('inf') if prefer_outlier else -1.0
         for i in range(len(card_choices_vectors)):
             if i in selected_indices:
                 continue
-            if similarities[i].item() > best_similarity:
-                best_similarity = similarities[i].item()
+            sim = similarities[i].item()
+            if prefer_outlier and sim < best_similarity:
+                best_similarity = sim
+                best_index = i
+            elif not prefer_outlier and sim > best_similarity:
+                best_similarity = sim
                 best_index = i
         return best_index
 

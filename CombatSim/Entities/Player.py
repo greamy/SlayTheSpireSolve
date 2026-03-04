@@ -41,6 +41,7 @@ class Player(Entity):
         self.final_stance = None
         self.gold_combat_multiplier = 1.0
         self.next_chest_empty = False
+        self.shop_remove_cost = 75
 
         self.controller: PlayerController = controller
 
