@@ -98,7 +98,7 @@ class AttentionStateEncoder(nn.Module):
         encoder_layer = nn.TransformerEncoderLayer(d_model=embed_dim, nhead=num_heads, dim_feedforward=embed_dim * 4, batch_first=True)
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=2)
 
-    def forward(self, deck_features, hand_features, player_features, strategic_features, enemy_features):
+    def forward(self, deck_features, hand_features, player_features, strategic_features, enemy_features, enemy_mask=None):
         """
         Takes raw features, projects them, runs attention, and returns the [CLS] token.
 
@@ -109,6 +109,9 @@ class AttentionStateEncoder(nn.Module):
         Always returns:
           Batched:   [batch, embed_dim]
           Unbatched: [embed_dim]
+
+        enemy_mask: bool tensor, True = padded slot (shape [max_num_enemies] or [batch, max_num_enemies]).
+                    Used as src_key_padding_mask so padded enemies are not attended to.
         """
         unbatched = deck_features.dim() == 2
         if unbatched:
@@ -117,6 +120,8 @@ class AttentionStateEncoder(nn.Module):
             player_features = player_features.unsqueeze(0)  # (player_dim,)         -> (1, player_dim)
             strategic_features = strategic_features.unsqueeze(0)  # (strategic_dim,)      -> (1, strategic_dim)
             enemy_features = enemy_features.unsqueeze(0)  # (num_enemies, e_dim)  -> (1, num_enemies, e_dim)
+            if enemy_mask is not None:
+                enemy_mask = enemy_mask.unsqueeze(0)  # (max_num_enemies,) -> (1, max_num_enemies)
 
         batch_size = deck_features.shape[0]
         # 1. Deck Token (average of card embeddings)
@@ -150,8 +155,16 @@ class AttentionStateEncoder(nn.Module):
             hand_tokens
         ], dim=1) # Shape: [batch, total_sequence_length, embed_dim]
 
-        # Apply attention
-        transformer_out = self.transformer(sequence)
+        # Apply attention — mask out padded enemy slots so they don't contaminate CLS
+        if enemy_mask is not None:
+            # Sequence layout: [CLS, player, strategic, deck, *enemies, *hand]
+            # Only the enemy slots need masking; everything else is always valid.
+            prefix = torch.zeros(batch_size, 4, dtype=torch.bool, device=enemy_mask.device)
+            suffix = torch.zeros(batch_size, hand_tokens.shape[1], dtype=torch.bool, device=enemy_mask.device)
+            src_key_padding_mask = torch.cat([prefix, enemy_mask, suffix], dim=1)
+            transformer_out = self.transformer(sequence, src_key_padding_mask=src_key_padding_mask)
+        else:
+            transformer_out = self.transformer(sequence)
 
         # Pool out
         # Extract only the [CLS] token
@@ -323,7 +336,7 @@ class PPOAgent:
 
     def remember(self, stage, state, action, reward, done, log_prob, value):
         """Store experience for multiple agents"""
-        state_np = tuple(s.detach().cpu().numpy() for s in state)
+        state_np = tuple(s.detach().cpu().numpy() if s is not None else None for s in state)
         self.memory['states'].append(state_np)
         # self.memory['hand_embeds'].append(hand_embed.detach().cpu().numpy())
         # self.memory['choice_embeds'].append(choice_embed.detach().cpu().numpy())
@@ -375,7 +388,7 @@ class PPOAgent:
             stage = self.GameStage.BATTLE
 
         # 3. Concatenate the single deck embedding vector with the other state features.
-        return (state['deck'], state['hand'], state['player'], state['strategic'], state['enemies']), stage, state['action_mask']
+        return (state['deck'], state['hand'], state['player'], state['strategic'], state['enemies'], state.get('enemy_mask')), stage, state['action_mask']
 
     def choose_action(self, state_tensors):
         """Choose actions for agent"""
@@ -669,7 +682,7 @@ class PPOAgent:
         # torch.from_numpy() shares memory and keeps the numpy array alive
         tensors = {}
         for key, value in state_np.items():
-            if key == "action_mask":
+            if key in ("action_mask", "enemy_mask"):
                 tensors[key] = torch.tensor(value, dtype=torch.bool, device=self.device)
                 continue
             tensors[key] = torch.tensor(value, dtype=torch.float32, device=self.device)

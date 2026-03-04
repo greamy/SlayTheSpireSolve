@@ -258,10 +258,13 @@ class RLPlayerController(PlayerController):
         deck = np.array([self.get_card_vector(card, player, enemies) for card in deck_cards])
         hand = np.array([self.get_card_vector(card, player, enemies) if in_hand else self.get_card_vector(None, None, None) for card, in_hand in self.turn_stable_hand])
 
+        num_enemies = len(enemies)
         enemies_arr = np.array([self.get_enemy_vector(enemy) for enemy in enemies])
-        if len(enemies) < self.max_num_enemies:
-            pad = np.zeros((self.max_num_enemies - len(enemies), self.enemy_vector_length), dtype=np.float32)
+        if num_enemies < self.max_num_enemies:
+            pad = np.zeros((self.max_num_enemies - num_enemies, self.enemy_vector_length), dtype=np.float32)
             enemies_arr = np.concatenate([enemies_arr, pad], axis=0)
+
+        enemy_mask = np.array([i >= num_enemies for i in range(self.max_num_enemies)], dtype=bool)
 
         state_dict = {
             "deck": deck,
@@ -269,7 +272,8 @@ class RLPlayerController(PlayerController):
             "strategic": self.get_strategic_features(player, enemies),
             "action_mask": self.get_battle_action_mask(player, enemies, playable),
             "hand": hand,
-            "enemies": enemies_arr
+            "enemies": enemies_arr,
+            "enemy_mask": enemy_mask,
         }
         return state_dict
 

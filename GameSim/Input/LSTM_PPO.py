@@ -403,8 +403,10 @@ class LSTMPPOAgent(PPOAgent):
                     np.stack([s[3] for s in raw_seq]), update=False), dtype=torch.float32).to(self.device)
                 batch_enemies = torch.tensor(self.obs_norms['enemies'].normalize(
                     np.stack([s[4] for s in raw_seq]), update=False), dtype=torch.float32).to(self.device)
+                batch_enemy_mask = torch.tensor(
+                    np.stack([s[5] for s in raw_seq]), dtype=torch.bool).to(self.device) if raw_seq[0][5] is not None else None
 
-                batch_states = self.state_encoder(batch_deck, batch_hand, batch_player, batch_strategic, batch_enemies)
+                batch_states = self.state_encoder(batch_deck, batch_hand, batch_player, batch_strategic, batch_enemies, batch_enemy_mask)
 
                 # Get the mini-batch of sequences
                 batch_actions = torch.tensor(actions_arr[episode], dtype=torch.long).to(self.device)
@@ -469,7 +471,7 @@ class LSTMPPOAgent(PPOAgent):
         elif torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        avg_loss = sum(losses) / (len(losses) + 0.000001) # prevent division by 0 if no full episodes
+        avg_loss = sum(losses) / len(losses) if losses else 0.0 # prevent division by 0 if no full episodes
         avg_reward = (sum(rewards_arr) / len(rewards_arr))
         self.losses.append(avg_loss)
         self.rewards.append(avg_reward)
