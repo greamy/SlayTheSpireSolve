@@ -13,7 +13,7 @@ class Devotion(Card):
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
-        # TODO: Implement the following:
+        # done: Implement the following:
         player.add_listener(self.listener)
         # At the start of your turn, gain 2(3) {{Mantra}}.
 

@@ -67,8 +67,9 @@ class Entity:
     def is_alive(self):
         return self.health > 0
 
-    def add_listener(self, listener):
-        self.listeners.append(listener)
+    def add_listener(self, listener: Listener):
+        if isinstance(listener, Listener):
+            self.listeners.append(listener)
 
     def remove_listener(self, listener):
         self.listeners.remove(listener)

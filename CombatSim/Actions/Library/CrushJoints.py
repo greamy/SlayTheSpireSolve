@@ -13,8 +13,7 @@ class CrushJoints(Card):
         self.skill_played = False
         self.skill_listener = Listener(Listener.Event.SKILL_PLAYED, self.do_skill)
         self.not_skill_listener = Listener([Listener.Event.ATTACK_PLAYED, Listener.Event.POWER_PLAYED], self.do_other)
-        player.add_listener(self.skill_listener)
-        player.add_listener(self.not_skill_listener)
+        self.add_listeners(player)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Deal 8(10) damage. If the previous card played was a skill, apply 1(2) {{Vulnerable}}.
@@ -36,6 +35,11 @@ class CrushJoints(Card):
         self.description = "Deal 10 damage. If the previous card played was a skill, apply 2 Vulnerable."
         self.damage = 10
         self.vulnerable = 2
+
+    def add_listeners(self, player: Player):
+        player.add_listener(self.skill_listener)
+        player.add_listener(self.not_skill_listener)
+        super().add_listeners(player)
 
     def remove_listeners(self, player: Player):
         player.remove_listener(self.skill_listener)
