@@ -22,4 +22,7 @@ class Regret(Card):
     def on_end_turn(self, player, enemy, enemies, debug):
         num_cards = len(player.deck.hand)
         player.health -= num_cards
-        player.notify_listeners(Listener.Event.TAKEN_DAMAGE, player, enemy, debug)
+        player.notify_listeners(Listener.Event.TAKEN_DAMAGE, player, enemies, debug)
+
+    def add_listeners(self, player):
+        player.add_listener(self.listener)

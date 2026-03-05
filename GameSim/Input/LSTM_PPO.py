@@ -458,19 +458,37 @@ class LSTMPPOAgent(PPOAgent):
                 )
 
                 # --- Loss Calculation ---
-                ratios = torch.exp(new_log_prob - batch_old_log_probs)
-                objective = ratios * batch_advantages
-                penalty = (torch.abs(batch_advantages) / (2 * self.epsilon)) * ((ratios - 1) ** 2)
-                policy_loss = -torch.mean(objective - penalty)
+                # ratios = torch.exp(new_log_prob - batch_old_log_probs)
+                # objective = ratios * batch_advantages
+                # penalty = (torch.abs(batch_advantages) / (2 * self.epsilon)) * ((ratios - 1) ** 2)
+                # policy_loss = -torch.mean(objective - penalty)
+
+                log_ratio = torch.clamp(new_log_prob - batch_old_log_probs, min=-5.0, max=5.0)
+                ratios = torch.exp(log_ratio)
+                surr1 = ratios * batch_advantages
+                surr2 = torch.clamp(ratios, 1 - self.epsilon, 1 + self.epsilon) * batch_advantages
+                policy_loss = -torch.mean(torch.min(surr1, surr2))
 
                 value_loss = F.mse_loss(values, batch_value_targets)
                 entropy_loss = -new_entropy.mean()
 
                 total_loss = policy_loss + self.value_coef * value_loss + self.entropy_coef * entropy_loss
+
+                if torch.isnan(total_loss):
+                    print("WARNING: NaN total_loss detected, skipping this update")
+                    continue
+
                 losses.append(total_loss.item())
 
                 self.optimizer.zero_grad()
                 total_loss.backward()
+
+                has_nan_grad = any(p.grad is not None and torch.isnan(p.grad).any() for p in self.params)
+                if has_nan_grad:
+                    print("WARNING: NaN gradients detected, skipping optimizer step")
+                    self.optimizer.zero_grad()
+                    continue
+
                 grad_norm = torch.nn.utils.clip_grad_norm_(self.params, max_norm=0.5).item()
                 self.optimizer.step()
                 clip_frac = (torch.abs(ratios - 1) > self.epsilon).float().mean().item()

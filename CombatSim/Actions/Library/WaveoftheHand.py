@@ -35,5 +35,6 @@ class WaveoftheHand(Card):
         self.weak = 2
 
     def remove_listeners(self, player: Player):
-        player.remove_listener(self.end_listener)
+        if self.end_listener in player.listeners:
+            player.remove_listener(self.end_listener)
         super().remove_listeners(player)

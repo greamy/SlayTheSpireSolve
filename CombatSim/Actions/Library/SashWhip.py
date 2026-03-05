@@ -35,7 +35,13 @@ class SashWhip(Card):
         self.damage = 10
         self.weak = 2
 
+    def add_listeners(self, player):
+        player.add_listener(self.attack_listener)
+        player.add_listener(self.other_listener)
+
     def remove_listeners(self, player: Player):
-        player.remove_listener(self.attack_listener)
-        player.remove_listener(self.other_listener)
+        if self.attack_listener in player.listeners:
+            player.remove_listener(self.attack_listener)
+        if self.other_listener in player.listeners:
+            player.remove_listener(self.other_listener)
         super().remove_listeners(player)

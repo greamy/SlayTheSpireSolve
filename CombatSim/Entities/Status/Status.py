@@ -21,6 +21,7 @@ class Status:
             if self.ID == status.ID:
                 status.duration += self.duration
                 self.listener = None
+                self.removed = True
                 return False
 
         self.entity.status_list.append(self)

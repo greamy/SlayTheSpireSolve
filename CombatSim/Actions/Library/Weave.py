@@ -9,7 +9,7 @@ class Weave(Card):
         super().__init__("Weave", Card.Type.ATTACK, 0, 4, 1, 0, 0, 0, False, False, player, None, id=83)
         self.description = "Deal 4 damage. Whenever you Scry, return this from the discard pile to your Hand."
         self.listener = Listener(Listener.Event.SCRY_OCCURRED, self.return_to_hand)
-        player.add_listeners(self.listener)
+        player.add_listener(self.listener)
         
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         # Deal 4(6) damage. Whenever you {{Scry}}, return this from the discard pile to your Hand.
@@ -29,4 +29,4 @@ class Weave(Card):
         self.damage = 6
 
     def add_listeners(self, player):
-        player.add_listeners(self.listener)
+        player.add_listener(self.listener)

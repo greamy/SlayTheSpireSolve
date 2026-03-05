@@ -55,13 +55,12 @@ class Event:
     description: str = ""
 
     def __init__(self, player, act, ascension):
+        self.act = act
+        self.ascension = ascension
         self.player = player
         self.options: list[EventOption] = self.build_options()
         self.chosen_option: int | None = None
         self.done: bool = False
-
-        self.act = act
-        self.ascension = ascension
 
     def build_options(self) -> list[EventOption]:
         raise NotImplementedError

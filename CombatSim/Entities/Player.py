@@ -135,6 +135,10 @@ class Player(Entity):
 
     def begin_combat(self, enemies, debug, boss=False):
         self.deck.reshuffle()
+
+        for card in self.deck.draw_pile:
+            card.add_listeners(self)
+
         num_innate = 0
         for idx, card in enumerate(self.deck.draw_pile):
             if card.innate:

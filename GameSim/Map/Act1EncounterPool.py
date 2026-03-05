@@ -145,5 +145,5 @@ class Act1EncounterPool:
         encounter = random.choice(candidates)
         self.recent_encounters.append(encounter.name)
         self.monster_encounter_count += 1
-        print(f"[Encounter #{self.monster_encounter_count}] {encounter.name}")
+        # print(f"[Encounter #{self.monster_encounter_count}] {encounter.name}")
         return encounter.create_enemies(ascension, act)

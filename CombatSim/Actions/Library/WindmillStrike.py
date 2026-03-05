@@ -32,6 +32,7 @@ class WindmillStrike(Card):
         player.add_listener(self.listener)
 
     def remove_listeners(self, player):
-        player.remove_listener(self.listener)
+        if self.listener in player.listeners:
+            player.remove_listener(self.listener)
 
 

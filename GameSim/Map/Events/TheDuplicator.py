@@ -29,7 +29,7 @@ class TheDuplicator(Event):
         card = player.deck.draw_pile[chosen[0]]
         # create new card that is the same card subclass:
         duplicated = card.__class__(player)
-        player.add_card(duplicated)
+        player.deck.draw_pile.append(duplicated)
 
     def leave(self, player):
         pass

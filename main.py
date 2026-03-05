@@ -8,8 +8,8 @@ def main():
     save = True
     train = True
     load_model = False
-    delay = 0.25
-    render_type = Renderer.RenderType.PYGAME
+    delay = 0.0
+    render_type = Renderer.RenderType.NONE
     episodes = 10_000
 
     load_path = "artifacts/models/first_fight/ppo_agent.pt"

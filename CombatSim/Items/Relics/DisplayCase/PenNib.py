@@ -8,7 +8,8 @@ class PenNib(Relic):
         self.player = player
         self.enemy_hps = {}
         self.attack_listener = Listener(Listener.Event.ATTACK_PLAYED, self.attack_was_played)
-        self.start_combat_listener = Listener(Listener.Event.START_COMBAT, self.on_start_combat)
+        self.start_turn_listener = Listener(Listener.Event.START_TURN, self.on_start_turn)
+        # self.start_combat_listener = Listener(Listener.Event.START_COMBAT, self.on_start_combat)
         self.current_attack_count = 0
 
     def attack_was_played(self, player, enemy, enemies, debug):
@@ -22,14 +23,21 @@ class PenNib(Relic):
         for enemy in enemies:
             self.enemy_hps[enemy] = enemy.health
 
-    def on_start_combat(self, player, enemy, enemies, debug):
+    # def on_start_combat(self, player, enemy, enemies, debug):
+    #     self.enemy_hps = {}
+    #     for enemy in enemies:
+    #         self.enemy_hps[enemy] = enemy.health + enemy.block
+
+    def on_start_turn(self, player, enemy, enemies, debug):
         self.enemy_hps = {}
         for enemy in enemies:
             self.enemy_hps[enemy] = enemy.health + enemy.block
 
     def on_pickup(self):
         self.player.add_listener(self.attack_listener)
+        self.player.add_listener(self.start_turn_listener)
 
     def on_drop(self):
         self.player.remove_listener(self.attack_listener)
+        self.player.remove_listener(self.start_turn_listener)
 

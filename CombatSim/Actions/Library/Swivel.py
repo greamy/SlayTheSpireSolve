@@ -36,6 +36,9 @@ class Swivel(Card):
         self.block = 11
 
     def remove_listeners(self, player: Player):
-        player.remove_listener(self.attack_listener)
-        player.remove_listener(self.other_listener)
+        if self.attack_listener in player.listeners:
+            player.remove_listener(self.attack_listener)
+        if self.other_listener in player.listeners:
+            player.remove_listener(self.other_listener)
         super().remove_listeners(player)
+

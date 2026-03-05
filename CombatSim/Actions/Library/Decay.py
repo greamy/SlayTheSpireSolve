@@ -15,12 +15,15 @@ class Decay(Card):
         player.add_listener(self.listener)
 
     def _end_turn_damage(self, player, enemy, enemies, debug):
-        if self in player.deckh.hand:
+        if self in player.deck.hand:
             player.take_damage(self.DAMAGE)
 
     def play(self, player: Player, player_list: list[Player], target_enemy: Enemy, enemies: list[Enemy], debug: bool):
         super().play(player, player_list, target_enemy, enemies, debug)
         return False
+
+    def add_listeners(self,player: Player):
+        player.add_listener(self.listener)
 
     def remove_listeners(self, player: Player):
         if self.listener in player.listeners:

@@ -16,9 +16,10 @@ class WarpedTongs(Relic):
 
     def start_turn(self, player, enemy, enemies, debug):
         choice_options = [card for card in player.deck.hand if not card.upgraded]
-        upgrade_choice = random.choice(choice_options)
-        upgrade_choice.upgrade()
-        self.upgraded.append(upgrade_choice)
+        if choice_options:
+            upgrade_choice = random.choice(choice_options)
+            upgrade_choice.upgrade()
+            self.upgraded.append(upgrade_choice)
 
     def end_combat_listener(self, player, enemy, enemies, debug):
         for card in self.upgraded:

@@ -160,7 +160,7 @@ class RLPlayerController(PlayerController):
         # if enemy is None:
         #     return np.zeros(13)
         return np.array([
-            enemy.start_health / enemy.health,
+            enemy.start_health / enemy.health if enemy.health > 0 else 0.0,
             enemy.block,
             enemy.block_modifier,
             enemy.block_multiplier,
@@ -359,7 +359,7 @@ class RLPlayerController(PlayerController):
         eligible = [(orig_idx, card) for orig_idx, card in enumerate(zone_cards)
                     if condition is None or condition(card)]
         if not eligible:
-            return []
+            return None
 
         eligible_vecs = [self.get_card_vector(card, player, enemies) for _, card in eligible]
         comparison_cards = player.deck.draw_pile + player.deck.hand

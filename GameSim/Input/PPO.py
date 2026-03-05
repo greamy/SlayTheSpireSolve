@@ -462,7 +462,7 @@ class PPOAgent:
             # if dones[t]:
             #     gae = 0  # Reset GAE at episode boundary
 
-            if t == len(rewards) - 1 and not dones[t]:
+            if t == len(rewards) - 1:
                 # Bootstrap from stored value estimate for non-terminal cutoff
                 next_value = float(values[t])
             else:

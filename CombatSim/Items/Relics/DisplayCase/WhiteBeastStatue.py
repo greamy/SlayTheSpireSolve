@@ -1,7 +1,7 @@
 from CombatSim.Actions.Listener import Listener
 from CombatSim.Items.Relics.Relic import Relic
 
-class WhiteBestStatue(Relic):
+class WhiteBeastStatue(Relic):
     # Potions always drop after combat.
 
     def __init__(self, player):
