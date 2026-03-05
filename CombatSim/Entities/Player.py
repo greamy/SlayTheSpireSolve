@@ -37,6 +37,7 @@ class Player(Entity):
         self.card_choice = None
         self.last_elite = None
         self.encounter_pool = None
+        self.rare_chance_offset = -5  # starts at -5, +1 per common roll, reset to -5 on rare
 
         self.final_stance = None
         self.gold_combat_multiplier = 1.0

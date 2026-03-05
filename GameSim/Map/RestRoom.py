@@ -53,8 +53,14 @@ class RestRoom(Room):
             if self.player.health / self.player.start_health < 0.5:
                 self.player.do_rest()
             else:
+                upgradeable = [c for c in self.player.deck.draw_pile if not c.upgraded]
+                has_non_basic = any(c.name not in ('Strike', 'Defend') for c in upgradeable)
+                if has_non_basic:
+                    upgrade_condition = lambda c: not c.upgraded and c.name not in ('Strike', 'Defend')
+                else:
+                    upgrade_condition = lambda c: not c.upgraded
                 upgrade_choice = self.player.controller.select_cards_from_zone(self.player, Player.Deck.Zone.DRAW_PILE,
-                                                                               [], 1, False,                                                          lambda c: not c.upgraded)
+                                                                               [], 1, False, upgrade_condition)
                 upg_card = self.player.deck.draw_pile[upgrade_choice[0]]
                 upg_card.upgrade()
                 self.upgraded_card = upg_card

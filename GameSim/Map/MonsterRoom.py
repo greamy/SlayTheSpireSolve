@@ -16,5 +16,14 @@ class MonsterRoom(CombatRoom):
             self.player.encounter_pool = Act1EncounterPool()
         return self.player.encounter_pool.get_next_encounter(ascension, act)
 
+    def end_combat(self):
+        if not self.player_won:
+            return
+        from GameSim.Map.CardRewardGenerator import generate_card_reward
+        card_options = generate_card_reward(self.player, is_elite=False)
+        chosen = self.player.controller.choose_card_reward(self.player, card_options)
+        if chosen is not None and 0 <= chosen < len(card_options):
+            self.player.add_card(card_options[chosen])
+
     def render_map(self, screen, font, x, y, counter, tile_size, available):
         super().render_map(screen, font, x, y, counter, tile_size, available)

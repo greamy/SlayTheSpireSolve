@@ -54,6 +54,23 @@ class EliteRoom(CombatRoom):
         class_ = getattr(module, elite_name)
         return [class_(ascension, act)]
 
+    def end_combat(self):
+        if not self.player_won:
+            return
+        from GameSim.Map.CardRewardGenerator import generate_card_reward
+        card_options = generate_card_reward(self.player, is_elite=True)
+        chosen = self.player.controller.choose_card_reward(self.player, card_options)
+        if chosen is not None and 0 <= chosen < len(card_options):
+            self.player.add_card(card_options[chosen])
+
+        # Award a random relic not already in the player's possession
+        existing = {type(r).__name__ for r in self.player.relics}
+        available = [name for name in self.player.implemented_relics if name not in existing]
+        if available:
+            relic_name = random.choice(available)
+            cls = getattr(self.player.implemented_relics[relic_name], relic_name)
+            self.player.add_relic(cls(self.player))
+
     def start(self):
         super().start()
         self.player.last_elite = self.enemies[0].__class__.__name__

@@ -16,6 +16,8 @@ from GameSim.Map.Room import Room
 
 class RLPlayerController(PlayerController):
 
+    CARD_REWARD_EPSILON = 0.2  # probability of random card pick during training
+
     def __init__(self, filepath, delay=0, train=True, save=True, visualizer=None):
         super().__init__()
         self.visualizer = visualizer
@@ -495,6 +497,44 @@ class RLPlayerController(PlayerController):
         self.agent.reset_hidden_state()
         self.episode_count += 1
         self.path = None
+
+    def choose_card_reward(self, player, card_options: list):
+        """
+        Choose a card from the combat reward options using deck-embedding similarity.
+
+        Cards are ranked by cosine similarity of their encoded feature vector to the
+        mean encoding of the current deck.  The highest-scoring card is chosen greedily
+        during inference; during training a random card is chosen with probability
+        CARD_REWARD_EPSILON to encourage exploration.
+
+        Returns the index of the chosen card (0-2), or None to skip the reward.
+        """
+        if not card_options:
+            return None
+
+        # Explore randomly during training
+        if self.agent.learning_enabled and random.random() < self.CARD_REWARD_EPSILON:
+            return random.randint(0, len(card_options) - 1)
+
+        # Temporarily instantiate the reward cards to compute feature vectors.
+        # We pass an empty enemies list because combat has ended.
+        reward_cards = []
+        for card_name in card_options:
+            cls = getattr(player.implemented_cards[card_name], card_name)
+            reward_cards.append(cls(player))
+        reward_vecs = [self.get_card_vector(card, player, []) for card in reward_cards]
+
+        # Use the full deck (all zones) as the comparison embedding for similarity.
+        deck_cards = player.deck.draw_pile + player.deck.hand + player.deck.discard_pile
+        if not deck_cards:
+            return random.randint(0, len(card_options) - 1)
+
+        deck_vecs = [self.get_card_vector(card, player, []) for card in deck_cards]
+
+        best_idx = self.agent.choose_card_from_zone(deck_vecs, reward_vecs, set())
+        if best_idx == -1:
+            return random.randint(0, len(card_options) - 1)
+        return best_idx
 
     def apply_episode_bonus(self, bonus_reward, reason=""):
         """

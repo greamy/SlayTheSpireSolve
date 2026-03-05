@@ -47,3 +47,7 @@ class PlayerController:
     def select_event_option(self, player, event) -> int:
         import random
         return random.randrange(len(event.options))
+
+    def choose_card_reward(self, player, card_options: list):
+        """Choose a card from the reward options. Return index (0-2) or None to skip."""
+        return None
