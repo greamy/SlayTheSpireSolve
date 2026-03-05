@@ -43,5 +43,6 @@ class DevaForm(Card):
     def remove_listeners(self, player: Player):
         if self.energy_listener in player.listeners:
             player.remove_listener(self.energy_listener)
-        player.remove_listener(self.ethereal_listener)
+        if self.ethereal_listener in player.listeners:
+            player.remove_listener(self.ethereal_listener)
         super().remove_listeners(player)
