@@ -30,7 +30,7 @@ class Status:
         return True
 
     def remove(self):
-        if self.listener is not None and not self.removed:
+        if self.listener is not None and not self.removed and self.listener in self.entity.listeners:
             self.removed = True
             self.entity.remove_listener(self.listener)
 

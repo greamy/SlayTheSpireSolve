@@ -327,9 +327,35 @@ class LSTMPPOAgent(PPOAgent):
         Choose action, now passing the hidden state.
         :param state_tensors: A single state dictionary with values of the dictionary converted to tensors.
         """
+        # --- NaN diagnostic: check raw observations ---
+        for k, v in state_tensors.items():
+            if isinstance(v, torch.Tensor) and v.dtype.is_floating_point and torch.isnan(v).any():
+                print(f"[NaN] Raw observation '{k}' contains NaN!")
+        for k, rms in self.obs_norms.items():
+            if np.isnan(rms.mean).any() or np.isnan(rms.var).any():
+                print(f"[NaN] obs_norms['{k}'] stats are NaN!")
+
         normalized_state_tensors = self._normalize_state_dict(state_tensors, update=self.learning_enabled)
+
+        # --- NaN diagnostic: check normalized observations ---
+        for k, v in normalized_state_tensors.items():
+            if isinstance(v, torch.Tensor) and v.dtype.is_floating_point and torch.isnan(v).any():
+                print(f"[NaN] Normalized observation '{k}' contains NaN!")
+
         state_tuple, stage, action_mask = self.embed_state(normalized_state_tensors)
         embedded_state = self.state_encoder(*state_tuple)
+
+        # --- NaN diagnostic: check embedded state and hidden state ---
+        if torch.isnan(embedded_state).any():
+            print(f"[NaN] embedded_state contains NaN!")
+            for name, param in self.state_encoder.named_parameters():
+                if torch.isnan(param).any():
+                    print(f"[NaN]   state_encoder.{name} weights are NaN!")
+        if self.hidden_state is not None:
+            h, c = self.hidden_state
+            if torch.isnan(h).any() or torch.isnan(c).any():
+                print(f"[NaN] hidden_state contains NaN! Resetting.")
+                self.reset_hidden_state()
 
         self.actor_critic.eval()
         with torch.no_grad():

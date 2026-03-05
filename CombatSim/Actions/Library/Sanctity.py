@@ -40,6 +40,8 @@ class Sanctity(Card):
         player.add_listener(self.not_skill_listener)
 
     def remove_listeners(self, player: Player):
-        player.remove_listener(self.skill_listener)
-        player.remove_listener(self.not_skill_listener)
+        if self.skill_listener in player.listeners:
+            player.remove_listener(self.skill_listener)
+        if self.not_skill_listener in player.listeners:
+            player.remove_listener(self.not_skill_listener)
         super().remove_listeners(player)

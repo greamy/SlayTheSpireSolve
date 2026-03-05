@@ -12,6 +12,7 @@ from GameSim.Map.MapGenerator import MapGenerator
 from GameSim.Render.Renderer import Renderer
 
 from CombatSim.util import createPlayer, addCards, get_default_deck
+from GameSim.Map.RestRoom import RestRoom
 
 class TrainerFullAct:
 
@@ -104,6 +105,9 @@ class TrainerFullAct:
                 next_room = self.renderer.render_act_map(self.cur_map, self.cur_map.player_pos[0],
                                                          self.cur_map.player_pos[1])
                 episode_done = next_room is None
+
+                if isinstance(room, RestRoom):
+                    self.controller.apply_episode_bonus(1.0, reason="rest_site")
 
                 combat_won = room.player.is_alive()
                 health_lost_per_combat.append(max(health_before - room.player.health, 0))

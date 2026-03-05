@@ -76,11 +76,11 @@ class Trainer:
                         heal_amount = int(room.player.start_health * 0.20)
                         room.player.health = min(room.player.health + heal_amount, room.player.start_health)
                         # Apply bonus reward
-                        self.controller.apply_episode_bonus(50, reason=f"rest_site")
+                        self.controller.apply_episode_bonus(1.0, reason=f"rest_site")
 
                     # Apply max gauntlet bonus if reached max length
                     if gauntlet_ends and combat_won and current_gauntlet_combats >= reg.max_gauntlet_length:
-                        self.controller.apply_episode_bonus(25, reason="max_combats_reached")
+                        self.controller.apply_episode_bonus(0.5, reason="max_combats_reached")
 
                     if gauntlet_ends:
                         gauntlet_active = False

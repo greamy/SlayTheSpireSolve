@@ -549,14 +549,14 @@ def run_many_game_sequences(controller, dungeon_path, library_path,
                     heal_amount = int(player.start_health * heal_percent)
                     player.health = min(player.health + heal_amount, player.start_health)
 
-                    controller.apply_episode_bonus(50, reason=f"rest_site_{combats_completed // combats_per_rest}")
+                    controller.apply_episode_bonus(1.0, reason=f"rest_site_{combats_completed // combats_per_rest}")
 
                 # Check episode termination
                 if combats_completed >= max_combats_per_episode:
                     # Reached max combats
                     episode_done = True
                     episode_won = True
-                    controller.apply_episode_bonus(25, reason="max_combats_reached")
+                    controller.apply_episode_bonus(0.5, reason="max_combats_reached")
                     player.end_combat(room.enemies, False, episode_done=True)
                 else:
                     # Episode continues
