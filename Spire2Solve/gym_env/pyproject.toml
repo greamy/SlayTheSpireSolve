@@ -1,0 +1,10 @@
+[project]
+name = "sts2-gym"
+version = "0.1.0"
+description = "Gymnasium environment for Slay the Spire 2 via the STS2MCP HTTP API"
+requires-python = ">=3.11"
+dependencies = [
+    "gymnasium>=0.29",
+    "numpy>=1.24",
+    "requests>=2.28",
+]
